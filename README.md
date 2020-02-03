@@ -8,7 +8,9 @@ Package R facilitant la configuration, le lancement, et la récupération de ré
 
 2. une fonction permettant de lancer le calcul, qui se base sur le *.yml*
 
-3. un module **shiny** pour configurer un lancement
+3. une fonction *launcher* qui regarde les tâches en cours / à lancer
 
-4. un module **shiny** pour voir l'état d'avancement des calculs
+4. un module **shiny** pour configurer un lancement
+
+5. un module **shiny** pour voir l'état d'avancement des calculs
 
