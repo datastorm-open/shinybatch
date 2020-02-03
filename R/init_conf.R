@@ -1,11 +1,12 @@
 #' Initialise conf file for batch tasks
 #'
-#' @param conf_path \code{character}. Where to create the new directory.
+#' @param dir_path \code{character}. Where to create the new directory.
 #' @param conf_descr \code{named list} (NULL). Description fields chosen by the user. 
 #' @param fun_path \code{character}. Path to the script of the function.
 #' @param fun_name \code{character}. Name of the function in fun_path script.
 #' @param fun_args \code{named list} (NULL). Args of the function, must all be named.
 #' @param priority \code{numeric} (0L). Number used to define which task should be launched first.
+#' @param compress For \code{saveRDS}. a logical specifying whether saving to a named file is to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if file is a connection.
 #'
 #' @return a list containing the conf fields. Attribute 'path' of the result contains the path to the conf directory.
 #' @export
@@ -19,7 +20,7 @@
 #' dir <- tempdir()
 #' 
 #' # create and save conf
-#' conf <- init_conf(conf_path = dir,
+#' conf <- init_task_conf(dir_path = dir,
 #'                   conf_descr = list(title = "my_title",
 #'                                     description = "my_descr"),
 #'                   fun_path = "my_fun_path",
@@ -31,21 +32,27 @@
 #' 
 #' # catch results
 #' list.files(attr(conf, "path"))
-#' conf <- yaml::read_yaml(paste0(attr(conf, "path"), "/", "conf.yml"))
+#' read_conf <- yaml::read_yaml(paste0(attr(conf, "path"), "/", "conf.yml"))
 #' y <- readRDS(paste0(attr(conf, "path"), "inputs/y.RDS"))
 #' z <- readRDS(paste0(attr(conf, "path"), "inputs/z.RDS"))
 #' 
 #' }}
-init_conf <- function(conf_path,
+init_task_conf <- function(dir_path,
                       conf_descr = NULL,
                       fun_path,
                       fun_name,
                       fun_args = NULL,
-                      priority = 0L) {
+                      priority = 0L,
+                      compress = TRUE) {
   # checks 
-  if (! is.character(conf_path)) {
-    stop("'conf_path' must be of class <character>.")
+  if (!is.character(dir_path)) {
+    stop("'dir_path' must be of class <character>.")
   }
+  
+  if (! dir.exists(dir_path)) {
+    stop("'dir_path' directory doesn't exist. (", dir_path, ")")
+  }
+  
   if (! (is.null(conf_descr) || 
          (is.list(conf_descr) && length(conf_descr) > 0 && 
           ! is.null(names(conf_descr)) && ! any(names(conf_descr) == "")))) {
@@ -62,15 +69,24 @@ init_conf <- function(conf_path,
           ! is.null(names(fun_args)) && ! any(names(fun_args) == "")))) {
     stop("'fun_args' must be a <named list> of 'fun_name' arguments.")
   }
-  if (! is.numeric(priority)) {
-    stop("'priority' must be of class <numeric>.")
+  if (! class(priority) %in% c("numeric", "integer")) {
+    stop("'priority' must be of class <numeric> or <integer>.")
   }
   
   # write conf
   time <- Sys.time()
   
-  conf_path <- paste0(conf_path, "/", gsub(" ", "_", gsub("-|:", "", time)), "/")
-  dir.create(conf_path, recursive = T)
+  dir_path <- file.path(paste0(dir_path, "/", 
+                               gsub(".", "", format(time, format = "%Y%m%d_%H%M%%OS2"), fixed = TRUE),  
+                               "/")
+                        )
+  
+  check_dir <- dir.create(dir_path, recursive = T)
+  if(!check_dir){
+    stop("Can't create output directory ", dir_path)
+  }
+  
+  dir_path <- paste0(dir_path, "/")
   
   conf <- list(
     "run_info" = list(
@@ -99,25 +115,28 @@ init_conf <- function(conf_path,
         conf$args[[arg_name]] <- arg
         # else save in RDS and add path to the yaml
       } else {
-        if (! dir.exists(paste0(conf_path, "inputs"))) {
-          dir.create(paste0(conf_path, "inputs"))
+        input_dir <- file.path(paste0(dir_path, "inputs"))
+        if (! dir.exists(input_dir)) {
+          check_dir <- dir.create(input_dir)
+          if(!check_dir){
+            stop("Can't create output directory ", input_dir)
+          }
         }
         
-        path <- paste0(conf_path, "inputs/", arg_name, ".RDS")
+        path <- paste0(dir_path, "inputs/", arg_name, ".RDS")
         
-        saveRDS(arg,
-                file = path)
+        saveRDS(arg, file = path, compress = compress)
+        
         conf$args[[arg_name]] <- list("_path" = path)
       }
     }
   }
   
   # save yaml
-  yaml::write_yaml(conf,
-                   file = paste0(conf_path, "conf.yml"))
+  yaml::write_yaml(conf,file = paste0(dir_path, "conf.yml"))
   
   # add path to res
-  attr(conf, "path") <- conf_path
+  attr(conf, "path") <- dir_path
   
   return(conf)
 }

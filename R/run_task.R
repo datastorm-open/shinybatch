@@ -24,7 +24,7 @@
 #' close(con)
 #' 
 #' # create and save conf
-#' conf <- init_conf(conf_path = dir_conf,
+#' conf <- init_task_conf(dir_path = dir_conf,
 #'                   conf_descr = list(title = "my_title",
 #'                                     description = "my_descr"),
 #'                   fun_path = paste0(dir_fun, "/fun_script.R"),

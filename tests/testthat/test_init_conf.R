@@ -1,11 +1,11 @@
-context("test_init_conf")
+context("test_init_task_conf")
 
 # create temporary directory
 dir <- tempdir()
 
-# create and save conf
+# create and save con
 time <- Sys.time()
-conf <- init_conf(conf_path = dir,
+conf <- init_task_conf(dir_path = dir,
                   conf_descr = list(title = "my_title",
                                     description = "my_descr"),
                   fun_path = "my_fun_path",
@@ -17,28 +17,23 @@ conf <- init_conf(conf_path = dir,
 
 
 test_that("test outputs", {
-  
-  # conf file fields
-  expected_conf <- list(
-    "run_info" = list(
-      "date_init" = as.character(time),
-      "date_start_run" = "N/A",
-      "date_end_run" = "N/A",
-      "priority" = 1,
-      "status" = "waiting"),
-    "descriptive" = list(title = "my_title",
-                         description = "my_descr"),
-    "function" = list(
-      "path" = "my_fun_path",
-      "name" = "my_fun_name"),
-    "args" = list(
-      x = 1,
-      y =  list("_path" = paste0(dir, "/", gsub(" ", "_", gsub("-|:", "", time)), "/inputs/y.RDS")),
-      z =  list("_path" = paste0(dir, "/", gsub(" ", "_", gsub("-|:", "", time)), "/inputs/z.RDS"))))
-    attr(expected_conf, "path") <- paste0(dir, "/", gsub(" ", "_", gsub("-|:", "", time)), "/")
-  
   # output files
-  expect_equal(conf, expected_conf)
+  conf_run_info <- conf$run_info
+  conf_run_info$date_init <- NULL
+  expect_equal(conf_run_info, list(
+    "date_start_run" = "N/A",
+    "date_end_run" = "N/A",
+    "priority" = 1,
+    "status" = "waiting")
+  )
+  
+  expect_equal(conf$descriptive, list(title = "my_title", description = "my_descr"))
+  expect_equal(conf$`function`, list(
+    "path" = "my_fun_path",
+    "name" = "my_fun_name")
+  )
+  
+  expect_equal(c("x", "y", "z"), names(conf$args))
   
   expect_equal(list.files(attr(conf, "path")), c("conf.yml", "inputs"))
   

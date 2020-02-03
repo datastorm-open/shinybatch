@@ -1,4 +1,4 @@
-context("test_init_conf")
+context("test_run_task")
 
 # create temporary directory for conf
 dir_conf <- tempdir()
@@ -13,7 +13,7 @@ writeLines("my_fun <- function(x, y, z) {
 close(con)
 
 # create and save conf
-conf <- init_conf(conf_path = dir_conf,
+conf <- init_task_conf(dir_path = dir_conf,
                   conf_descr = list(title = "my_title",
                                     description = "my_descr"),
                   fun_path = paste0(dir_fun, "/fun_script.R"),
@@ -53,7 +53,7 @@ test_that("test outputs", {
   close(con)
   
   # create and save conf
-  conf <- init_conf(conf_path = dir_conf,
+  conf <- init_task_conf(dir_path = dir_conf,
                     conf_descr = list(title = "my_title",
                                       description = "my_descr"),
                     fun_path = paste0(dir_fun, "/fun_script.R"),
@@ -67,6 +67,5 @@ test_that("test outputs", {
   try(run_task(paste0(attr(conf, "path"), "conf.yml")), silent = T)
   
   expect_equal(yaml::read_yaml(paste0(attr(conf, "path"), "conf.yml"))$run_info$status, "error")
-  expect_equal(yaml::read_yaml(paste0(attr(conf, "path"), "conf.yml"))$run_info$date_end_run, as.character(time))
-  
+
 })
