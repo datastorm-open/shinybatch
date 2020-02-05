@@ -65,33 +65,6 @@ run_task <- function(conf_path) {
   conf$run_info$date_start_run <- as.character(Sys.time())
   conf$run_info$status <- "running"
   
-  # retrieve fun args
-  fun_args <- conf$args
-  if (length(fun_args) > 0) {
-    for (n_arg in 1:length(fun_args)) {
-      arg <- fun_args[[n_arg]]
-      arg_name <- names(fun_args)[[n_arg]]
-      
-      if (! is.null(names(arg)) && names(arg) == "_path") {
-        fun_args[[n_arg]] <- tryCatch(readRDS(arg[["_path"]]),
-                                      error = function(e) {
-                                        stop(paste0("Path '", arg[["_path"]], "' doesnt exist."))
-                                      })
-      }
-    } 
-  }
-  
-  # apply fun + create log
-  tryCatch(source(conf[["function"]]$path),
-           error = function(e) {
-             stop(paste0("File '", conf[["function"]]$path, "' cannot be sourced."))
-           })
-  check_dir <- dir.create(paste0(dirname(conf_path), "/output"))
-  if (! check_dir) {
-    stop("Can't create output directory ", paste0(dirname(conf_path), "/output"))
-  }
-  setwd(paste0(dirname(conf_path), "/output")) 
-  
   # init log
   futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log.txt")), 
                                name = "td.io")
@@ -103,6 +76,34 @@ run_task <- function(conf_path) {
   futile.logger::flog.threshold("INFO", name = "td.io")
   
   fun_res <- withCallingHandlers({
+    # retrieve fun args
+    fun_args <- conf$args
+    if (length(fun_args) > 0) {
+      for (n_arg in 1:length(fun_args)) {
+        arg <- fun_args[[n_arg]]
+        arg_name <- names(fun_args)[[n_arg]]
+        
+        if (! is.null(names(arg)) && names(arg) == "_path") {
+          fun_args[[n_arg]] <- tryCatch(readRDS(arg[["_path"]]),
+                                        error = function(e) {
+                                          stop(paste0("Path '", arg[["_path"]], "' doesnt exist."))
+                                        })
+        }
+      } 
+    }
+    
+    # apply fun + create log
+    tryCatch(source(conf[["function"]]$path),
+             error = function(e) {
+               stop(paste0("File '", conf[["function"]]$path, "' cannot be sourced."))
+             })
+    check_dir <- dir.create(paste0(dirname(conf_path), "/output"))
+    if (! check_dir) {
+      stop("Can't create output directory ", paste0(dirname(conf_path), "/output"))
+    }
+    setwd(paste0(dirname(conf_path), "/output")) 
+    
+    # run fun
     do.call(conf[["function"]]$name, fun_args)
   }, simpleError  = function(e){
     futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="td.io")
