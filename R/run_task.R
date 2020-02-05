@@ -11,10 +11,13 @@
 #' \donttest{\dontrun{
 #' 
 #' # create temporary directory for conf
-#' dir_conf <- tempdir()
+#' # create temporary directory for conf
+#' dir_conf <- paste0(tempdir(), "/conf")
+#' dir.create(dir_conf, recursive = T)
 #' 
 #' # create temporary directory for fun
-#' dir_fun <- tempdir()
+#' dir_fun <- paste0(tempdir(), "/fun")
+#' dir.create(dir_fun)
 #' con <- file(paste0(dir_fun, "/fun_script.R"))
 #' writeLines("my_fun <- function(x, y, z) {
 #'                         res <- x + y ;
@@ -24,15 +27,15 @@
 #' close(con)
 #' 
 #' # create and save conf
-#' conf <- init_task_conf(dir_path = dir_conf,
-#'                   conf_descr = list(title = "my_title",
-#'                                     description = "my_descr"),
-#'                   fun_path = paste0(dir_fun, "/fun_script.R"),
-#'                   fun_name = "my_fun",
-#'                   fun_args = list(x = 1,
-#'                                   y = 0:4,
-#'                                   z = iris),
-#'                   priority = 1)
+#' conf <- configure_task(dir_path = dir_conf,
+#'                        conf_descr = list(title = "my_title",
+#'                                          description = "my_descr"),
+#'                        fun_path = paste0(dir_fun, "/fun_script.R"),
+#'                        fun_name = "my_fun",
+#'                        fun_args = list(x = 1,
+#'                                        y = 0:4,
+#'                                        z = iris),
+#'                        priority = 1)
 #' 
 #' conf_init <- yaml::read_yaml(paste0(attr(conf, "path"), "conf.yml"))
 #' y <- readRDS(paste0(attr(conf, "path"), "inputs/y.RDS"))
@@ -83,7 +86,10 @@ run_task <- function(conf_path) {
            error = function(e) {
              stop(paste0("File '", conf[["function"]]$path, "' cannot be sourced."))
            })
-  dir.create(paste0(dirname(conf_path), "/output"))
+  check_dir <- dir.create(paste0(dirname(conf_path), "/output"))
+  if (! check_dir) {
+    stop("Can't create output directory ", paste0(dirname(conf_path), "/output"))
+  }
   setwd(paste0(dirname(conf_path), "/output")) 
   
   # init log

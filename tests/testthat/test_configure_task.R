@@ -1,19 +1,19 @@
-context("test_init_task_conf")
+context("test_configure_task")
 
 # create temporary directory
 dir <- tempdir()
 
 # create and save con
 time <- Sys.time()
-conf <- init_task_conf(dir_path = dir,
-                  conf_descr = list(title = "my_title",
-                                    description = "my_descr"),
-                  fun_path = "my_fun_path",
-                  fun_name = "my_fun_name",
-                  fun_args = list(x = 1,
-                                  y = 0:4,
-                                  z = iris),
-                  priority = 1)
+conf <- configure_task(dir_path = dir,
+                       conf_descr = list(title = "my_title",
+                                         description = "my_descr"),
+                       fun_path = "my_fun_path",
+                       fun_name = "my_fun_name",
+                       fun_args = list(x = 1,
+                                       y = 0:4,
+                                       z = iris),
+                       priority = 1)
 
 
 test_that("test outputs", {
