@@ -19,7 +19,6 @@ Run the task defined in a conf file
 \donttest{\dontrun{
 
 # create temporary directory for conf
-# create temporary directory for conf
 dir_conf <- paste0(tempdir(), "/conf")
 dir.create(dir_conf, recursive = T)
 

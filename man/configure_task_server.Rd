@@ -4,9 +4,18 @@
 \alias{configure_task_server}
 \title{Module to configure a task.}
 \usage{
-configure_task_server(input, output, session, dir_path,
-  conf_descr = NULL, fun_path, fun_name, fun_args = NULL,
-  priority = 0L, compress = TRUE)
+configure_task_server(
+  input,
+  output,
+  session,
+  dir_path,
+  conf_descr = NULL,
+  fun_path,
+  fun_name,
+  fun_args = NULL,
+  priority = 0L,
+  compress = TRUE
+)
 }
 \arguments{
 \item{input}{shiny input}
