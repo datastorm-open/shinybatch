@@ -51,6 +51,8 @@
 #' }}
 run_task <- function(conf_path) {
   
+  current_wd <- getwd()
+  
   # checks
   if (! is.character(conf_path)) {
     stop("'conf_path' must be of class <character>.")
@@ -111,8 +113,10 @@ run_task <- function(conf_path) {
     conf$run_info$date_end_run <- as.character(Sys.time())
     conf$run_info$status <- "error"
     
-    yaml::write_yaml(conf,
-                     file = conf_path)
+    setwd(current_wd)
+    
+    yaml::write_yaml(conf,file = conf_path)
+    
   }, warning = function(w){
     futile.logger::flog.warn(gsub("(\n)*$", "", w$message), name = "td.io")
   }, message = function(m){
@@ -127,8 +131,9 @@ run_task <- function(conf_path) {
   conf$run_info$status <- "finished"
   conf$run_info$priority = 0
   
-  yaml::write_yaml(conf,
-                   file = conf_path)
+  setwd(current_wd)
+  
+  yaml::write_yaml(conf, file = conf_path)
   
   return(fun_res)
 }
