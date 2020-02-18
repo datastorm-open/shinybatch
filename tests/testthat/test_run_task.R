@@ -1,12 +1,15 @@
 context("test_run_task")
 
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf")
+dir_conf <- paste0(tempdir(), "/conf_task")
+if(dir.exists(dir_conf)) unlink(dir_conf, recursive = TRUE)
 dir.create(dir_conf, recursive = T)
 
 # create temporary directory for fun
-dir_fun <- paste0(tempdir(), "/fun")
+dir_fun <- paste0(tempdir(), "/fun_task")
+if(dir.exists(dir_fun))  unlink(dir_fun, recursive = TRUE)
 dir.create(dir_fun)
+
 con <- file(paste0(dir_fun, "/fun_script.R"))
 writeLines("my_fun <- function(x, y, z) {
                         res <- x + y ;
@@ -30,13 +33,13 @@ conf <- configure_task(dir_path = dir_conf,
 test_that("test outputs", {
   
   # fun output
-  expect_equal(suppressWarnings(run_task(paste0(attr(conf, "path"), "conf.yml"))), 1:5)
+  expect_equal(suppressWarnings(run_task(paste0(conf$path, "conf.yml"))), 1:5)
   
   # conf updates
   #####
   # 1 #
   #####
-  expect_equal(yaml::read_yaml(paste0(attr(conf, "path"), "conf.yml"))$run_info$status, "finished")
+  expect_equal(yaml::read_yaml(paste0(conf$path, "conf.yml"))$run_info$status, "finished")
 
   #####
   # 2 #
@@ -65,8 +68,8 @@ test_that("test outputs", {
                          priority = 1)
   
   time <- Sys.time()
-  try(run_task(paste0(attr(conf, "path"), "conf.yml")), silent = T)
+  try(run_task(paste0(conf$path, "conf.yml")), silent = T)
   
-  expect_equal(yaml::read_yaml(paste0(attr(conf, "path"), "conf.yml"))$run_info$status, "error")
+  expect_equal(yaml::read_yaml(paste0(conf$path, "conf.yml"))$run_info$status, "error")
   
 })

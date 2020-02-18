@@ -35,10 +35,10 @@ test_that("test outputs", {
   
   expect_equal(c("x", "y", "z"), names(conf$args))
   
-  expect_equal(list.files(attr(conf, "path")), c("conf.yml", "inputs"))
+  expect_equal(list.files(conf$path), c("conf.yml", "inputs"))
   
-  expect_equal(readRDS(paste0(attr(conf, "path"), "inputs/y.RDS")), 0:4)
+  expect_equal(readRDS(paste0(conf$path, "inputs/y.RDS")), 0:4)
   
-  expect_equal(readRDS(paste0(attr(conf, "path"), "inputs/z.RDS")), iris)
+  expect_equal(readRDS(paste0(conf$path, "inputs/z.RDS")), iris)
   
 })
