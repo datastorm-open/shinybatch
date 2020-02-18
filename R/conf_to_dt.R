@@ -10,7 +10,7 @@
 #' \itemize{
 #'  \item{tbl_global} {contains the global features of the configurations (.$run_info and .$descriptive)}
 #'  \item{tbl_idv} {contains the individual features of the configurations (.$function and .$args)}
-#'}
+#' }
 #' @export
 #'
 #' @import data.table
@@ -59,15 +59,19 @@
 #' confs <- list(conf_1, conf_2)
 #' 
 #' conf_to_dt(confs)
+#' 
 #' conf_to_dt(confs, 
 #'            allow_descr = F,
 #'            allow_args = F)
+#'            
 #' conf_to_dt(confs,
-#'            allowed_run_info_cols = c("date_init", "status"),
+#'            allowed_run_info_cols = c("status", "date_init"),
 #'            allowed_function_cols = c("path"))
+#'            
 #' conf_to_dt(confs,
 #'            allowed_run_info_cols = NULL,
 #'            allowed_function_cols = NULL)
+#'            
 #' conf_to_dt(confs,
 #'            allowed_run_info_cols = "",
 #'            allowed_function_cols = "",
@@ -104,27 +108,36 @@ conf_to_dt <- function(confs,
       cur_conf <- confs[[n_conf]]
       
       # get selected columns
-      global_cols <- c(allowed_run_info_cols, 
-                       if (is.logical(allow_descr)) {
-                         if (allow_descr) {names(cur_conf$descriptive)} else {""}
-                       } else {allow_descr})
+      global_cols <- c(
+        if (is.logical(allow_descr)) {
+          if (allow_descr) {
+            names(cur_conf$descriptive)
+          } else {""}
+        } else {
+          allow_descr
+        }, 
+        allowed_run_info_cols
+      )
       
       idv_cols <- c(allowed_function_cols, 
                     if (is.logical(allow_args)) {
-                      if (allow_args) {names(cur_conf$args)} else {""}
+                      if (allow_args) {
+                        names(cur_conf$args)
+                      } else {""}
                     } else {allow_args})
       
       tbl_global[[n_conf]] <- data.table::as.data.table(c(cur_conf$run_info, cur_conf$descriptive)
-      )[, intersect(c(names(cur_conf$run_info), names(cur_conf$descriptive)), 
-                    global_cols), with = F]
+      )[, intersect(global_cols, c(names(cur_conf$run_info), names(cur_conf$descriptive))), with = F]
+      
       tbls_idv[[n_conf]] <- data.table::as.data.table(c(cur_conf[["function"]], cur_conf$args)
-      )[, intersect(c(names(cur_conf[["function"]]), names(cur_conf$args)),
-                    idv_cols), with = F]
+      )[, intersect(idv_cols, c(names(cur_conf[["function"]]), names(cur_conf$args))), with = F]
+      
     } 
   }
   
   # rbind global table
   tbl_global <- data.table::rbindlist(tbl_global, fill = T)
+  
   # sort by decreasing priority and increasing date
   if ("date_init" %in% names(tbl_global)) {
     tbl_global <- tbl_global[order(get("date_init"), decreasing = F)] 
@@ -132,6 +145,6 @@ conf_to_dt <- function(confs,
   if ("priority" %in% names(tbl_global)) {
     tbl_global <- tbl_global[order(get("priority"), decreasing = T)] 
   }
-
+  
   return(list("tbl_global" = tbl_global, "tbls_idv" = tbls_idv)) 
 }
