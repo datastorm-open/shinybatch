@@ -46,11 +46,11 @@
 #' 
 #' launcher(dir_conf)
 #' # display res of conf_2 in /output dir
-#' readRDS(paste0(attr(conf_2, "path"), "output/res.RDS"))
+#' readRDS(paste0(conf_2$path, "output/res.RDS"))
 #' 
 #' launcher(dir_conf)
-#' # display res of conf_2 in /output dir
-#' readRDS(paste0(attr(conf_1, "path"), "output/res.RDS"))
+#' # display res of conf_1 in /output dir
+#' readRDS(paste0(conf_1$path, "output/res.RDS"))
 #' 
 #' launcher(dir_conf) 
 #' 

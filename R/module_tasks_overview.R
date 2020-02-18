@@ -53,7 +53,7 @@
 #'                                          z = iris),
 #'                          priority = 2)
 #'                          
-#' run_task(paste0(attr(conf_2, "path"), "conf.yml"))
+#' run_task(paste0(conf_2$path, "conf.yml"))
 #' 
 #' ui <- shiny::fluidPage(tasks_overview_UI("my_id_1"))
 #' server <- function(input, output, session) {

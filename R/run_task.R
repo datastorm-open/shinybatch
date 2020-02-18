@@ -36,17 +36,17 @@
 #'                                        z = iris),
 #'                        priority = 1)
 #' 
-#' conf_init <- yaml::read_yaml(paste0(attr(conf, "path"), "conf.yml"))
-#' y <- readRDS(paste0(attr(conf, "path"), "inputs/y.RDS"))
-#' z <- readRDS(paste0(attr(conf, "path"), "inputs/z.RDS"))
+#' conf_init <- yaml::read_yaml(paste0(conf$path, "conf.yml"))
+#' y <- readRDS(paste0(conf$path, "inputs/y.RDS"))
+#' z <- readRDS(paste0(conf$path, "inputs/z.RDS"))
 #' 
-#' run_task(paste0(attr(conf, "path"), "conf.yml"))
+#' run_task(paste0(conf$path, "conf.yml"))
 #' 
 #' # catch results
-#' list.files(attr(conf, "path"))
-#' conf_update <- yaml::read_yaml(paste0(attr(conf, "path"), "conf.yml"))
-#' output <- readRDS(paste0(attr(conf, "path"), "output/res.RDS"))
-#' log <- read.table(paste0(attr(conf, "path"), "output/log.txt"), header = F)
+#' list.files(conf$path)
+#' conf_update <- yaml::read_yaml(paste0(conf$path, "conf.yml"))
+#' output <- readRDS(paste0(conf$path, "output/res.RDS"))
+#' log <- read.table(paste0(conf$path, "output/log.txt"), header = F)
 #' 
 #' }}
 run_task <- function(conf_path) {

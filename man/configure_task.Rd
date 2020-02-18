@@ -6,9 +6,9 @@
 \usage{
 configure_task(
   dir_path,
-  conf_descr = NULL,
   fun_path,
   fun_name,
+  conf_descr = NULL,
   fun_args = NULL,
   priority = 0L,
   compress = TRUE
@@ -17,11 +17,11 @@ configure_task(
 \arguments{
 \item{dir_path}{\code{character}. Where to create the new directory.}
 
-\item{conf_descr}{\code{named list} (NULL). Description fields chosen by the user.}
-
 \item{fun_path}{\code{character}. Path to the script of the function.}
 
 \item{fun_name}{\code{character}. Name of the function in fun_path script.}
+
+\item{conf_descr}{\code{named list} (NULL). Description fields chosen by the user.}
 
 \item{fun_args}{\code{named list} (NULL). Args of the function, must all be named.}
 
@@ -53,10 +53,10 @@ conf <- configure_task(dir_path = dir,
                        priority = 1)
 
 # catch results
-list.files(attr(conf, "path"))
-read_conf <- yaml::read_yaml(paste0(attr(conf, "path"), "/", "conf.yml"))
-y <- readRDS(paste0(attr(conf, "path"), "inputs/y.RDS"))
-z <- readRDS(paste0(attr(conf, "path"), "inputs/z.RDS"))
+list.files(conf$path)
+read_conf <- yaml::read_yaml(paste0(conf$path, "/", "conf.yml"))
+y <- readRDS(paste0(conf$path, "inputs/y.RDS"))
+z <- readRDS(paste0(conf$path, "inputs/z.RDS"))
 
 }}
 }
