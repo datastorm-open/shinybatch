@@ -49,7 +49,7 @@
 #' shiny::shinyApp(ui = ui, server = server)
 #' 
 #' # catch results
-#' list.files(path <- paste0(dir_conf, "/", list.files(dir_conf)[1]))
+#' list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
 #' read_conf <- yaml::read_yaml(paste0(path, "/", "conf.yml"))
 #' y <- readRDS(paste0(path, "/", "inputs/y.RDS"))
 #' z <- readRDS(paste0(path, "/", "inputs/z.RDS"))

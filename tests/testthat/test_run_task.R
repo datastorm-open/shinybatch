@@ -33,13 +33,13 @@ conf <- configure_task(dir_path = dir_conf,
 test_that("test outputs", {
   
   # fun output
-  expect_equal(suppressWarnings(run_task(paste0(conf$path, "conf.yml"))), 1:5)
+  expect_equal(suppressWarnings(run_task(paste0(conf$dir, "conf.yml"))), 1:5)
   
   # conf updates
   #####
   # 1 #
   #####
-  expect_equal(yaml::read_yaml(paste0(conf$path, "conf.yml"))$run_info$status, "finished")
+  expect_equal(yaml::read_yaml(paste0(conf$dir, "conf.yml"))$run_info$status, "finished")
 
   #####
   # 2 #
@@ -68,8 +68,8 @@ test_that("test outputs", {
                          priority = 1)
   
   time <- Sys.time()
-  try(run_task(paste0(conf$path, "conf.yml")), silent = T)
+  try(run_task(paste0(conf$dir, "conf.yml")), silent = T)
   
-  expect_equal(yaml::read_yaml(paste0(conf$path, "conf.yml"))$run_info$status, "error")
+  expect_equal(yaml::read_yaml(paste0(conf$dir, "conf.yml"))$run_info$status, "error")
   
 })

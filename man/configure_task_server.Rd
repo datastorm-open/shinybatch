@@ -4,18 +4,9 @@
 \alias{configure_task_server}
 \title{Module to configure a task.}
 \usage{
-configure_task_server(
-  input,
-  output,
-  session,
-  dir_path,
-  conf_descr = NULL,
-  fun_path,
-  fun_name,
-  fun_args = NULL,
-  priority = 0L,
-  compress = TRUE
-)
+configure_task_server(input, output, session, dir_path,
+  conf_descr = NULL, fun_path, fun_name, fun_args = NULL,
+  priority = 0L, compress = TRUE)
 }
 \arguments{
 \item{input}{shiny input}
@@ -77,7 +68,7 @@ server <- function(input, output, session) {
 shiny::shinyApp(ui = ui, server = server)
 
 # catch results
-list.files(path <- paste0(dir_conf, "/", list.files(dir_conf)[1]))
+list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
 read_conf <- yaml::read_yaml(paste0(path, "/", "conf.yml"))
 y <- readRDS(paste0(path, "/", "inputs/y.RDS"))
 z <- readRDS(paste0(path, "/", "inputs/z.RDS"))

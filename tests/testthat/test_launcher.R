@@ -47,13 +47,13 @@ test_that("test outputs", {
   # launch highest priority
   expect_equal(launcher(dir_conf), 
                1)
-  expect_equal(readRDS(paste0(conf_2$path, "output/res.RDS")),
+  expect_equal(readRDS(paste0(conf_2$dir, "output/res.RDS")),
                1:5)
   
   # launch last conf file
   expect_equal(launcher(dir_conf), 
                1)
-  expect_equal(readRDS(paste0(conf_1$path, "output/res.RDS")), 
+  expect_equal(readRDS(paste0(conf_1$dir, "output/res.RDS")), 
                0:4)
   
   # launch nothing

@@ -53,7 +53,7 @@
 #'                                          z = iris),
 #'                          priority = 2)
 #'                          
-#' run_task(paste0(conf_2$path, "conf.yml"))
+#' run_task(paste0(conf_2$dir, "conf.yml"))
 #' 
 #' ui <- shiny::fluidPage(tasks_overview_UI("my_id_1"))
 #' server <- function(input, output, session) {
@@ -123,7 +123,7 @@ tasks_overview_server <- function(input, output, session,
     isolate({
       if (cpt > 0) {
         confs <- tryCatch({
-          lapply(list.files(dir_path, full.names = T), function(x) {
+          lapply(list.dirs(dir_path, full.names = T, recursive = F), function(x) {
             yaml::read_yaml(paste0(x, "/conf.yml"))
           })},
           error = function(e) {

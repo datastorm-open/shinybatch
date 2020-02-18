@@ -37,17 +37,17 @@
 #'                                        z = iris),
 #'                        priority = 1)
 #' 
-#' conf_init <- yaml::read_yaml(paste0(conf$path, "conf.yml"))
-#' y <- readRDS(paste0(conf$path, "inputs/y.RDS"))
-#' z <- readRDS(paste0(conf$path, "inputs/z.RDS"))
+#' conf_init <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
+#' y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
+#' z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 #' 
-#' run_task(paste0(conf$path, "conf.yml"))
+#' run_task(paste0(conf$dir, "conf.yml"))
 #' 
 #' # catch results
-#' list.files(conf$path)
-#' conf_update <- yaml::read_yaml(paste0(conf$path, "conf.yml"))
-#' output <- readRDS(paste0(conf$path, "output/res.RDS"))
-#' log <- read.table(paste0(conf$path, "output/log.txt"), header = F)
+#' list.files(conf$dir)
+#' conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
+#' output <- readRDS(paste0(conf$dir, "output/res.RDS"))
+#' log <- read.table(paste0(conf$dir, "output/log_run.txt"), header = F)
 #' 
 #' }}
 run_task <- function(conf_path,
@@ -68,12 +68,12 @@ run_task <- function(conf_path,
   
   fun_res <- NULL
   
-  if (conf$run_info$status == "waiting" || ignore_status = T) {
+  if (conf$run_info$status == "waiting" || ignore_status == T) {
     conf$run_info$date_start_run <- as.character(Sys.time())
     conf$run_info$status <- "running"
     
     # init log
-    futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log.txt")), 
+    futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log_run.txt")), 
                                  name = "td.io")
     # set layout
     layout <- futile.logger::layout.format('[~t] [~l] ~m')

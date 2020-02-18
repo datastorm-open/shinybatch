@@ -5,18 +5,11 @@
 \alias{tasks_overview_UI}
 \title{Module to visualize all the created tasks.}
 \usage{
-tasks_overview_server(
-  input,
-  output,
-  session,
-  dir_path,
-  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority",
-    "status"),
-  allow_descr = TRUE,
-  allowed_function_cols = c("path", "name"),
-  allow_args = TRUE,
-  allowed_status = c("waiting", "running", "finished", "error")
-)
+tasks_overview_server(input, output, session, dir_path,
+  allowed_run_info_cols = c("date_init", "date_start_run",
+  "date_end_run", "priority", "status"), allow_descr = TRUE,
+  allowed_function_cols = c("path", "name"), allow_args = TRUE,
+  allowed_status = c("waiting", "running", "finished", "error"))
 
 tasks_overview_UI(id)
 }
@@ -82,7 +75,7 @@ conf_2 <- configure_task(dir_path = dir_conf,
                                          z = iris),
                          priority = 2)
                          
-run_task(paste0(conf_2$path, "conf.yml"))
+run_task(paste0(conf_2$dir, "conf.yml"))
 
 ui <- shiny::fluidPage(tasks_overview_UI("my_id_1"))
 server <- function(input, output, session) {

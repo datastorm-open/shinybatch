@@ -31,10 +31,10 @@
 #'                        priority = 1)
 #' 
 #' # catch results
-#' list.files(conf$path)
-#' read_conf <- yaml::read_yaml(paste0(conf$path, "/", "conf.yml"))
-#' y <- readRDS(paste0(conf$path, "inputs/y.RDS"))
-#' z <- readRDS(paste0(conf$path, "inputs/z.RDS"))
+#' list.files(conf$dir)
+#' read_conf <- yaml::read_yaml(paste0(conf$dir, "/", "conf.yml"))
+#' y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
+#' z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 #' 
 #' }}
 configure_task <- function(dir_path,
@@ -129,7 +129,7 @@ configure_task <- function(dir_path,
   }
   
   # add path to res
-  conf$path <- dir_path
+  conf$dir <- dir_path
   
   # save yaml
   yaml::write_yaml(conf,file = paste0(dir_path, "conf.yml"))

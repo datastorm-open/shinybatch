@@ -56,13 +56,15 @@ conf_2 <- configure_task(dir_path = dir_conf,
 
 launcher(dir_conf)
 # display res of conf_2 in /output dir
-readRDS(paste0(conf_2$path, "output/res.RDS"))
+readRDS(paste0(conf_2$dir, "output/res.RDS"))
 
 launcher(dir_conf)
 # display res of conf_1 in /output dir
-readRDS(paste0(conf_1$path, "output/res.RDS"))
+readRDS(paste0(conf_1$dir, "output/res.RDS"))
 
 launcher(dir_conf) 
+
+log <- read.table(paste0(conf$dir, "/log_launcher.txt"), header = F)
 
 }}
 }

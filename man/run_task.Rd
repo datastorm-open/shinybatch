@@ -4,10 +4,12 @@
 \alias{run_task}
 \title{Run the task defined in a conf file}
 \usage{
-run_task(conf_path)
+run_task(conf_path, ignore_status = FALSE)
 }
 \arguments{
 \item{conf_path}{\code{character}. Path to the conf file.}
+
+\item{ignore_status}{\code{logical} (FALSE). Whether or not to launch a task if its status is not "waiting".}
 }
 \value{
 the result of the task (function applied on prepared args).
@@ -44,17 +46,17 @@ conf <- configure_task(dir_path = dir_conf,
                                        z = iris),
                        priority = 1)
 
-conf_init <- yaml::read_yaml(paste0(conf$path, "conf.yml"))
-y <- readRDS(paste0(conf$path, "inputs/y.RDS"))
-z <- readRDS(paste0(conf$path, "inputs/z.RDS"))
+conf_init <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
+y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
+z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 
-run_task(paste0(conf$path, "conf.yml"))
+run_task(paste0(conf$dir, "conf.yml"))
 
 # catch results
-list.files(conf$path)
-conf_update <- yaml::read_yaml(paste0(conf$path, "conf.yml"))
-output <- readRDS(paste0(conf$path, "output/res.RDS"))
-log <- read.table(paste0(conf$path, "output/log.txt"), header = F)
+list.files(conf$dir)
+conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
+output <- readRDS(paste0(conf$dir, "output/res.RDS"))
+log <- read.table(paste0(conf$dir, "output/log_run.txt"), header = F)
 
 }}
 }
