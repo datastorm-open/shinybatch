@@ -11,7 +11,6 @@
 #' \donttest{\dontrun{
 #' 
 #' # create temporary directory for conf
-#' # create temporary directory for conf
 #' dir_conf <- paste0(tempdir(), "/conf")
 #' dir.create(dir_conf, recursive = T)
 #' 
@@ -126,6 +125,7 @@ run_task <- function(conf_path) {
   # update conf file
   conf$run_info$date_end_run <- as.character(Sys.time())
   conf$run_info$status <- "finished"
+  conf$run_info$priority = 0
   
   yaml::write_yaml(conf,
                    file = conf_path)

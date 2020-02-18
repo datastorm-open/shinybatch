@@ -118,9 +118,20 @@ tasks_overview_server <- function(input, output, session,
     
     isolate({
       if (cpt > 0) {
-        confs <- lapply(list.files(dir_path, full.names = T), function(x) {
-          yaml::read_yaml(paste0(x, "/conf.yml"))
-        })
+        confs <- tryCatch({
+          lapply(list.files(dir_path, full.names = T), function(x) {
+            yaml::read_yaml(paste0(x, "/conf.yml"))
+          })},
+          error = function(e) {
+            showModal(modalDialog(
+              easyClose = TRUE,
+              footer = NULL,
+              paste0("Path '", dir_path, "' doesnt exist.")
+            ))
+            
+            NULL
+          }
+        )
         
         conf_to_dt(confs = confs,
                    allowed_run_info_cols = get_allowed_run_info_cols(),
