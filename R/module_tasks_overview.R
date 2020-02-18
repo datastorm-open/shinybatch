@@ -1,5 +1,6 @@
 #' Module to visualize all the created tasks.
 #'
+#' @param id \code{character}. shiny id to allow multiple instanciation.
 #' @param input shiny input
 #' @param output shiny input
 #' @param session shiny input
@@ -14,7 +15,8 @@
 #' 
 #' @export
 #' 
-#' @import shiny data.table DT yaml
+#' @import shiny data.table yaml
+#' @importFrom DT datatable renderDT DTOutput formatStyle
 #'
 #' @examples
 #' \dontrun{\donttest{
@@ -33,8 +35,8 @@
 #' 
 #' # create 2 confs
 #' conf_1 <- configure_task(dir_path = dir_conf,
-#'                          conf_descr = list(title_1 = "my_title_1",
-#'                                            description_1 = "my_descr_1"),
+#'                          conf_descr = list(title = "my_title_1",
+#'                                            description = "my_descr_1"),
 #'                          fun_path = "my_fun_path_1",
 #'                          fun_name = "my_fun_name_1",
 #'                          fun_args = list(x = 1,
@@ -42,8 +44,8 @@
 #'                                          z = iris),
 #'                          priority = 1)
 #' conf_2 <- configure_task(dir_path = dir_conf,
-#'                          conf_descr = list(title_2 = "my_title_2",
-#'                                            description_2 = "my_descr_2"),
+#'                          conf_descr = list(title = "my_title_2",
+#'                                            description = "my_descr_2"),
 #'                          fun_path = paste0(dir_fun, "/fun_script.R"),
 #'                          fun_name = "my_fun",
 #'                          fun_args = list(x = 1,
@@ -57,15 +59,17 @@
 #' server <- function(input, output, session) {
 #'   callModule(tasks_overview_server, "my_id_1",
 #'              dir_path = dir_conf,
-#'              allowed_status = c("waiting", "running", "finished"),
+#'              allowed_status = c("waiting", "running", "finished", "error"),
 #'              allowed_run_info_cols = NULL,
 #'              allowed_function_cols = "",
-#'              allow_descr = F,
+#'              allow_descr = T,
 #'              allow_args = T)
 #' }
 #' shiny::shinyApp(ui = ui, server = server)
 #' 
 #' }}
+#' 
+#' @rdname tasks_overview
 tasks_overview_server <- function(input, output, session,
                                   dir_path,
                                   allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
@@ -172,9 +176,10 @@ tasks_overview_server <- function(input, output, session,
       DT
     }
   })
-  # call module DT
-  callModule(moduleDataTable, "tbl_global_DT", tbl_features$global, tbl_global_DT, 
-             paste0("tbl_global_features", format(Sys.time(), format = "%d%m%Y_%H%M%S")), row.names = TRUE)
+  
+  output$tbl_global_DT_out <- DT::renderDT({
+    tbl_global_DT()
+  })
   
   # check tbl_global_dt
   output$is_global_dt <- reactive({
@@ -184,14 +189,16 @@ tasks_overview_server <- function(input, output, session,
   
   # get DT table of idv feature of selected row
   tbl_idv_DT <- reactive({
-    sel_row <- input[["tbl_global_DT-table_rows_selected"]]
+    sel_row <- input[["tbl_global_DT_out_rows_selected"]]
     
     isolate({
       if (! is.null(sel_row)) {
         tbl_idv <- tbl_features()$tbls_idv[[sel_row]]
         
         if (! is.null(tbl_idv)) {
-          DT <- DT::datatable(tbl_idv, rownames = F, filter = 'bottom', options = list(scrollX = TRUE))
+          DT <- DT::datatable(tbl_idv, rownames = F, 
+                              filter = 'none', selection = "none",
+                              options = list(scrollX = TRUE, dom = 't'))
           
           # color paths in green
           if ("path" %in% names(tbl_idv)) {
@@ -207,12 +214,13 @@ tasks_overview_server <- function(input, output, session,
       }
     })
   })
-  # call module DT
-  callModule(moduleDataTable, "tbl_idv_DT", tbl_features()$tbls_idv[[input[["tbl_global_DT-table_rows_selected"]]]], tbl_idv_DT, 
-             paste0("tbl_idv_features", format(Sys.time(), format = "%d%m%Y_%H%M%S")), row.names = TRUE)
+  
+  output$tbl_idv_DT_out <- DT::renderDT({
+    tbl_idv_DT()
+  })
   
   output$is_idv_dt <- reactive({
-    sel_row <- input[["tbl_global_DT-table_rows_selected"]]
+    sel_row <- input[["tbl_global_DT_out_rows_selected"]]
     
     if (! is.null(sel_row)) {
       ! is.null(tbl_features()$tbls_idv[[sel_row]]) || nrow(tbl_features()$tbls_idv[[sel_row]]) > 0 
@@ -225,65 +233,9 @@ tasks_overview_server <- function(input, output, session,
 
 
 
-#' Module to visualize all the created tasks.
-#'
-#' @param id \code{character}. shiny id to allow multiple instanciation.
-#'
-#' @return shiny module.
+
+#' @rdname tasks_overview
 #' @export
-#' 
-#' @import shiny
-#'
-#' @examples
-#' \dontrun{\donttest{
-#' 
-#' # create temporary directory for conf
-#' dir_conf <- paste0(tempdir(), "/conf")
-#' dir.create(dir_conf, recursive = T)
-#' 
-#' # create temporary directory for fun
-#' dir_fun <- paste0(tempdir(), "/fun")
-#' dir.create(dir_fun)
-#' con <- file(paste0(dir_fun, "/fun_script.R"))
-#' writeLines("my_fun <- function(x, y, z) {x + y}",
-#'            con)
-#' close(con)
-#' 
-#' # create 2 confs
-#' conf_1 <- configure_task(dir_path = dir_conf,
-#'                          conf_descr = list(title_1 = "my_title_1",
-#'                                            description_1 = "my_descr_1"),
-#'                          fun_path = "my_fun_path_1",
-#'                          fun_name = "my_fun_name_1",
-#'                          fun_args = list(x = 1,
-#'                                          y = 0:4,
-#'                                          z = iris),
-#'                          priority = 1)
-#' conf_2 <- configure_task(dir_path = dir_conf,
-#'                          conf_descr = list(title_2 = "my_title_2",
-#'                                            description_2 = "my_descr_2"),
-#'                          fun_path = paste0(dir_fun, "/fun_script.R"),
-#'                          fun_name = "my_fun",
-#'                          fun_args = list(x = 1,
-#'                                          y = 0:4,
-#'                                          z = iris),
-#'                          priority = 2)
-#'                          
-#' run_task(paste0(attr(conf_2, "path"), "conf.yml"))
-#' 
-#' ui <- shiny::fluidPage(tasks_overview_UI("my_id_1"))
-#' server <- function(input, output, session) {
-#'   callModule(tasks_overview_server, "my_id_1",
-#'              dir_path = dir_conf,
-#'              allowed_status = c("waiting", "running", "finished"),
-#'              allowed_run_info_cols = NULL,
-#'              allowed_function_cols = "",
-#'              allow_descr = F,
-#'              allow_args = T)
-#' }
-#' shiny::shinyApp(ui = ui, server = server)
-#' 
-#' }}
 tasks_overview_UI <- function(id) {
   ns <- NS(id)
   
@@ -296,7 +248,7 @@ tasks_overview_UI <- function(id) {
                      conditionalPanel(condition = paste0("input['", ns("go_overview"), "'] > 0"),
                                       conditionalPanel(condition = paste0("output['", ns("is_global_dt"), "']"), 
                                                        column(12,
-                                                              moduleDataTableUI(ns("tbl_global_DT"))
+                                                              DT::DTOutput(ns("tbl_global_DT_out"))
                                                        )
                                       ),
                                       conditionalPanel(condition = paste0("! output['", ns("is_global_dt"), "']"), 
@@ -306,17 +258,17 @@ tasks_overview_UI <- function(id) {
                                                               )
                                                        )
                                       ),
-                                      conditionalPanel(condition = paste0("input['", ns("tbl_global_DT-table_rows_selected"), "'] > 0"), 
+                                      conditionalPanel(condition = paste0("input['", ns("tbl_global_DT_out_rows_selected"), "'] > 0"), 
                                                        conditionalPanel(condition = paste0("output['", ns("is_idv_dt"), "']"), 
                                                                         column(12,
-                                                                               column(1),
-                                                                               column(10,
-                                                                                      moduleDataTableUI(ns("tbl_idv_DT"))
-                                                                               )
+                                                                               tags$hr(),
+                                                                               DT::DTOutput(ns("tbl_idv_DT_out"))
+                                                                               
                                                                         )
                                                        ),
                                                        conditionalPanel(condition = paste0("! output['", ns("is_idv_dt"), "']"), 
                                                                         column(12,
+                                                                               tags$hr(),
                                                                                fluidRow(
                                                                                  div(h4("Empty table of individual features.", style = "color: darkblue;"), align = "center") 
                                                                                )
