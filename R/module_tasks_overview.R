@@ -73,7 +73,7 @@
 #' 
 #' }}
 #' 
-#' @rdname tasks_overview
+#' @rdname module_tasks_overview
 tasks_overview_server <- function(input, output, session,
                                   dir_path,
                                   allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
@@ -237,9 +237,9 @@ tasks_overview_server <- function(input, output, session,
 
 
 
-
-#' @rdname tasks_overview
 #' @export
+#' 
+#' @rdname module_tasks_overview
 tasks_overview_UI <- function(id) {
   ns <- NS(id)
   

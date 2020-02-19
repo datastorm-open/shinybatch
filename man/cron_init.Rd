@@ -34,7 +34,7 @@ Create and start the cron on the launcher function
 \examples{
 \dontrun{\donttest{
 
-# create file to be called by the cron 
+# create example of files to be called by the cron 
 cron_init(dir_cron = tempdir(),
           head_rows = NULL)
 read.delim(paste0(tempdir(), "/cron_script.R"), header = F)

@@ -1,5 +1,6 @@
 #' Module to configure a task.
 #'
+#' @param id \code{character}. shiny id to allow multiple instanciation.
 #' @param input shiny input
 #' @param output shiny input
 #' @param session shiny input
@@ -57,6 +58,8 @@
 #' z <- readRDS(paste0(path, "/", "inputs/z.RDS"))
 #' 
 #' }}
+#' 
+#' @rdname module_configure_task
 configure_task_server <- function(input, output, session,
                                   dir_path,
                                   conf_descr = NULL,
@@ -137,57 +140,9 @@ configure_task_server <- function(input, output, session,
 }
 
 
-
-#' Module to configure a task.
-#'
-#' @param id \code{character}. shiny id to allow multiple instanciation.
-#'
-#' @return shiny module.
 #' @export
 #' 
-#' @import shiny
-#'
-#' @examples
-#' \dontrun{\donttest{
-#' 
-#' # create temporary directory for conf
-#' dir_conf <- tempdir()
-#' 
-#' # create temporary directory for fun
-#' dir_fun <- paste0(tempdir(), "/fun")
-#' dir.create(dir_fun)
-#' con <- file(paste0(dir_fun, "/fun_script.R"))
-#' writeLines(c("my_fun <- function(x, y, z) {",
-#'              "  res <- x + y ;",
-#'              "  message('Running !') ;",
-#'              "  res",
-#'              "}"),
-#'            con)
-#' close(con)
-#' 
-#' # create and save conf
-#' ui <- shiny::fluidPage(configure_task_UI("my_id_1"))
-#' server <- function(input, output, session) {
-#'   callModule(configure_task_server, "my_id_1",
-#'              dir_path = dir_conf,
-#'              conf_descr = list(title = "my_title",
-#'                                description = "my_descr"),
-#'              fun_path = paste0(dir_fun, "/fun_script.R"),
-#'              fun_name = "my_fun",
-#'              fun_args = list(x = 1,
-#'                              y = 0:4,
-#'                              z = iris),
-#'              priority = 1)
-#' }
-#' shiny::shinyApp(ui = ui, server = server)
-#' 
-#' # catch results
-#' list.files(path <- paste0(dir_conf, "/", list.files(dir_conf)[1]))
-#' read_conf <- yaml::read_yaml(paste0(path, "/", "conf.yml"))
-#' y <- readRDS(paste0(path, "/", "inputs/y.RDS"))
-#' z <- readRDS(paste0(path, "/", "inputs/z.RDS"))
-#' 
-#' }}
+#' @rdname module_configure_task
 configure_task_UI <- function(id) {
   ns <- NS(id)
   
