@@ -1,20 +1,20 @@
 context("test_run_task")
 
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf_task")
-if(dir.exists(dir_conf)) unlink(dir_conf, recursive = TRUE)
+dir_conf <- paste0(tempdir(), "/conf")
+if (dir.exists(dir_conf)) unlink(dir_conf, recursive = TRUE)
 dir.create(dir_conf, recursive = T)
 
 # create temporary directory for fun
-dir_fun <- paste0(tempdir(), "/fun_task")
-if(dir.exists(dir_fun))  unlink(dir_fun, recursive = TRUE)
+dir_fun <- paste0(tempdir(), "/fun")
+if (dir.exists(dir_fun)) unlink(dir_fun, recursive = TRUE)
 dir.create(dir_fun)
-
 con <- file(paste0(dir_fun, "/fun_script.R"))
-writeLines("my_fun <- function(x, y, z) {
-                        res <- x + y ;
-                        warning('Just a warning') ;
-                        res} ",
+writeLines(c("my_fun <- function(x, y, z) {",
+             "  res <- x + y ;",
+             "  message('Running !') ;",
+             "  res",
+             "}"),
            con)
 close(con)
 
@@ -47,12 +47,15 @@ test_that("test outputs", {
   # create temporary directory for conf
   dir_conf <- tempdir()
   # create temporary directory for fun
-  dir_fun <- tempdir()
+  dir_fun <- paste0(tempdir(), "/fun")
+  if (dir.exists(dir_fun)) unlink(dir_fun, recursive = TRUE)
+  dir.create(dir_fun)
   con <- file(paste0(dir_fun, "/fun_script.R"))
-  writeLines("my_fun <- function(x, y, z) {
-             res <- x + y ;
-             stop('crap an error') ;
-             res} ",
+  writeLines(c("my_fun <- function(x, y, z) {",
+               "  res <- x + y ;",
+               "  stop('Error') ;",
+               "  res",
+               "}"),
              con)
   close(con)
   

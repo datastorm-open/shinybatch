@@ -30,7 +30,11 @@ dir.create(dir_conf, recursive = T)
 dir_fun <- paste0(tempdir(), "/fun")
 dir.create(dir_fun)
 con <- file(paste0(dir_fun, "/fun_script.R"))
-writeLines("my_fun <- function(x, y, z) {x + y}",
+writeLines(c("my_fun <- function(x, y, z) {",
+             "  res <- x + y ;",
+             "  message('Running !') ;",
+             "  res",
+             "}"),
            con)
 close(con)
 

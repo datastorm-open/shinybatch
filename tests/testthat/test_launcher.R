@@ -6,12 +6,15 @@ if (dir.exists(dir_conf)) unlink(dir_conf, recursive = TRUE)
 dir.create(dir_conf, recursive = T)
 
 # create temporary directory for fun
-dir_fun <- paste0(tempdir(), "/fun_launcher")
+dir_fun <- paste0(tempdir(), "/fun")
 if (dir.exists(dir_fun)) unlink(dir_fun, recursive = TRUE)
 dir.create(dir_fun)
-
 con <- file(paste0(dir_fun, "/fun_script.R"))
-writeLines("my_fun <- function(x, y, z) {x + y}",
+writeLines(c("my_fun <- function(x, y, z) {",
+             "  res <- x + y ;",
+             "  message('Running !') ;",
+             "  res",
+             "}"),
            con)
 close(con)
 
@@ -70,13 +73,16 @@ test_that("test outputs", {
   unlink(tempdir(), recursive = TRUE)
   dir.create(dir_conf, recursive = T)
 
-    # create temporary directory for fun
-  dir_fun <- paste0(tempdir(), "/fun_launcher")
+  # create temporary directory for fun
+  dir_fun <- paste0(tempdir(), "/fun")
   if (dir.exists(dir_fun)) unlink(dir_fun, recursive = TRUE)
   dir.create(dir_fun)
-  
   con <- file(paste0(dir_fun, "/fun_script.R"))
-  writeLines("my_fun <- function(x, y, z) {x + y}",
+  writeLines(c("my_fun <- function(x, y, z) {",
+               "  res <- x + y ;",
+               "  message('Running !') ;",
+               "  res",
+               "}"),
              con)
   close(con)
   

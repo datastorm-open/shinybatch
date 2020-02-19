@@ -20,7 +20,11 @@
 #' dir_fun <- paste0(tempdir(), "/fun")
 #' dir.create(dir_fun)
 #' con <- file(paste0(dir_fun, "/fun_script.R"))
-#' writeLines("my_fun <- function(x, y, z) {x + y}",
+#' writeLines(c("my_fun <- function(x, y, z) {",
+#'              "  res <- x + y ;",
+#'              "  message('Running !') ;",
+#'              "  res",
+#'              "}"),
 #'            con)
 #' close(con)
 #' 
@@ -115,7 +119,7 @@ launcher <- function(dir_path,
         if (nb_runs > 0) {
           run_order_ <- run_order(confs)
           
-          for (i in 1:nb_runs) {
+          for (i in 1:min(nb_runs, sum(tbl_global$status == "waiting"))) {
             # create batch script
             
             # run batch script

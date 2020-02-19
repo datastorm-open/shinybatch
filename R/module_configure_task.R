@@ -23,12 +23,14 @@
 #' dir_conf <- tempdir()
 #' 
 #' # create temporary directory for fun
-#' dir_fun <- tempdir()
+#' dir_fun <- paste0(tempdir(), "/fun")
+#' dir.create(dir_fun)
 #' con <- file(paste0(dir_fun, "/fun_script.R"))
-#' writeLines("my_fun <- function(x, y, z) {
-#'                         res <- x + y ;
-#'                         warning('Just a warning') ;
-#'                         res} ",
+#' writeLines(c("my_fun <- function(x, y, z) {",
+#'              "  res <- x + y ;",
+#'              "  message('Running !') ;",
+#'              "  res",
+#'              "}"),
 #'            con)
 #' close(con)
 #' 
@@ -40,7 +42,7 @@
 #'              conf_descr = list(title = "my_title",
 #'                                description = "my_descr"),
 #'              fun_path = paste0(dir_fun, "/fun_script.R"),
-#'              fun_name = "my_efun",
+#'              fun_name = "my_fun",
 #'              fun_args = list(x = 1,
 #'                              y = 0:4,
 #'                              z = iris),
@@ -115,12 +117,12 @@ configure_task_server <- function(input, output, session,
     isolate({
       if (cpt > 0) {
         try <- try(configure_task(dir_path = get_dir_path(),
-                                  conf_descr =  get_conf_descr(),
-                                  fun_path =  get_fun_path(),
-                                  fun_name =  get_fun_name(),
-                                  fun_args =  get_fun_args(),
-                                  priority =  get_priority(),
-                                  compress =  get_compress()), silent = T)
+                                  conf_descr = get_conf_descr(),
+                                  fun_path = get_fun_path(),
+                                  fun_name = get_fun_name(),
+                                  fun_args = get_fun_args(),
+                                  priority = get_priority(),
+                                  compress = get_compress()), silent = T)
         
         if (class(try) == "try-error") {
           showModal(modalDialog(
@@ -152,12 +154,14 @@ configure_task_server <- function(input, output, session,
 #' dir_conf <- tempdir()
 #' 
 #' # create temporary directory for fun
-#' dir_fun <- tempdir()
+#' dir_fun <- paste0(tempdir(), "/fun")
+#' dir.create(dir_fun)
 #' con <- file(paste0(dir_fun, "/fun_script.R"))
-#' writeLines("my_fun <- function(x, y, z) {
-#'                         res <- x + y ;
-#'                         warning('Just a warning') ;
-#'                         res} ",
+#' writeLines(c("my_fun <- function(x, y, z) {",
+#'              "  res <- x + y ;",
+#'              "  message('Running !') ;",
+#'              "  res",
+#'              "}"),
 #'            con)
 #' close(con)
 #' 
@@ -169,7 +173,7 @@ configure_task_server <- function(input, output, session,
 #'              conf_descr = list(title = "my_title",
 #'                                description = "my_descr"),
 #'              fun_path = paste0(dir_fun, "/fun_script.R"),
-#'              fun_name = "my_efun",
+#'              fun_name = "my_fun",
 #'              fun_args = list(x = 1,
 #'                              y = 0:4,
 #'                              z = iris),

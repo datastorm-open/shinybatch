@@ -19,10 +19,11 @@
 #' dir_fun <- paste0(tempdir(), "/fun")
 #' dir.create(dir_fun)
 #' con <- file(paste0(dir_fun, "/fun_script.R"))
-#' writeLines("my_fun <- function(x, y, z) {
-#'                         res <- x + y ;
-#'                         warning('Just a warning') ;
-#'                         res} ",
+#' writeLines(c("my_fun <- function(x, y, z) {",
+#'              "  res <- x + y ;",
+#'              "  message('Running !') ;",
+#'              "  res",
+#'              "}"),
 #'            con)
 #' close(con)
 #' 
@@ -142,8 +143,7 @@ run_task <- function(conf_path,
     # update conf file
     conf$run_info$date_end_run <- as.character(Sys.time())
     conf$run_info$status <- "finished"
-    conf$run_info$priority = 0 
-    
+
     yaml::write_yaml(conf, file = conf_path)
   }
   

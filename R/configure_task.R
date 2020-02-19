@@ -32,7 +32,7 @@
 #' 
 #' # catch results
 #' list.files(conf$dir)
-#' read_conf <- yaml::read_yaml(paste0(conf$dir, "/", "conf.yml"))
+#' read_conf <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
 #' y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
 #' z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 #' 

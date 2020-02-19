@@ -9,14 +9,19 @@
 #'
 run_order <- function(confs) {
   
+  waiting <- sapply(confs, function(x) x$run_info$status == "waiting")
   priority <- sapply(confs, function(x) x$run_info$priority)
   date_init <- sapply(confs, function(x) x$run_info$date_init)
   
   data_order <- data.table::data.table("order" = 1:length(confs),
+                                       "waiting" = waiting,
                                        "date_init" = date_init,
                                        "priority" = priority)
   
-  run_order <- data_order[order(date_init)][order(priority, decreasing = T)][["order"]]
+  run_order <- data_order[order(date_init)
+                          ][order(priority, decreasing = T)
+                            ][order(waiting, decreasing = T)
+                              ][["order"]]
   
   return(run_order)
 }

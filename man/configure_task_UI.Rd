@@ -22,12 +22,14 @@ Module to configure a task.
 dir_conf <- tempdir()
 
 # create temporary directory for fun
-dir_fun <- tempdir()
+dir_fun <- paste0(tempdir(), "/fun")
+dir.create(dir_fun)
 con <- file(paste0(dir_fun, "/fun_script.R"))
-writeLines("my_fun <- function(x, y, z) {
-                        res <- x + y ;
-                        warning('Just a warning') ;
-                        res} ",
+writeLines(c("my_fun <- function(x, y, z) {",
+             "  res <- x + y ;",
+             "  message('Running !') ;",
+             "  res",
+             "}"),
            con)
 close(con)
 
