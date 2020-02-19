@@ -64,7 +64,7 @@ readRDS(paste0(conf_1$dir, "output/res.RDS"))
 
 launcher(dir_conf) 
 
-log <- read.table(paste0(conf$dir, "/log_launcher.txt"), header = F)
+log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
 
 }}
 }

@@ -47,7 +47,7 @@
 #' list.files(conf$dir)
 #' conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
 #' output <- readRDS(paste0(conf$dir, "output/res.RDS"))
-#' log <- read.table(paste0(conf$dir, "output/log_run.txt"), header = F)
+#' log <- read.delim(paste0(conf$dir, "output/log_run.txt"), header = F)
 #' 
 #' }}
 run_task <- function(conf_path,
@@ -72,6 +72,11 @@ run_task <- function(conf_path,
     conf$run_info$date_start_run <- as.character(Sys.time())
     conf$run_info$status <- "running"
     
+    check_dir <- dir.create(paste0(dirname(conf_path), "/output"))
+    if (! check_dir) {
+      stop("Cannot create output directory ", paste0(dirname(conf_path), "/output"))
+    }
+    
     # init log
     futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log_run.txt")), 
                                  name = "td.io")
@@ -83,6 +88,8 @@ run_task <- function(conf_path,
     futile.logger::flog.threshold("INFO", name = "td.io")
     
     fun_res <- withCallingHandlers({
+      message("Execution du run_task...")
+      
       # retrieve fun args
       fun_args <- conf$args
       if (length(fun_args) > 0) {
@@ -104,14 +111,14 @@ run_task <- function(conf_path,
                error = function(e) {
                  stop(paste0("File '", conf[["function"]]$path, "' cannot be sourced."))
                })
-      check_dir <- dir.create(paste0(dirname(conf_path), "/output"))
-      if (! check_dir) {
-        stop("Can't create output directory ", paste0(dirname(conf_path), "/output"))
-      }
+      
       setwd(paste0(dirname(conf_path), "/output")) 
       
       # run fun
-      do.call(conf[["function"]]$name, fun_args)
+      res <- do.call(conf[["function"]]$name, fun_args)
+      message("... fin du run_task.")
+      res
+      
     }, simpleError  = function(e){
       futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="td.io")
       

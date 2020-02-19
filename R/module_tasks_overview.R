@@ -15,8 +15,8 @@
 #' 
 #' @export
 #' 
-#' @import shiny data.table yaml
-#' @importFrom DT datatable renderDT DTOutput formatStyle
+#' @import shiny data.table yaml  
+#' @importFrom DT datatable renderDT DTOutput formatStyle %>%
 #'
 #' @examples
 #' \dontrun{\donttest{
@@ -169,7 +169,7 @@ tasks_overview_server <- function(input, output, session,
         DT <- DT %>%
           formatStyle(
             'status',
-            backgroundColor = styleEqual(c("waiting", "running", "finished", "error"), c('#afd6ec', '#f1d36e', "#b4e163", "#e74c3c"))
+            backgroundColor = DT::styleEqual(c("waiting", "running", "finished", "error"), c('#afd6ec', '#f1d36e', "#b4e163", "#e74c3c"))
           )
       }
       

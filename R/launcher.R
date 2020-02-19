@@ -54,7 +54,7 @@
 #' 
 #' launcher(dir_conf) 
 #' 
-#' log <- read.table(paste0(conf$dir, "/log_launcher.txt"), header = F)
+#' log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
 #' 
 #' }}
 launcher <- function(dir_path,
@@ -62,7 +62,7 @@ launcher <- function(dir_path,
                      memory_size = NULL) {
   
   # checks
-  if (! (is.null(dir_path) || is.character(dir_path))) {
+  if (! is.character(dir_path)) {
     stop("'dir_path' must be of class <character>.")
   }
   if (! is.numeric(max_runs) && max_runs > 0) {
@@ -82,6 +82,8 @@ launcher <- function(dir_path,
   futile.logger::flog.threshold("INFO", name = "td.io")
   
   nb_runs <- withCallingHandlers({
+    message("Execution du launcher...")
+    
     # retreive conf files
     confs <- tryCatch({
       conf_paths <- if (! is.null(dir_path)) {
@@ -123,6 +125,7 @@ launcher <- function(dir_path,
       }
     }
     
+    message("... fin du launcher.")
     nb_runs
     
   }, simpleError  = function(e){
