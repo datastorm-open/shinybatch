@@ -18,6 +18,7 @@ Imports:
     DT,
     shiny,
     yaml,
-    futile.logger
+    futile.logger,
+    cronR
 Suggests: 
     testthat

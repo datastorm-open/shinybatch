@@ -20,7 +20,7 @@ tasks_overview_UI(id)
 
 \item{session}{shiny input}
 
-\item{dir_path}{\code{character}. Where to find the tasks directory.}
+\item{dir_path}{\code{character}. Where to find the tasks directorys.}
 
 \item{allowed_run_info_cols}{\code{character} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.}
 
