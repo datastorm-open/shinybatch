@@ -57,7 +57,8 @@ run_task(paste0(conf$dir, "conf.yml"))
 list.files(conf$dir)
 conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
 output <- readRDS(paste0(conf$dir, "output/res.RDS"))
-log <- read.delim(list.files(paste0(conf$dir, "output/"), pattern = "log_run", full.names = T), header = F)
+log <- read.delim(list.files(paste0(conf$dir, "output/"),
+                             pattern = "log_run", full.names = T), header = F)
 
 }}
 }
