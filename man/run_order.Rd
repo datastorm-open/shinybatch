@@ -4,10 +4,12 @@
 \alias{run_order}
 \title{Compute the order of priority to run a list of configurations}
 \usage{
-run_order(confs)
+run_order(confs, ignore_status = c("running", "finished", "error"))
 }
 \arguments{
-\item{confs}{\code{list}. .}
+\item{confs}{\code{list}. List of conf tables.}
+
+\item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
 }
 \value{
 the order of priority of the given confs according to their priority argument and

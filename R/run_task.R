@@ -1,7 +1,7 @@
 #' Run the task defined in a conf file
 #'
 #' @param conf_path \code{character}. Path to the conf file.
-#' @param ignore_status \code{logical} (FALSE). Whether or not to launch a task if its status is not "waiting".
+#' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
 #'
 #' @return the result of the task (function applied on prepared args).
 #' @export
@@ -48,17 +48,20 @@
 #' list.files(conf$dir)
 #' conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
 #' output <- readRDS(paste0(conf$dir, "output/res.RDS"))
-#' log <- read.delim(paste0(conf$dir, "output/log_run.txt"), header = F)
+#' log <- read.delim(list.files(paste0(conf$dir, "output/"), pattern = "log_run", full.names = T), header = F)
 #' 
 #' }}
 run_task <- function(conf_path,
-                     ignore_status = FALSE) {
+                     ignore_status = c("running", "finished", "error")) {
   
   current_wd <- getwd()
   
   # checks
   if (! is.character(conf_path)) {
     stop("'conf_path' must be of class <character>.")
+  }
+  if (! is.character(ignore_status)) {
+    stop("'ignore_status' must be of class <character>.")
   }
   
   # read conf 
@@ -69,7 +72,7 @@ run_task <- function(conf_path,
   
   fun_res <- NULL
   
-  if (conf$run_info$status == "waiting" || ignore_status == T) {
+  if (! conf$run_info$status %in% ignore_status) {
     conf$run_info$date_start_run <- as.character(Sys.time())
     conf$run_info$status <- "running"
     
@@ -79,14 +82,16 @@ run_task <- function(conf_path,
     }
     
     # init log
-    futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log_run.txt")), 
-                                 name = "td.io")
+    time <- Sys.time()
+    time <- gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE)
+    futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log_run_", time, ".txt")), 
+                                 name = "run_task.io")
     # set layout
     layout <- futile.logger::layout.format('[~t] [~l] ~m')
-    futile.logger::flog.layout(layout, name="td.io")
+    futile.logger::flog.layout(layout, name="run_task.io")
     
     # and threshold
-    futile.logger::flog.threshold("INFO", name = "td.io")
+    futile.logger::flog.threshold("INFO", name = "run_task.io")
     
     fun_res <- withCallingHandlers({
       message("Execution du run_task...")
@@ -121,7 +126,7 @@ run_task <- function(conf_path,
       res
       
     }, simpleError  = function(e){
-      futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="td.io")
+      futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="run_task.io")
       
       # update conf file if error
       conf$run_info$date_end_run <- as.character(Sys.time())
@@ -132,9 +137,9 @@ run_task <- function(conf_path,
       yaml::write_yaml(conf,file = conf_path)
       
     }, warning = function(w){
-      futile.logger::flog.warn(gsub("(\n)*$", "", w$message), name = "td.io")
+      futile.logger::flog.warn(gsub("(\n)*$", "", w$message), name = "run_task.io")
     }, message = function(m){
-      futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "td.io") 
+      futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "run_task.io") 
     })
     
     saveRDS(fun_res, 
@@ -143,7 +148,7 @@ run_task <- function(conf_path,
     # update conf file
     conf$run_info$date_end_run <- as.character(Sys.time())
     conf$run_info$status <- "finished"
-
+    
     yaml::write_yaml(conf, file = conf_path)
   }
   

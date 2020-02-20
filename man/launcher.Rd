@@ -4,12 +4,15 @@
 \alias{launcher}
 \title{Evaluates and triggers the number of tasks to launch to reach the maximum allowed}
 \usage{
-launcher(dir_path, max_runs = 1, memory_size = NULL)
+launcher(dir_path, max_runs = 1, ignore_status = c("running",
+  "finished", "error"), memory_size = NULL)
 }
 \arguments{
 \item{dir_path}{\code{character}. Where to find the tasks directory.}
 
 \item{max_runs}{\code{integer}. Maximum number of simultaneous running tasks.}
+
+\item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
 
 \item{memory_size}{\code{integer}. Maximum memory size allowed for the runs.}
 }

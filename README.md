@@ -4,6 +4,8 @@ This package provides a simple framework to create, launch *automatically* and r
 
 The tasks are automatically launched using a CRON, e.g. a timer that periodically launches a (batch) operation.  
 
+<br>
+
 ### Package functions
 
 - **configure_task** : create a *.yml* file filed with operation parms (fun path, fun args, priority, ...),
@@ -39,7 +41,7 @@ The ``desccriptive`` part contains informations given by the user. The title and
 
 The ``function`` part contains the location of the fun script (for sourcing) and its name (for calling).
 
-The ``args`` part contains either the location of each argument (in *dir_conf/inputs/<arg>.RDS*) or the argument itself if it is of length 1.
+The ``args`` part contains either the location of the argument (in *dir_conf/inputs/arg_name.RDS*) or the argument itself if it is of length 1.
 
 The ``dir`` argument contains the location of the directory in which is stored the *conf.yml* file.
 
@@ -59,7 +61,7 @@ Some outputs are created:
 
 ### Description of the launcher
 
-The launcher retrieves all the tasks in the directory, retrieve the table of run_info. Based on this, it verifies that there are tasks with status *waiting*. Then, if the maximum number of simultaneously running tasks is not reached, it launches new tasks according to their priority.
+The launcher retrieves all the tasks in the directory and build a the table of their *run_info*. Based on this, it verifies that there are tasks with *status* **waiting**. Then, if the maximum number of simultaneously running tasks is not reached, it launches new tasks according to their priority.
 
 The task with higher priority is defined as the one:
 
@@ -71,17 +73,17 @@ The task with higher priority is defined as the one:
 
 ### Description of the CRON
 
-Before calling the CRON, we first create the file that it will launch. By default, it looks like this:
+Before calling the CRON, we first create the file that it will launch with **cron_init**. By default, it looks like this:
 
 <img src="inst/img/default_cron.PNG" width="400">
 
-... but the head lines can be customized:
+... but the head lines can be customized by filling the *head_rows* argument:
 
 <img src="inst/img/custom_cron.PNG" width="400">
 
 <br>
 
-Once the file has been created, the cron is launched using the **cron_start** function. The default cmd argument is:
+Once the file has been created, the cron is launched using the **cron_start** function. The default *cmd* argument is:
 ``Rscript /path/to/cron_script.R /path/to/conf 1``, 
 
 with 2 args being the *conf.yml* directory an the maximum number of simultaneous running tasks at a given time... but it can be customized.
@@ -153,7 +155,7 @@ run_task(paste0(conf$dir, "conf.yml"))
 list.files(conf$dir, recursive = T)
 (conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml")))
 (output <- readRDS(paste0(conf$dir, "output/res.RDS")))
-(log <- read.delim(paste0(conf$dir, "output/log_run.txt"), header = F))
+(log <- read.delim(list.files(paste0(conf$dir, "output/"), pattern = "log_run", full.names = T), header = F))
 
 # remove directory
 unlink(dir_conf, recursive = T)

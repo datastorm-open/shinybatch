@@ -2,6 +2,7 @@
 #'
 #' @param dir_path \code{character}. Where to find the tasks directory.
 #' @param max_runs \code{integer}. Maximum number of simultaneous running tasks.
+#' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
 #' @param memory_size \code{integer}. Maximum memory size allowed for the runs.
 #'
 #' @return the number of launched tasks.
@@ -63,6 +64,7 @@
 #' }}
 launcher <- function(dir_path,
                      max_runs = 1,
+                     ignore_status = c("running", "finished", "error"),
                      memory_size = NULL) {
   
   # checks
@@ -77,13 +79,13 @@ launcher <- function(dir_path,
   
   # init log
   futile.logger::flog.appender(futile.logger::appender.file(paste0(dir_path, "/log_launcher.txt")), 
-                               name = "td.io")
+                               name = "launcher.io")
   # set layout
   layout <- futile.logger::layout.format('[~t] [~l] ~m')
-  futile.logger::flog.layout(layout, name="td.io")
+  futile.logger::flog.layout(layout, name="launcher.io")
   
   # and threshold
-  futile.logger::flog.threshold("INFO", name = "td.io")
+  futile.logger::flog.threshold("INFO", name = "launcher.io")
   
   nb_runs <- withCallingHandlers({
     message("Execution du launcher...")
@@ -117,13 +119,15 @@ launcher <- function(dir_path,
         nb_runs <- max_runs - sum(tbl_global$status == "running")
         
         if (nb_runs > 0) {
-          run_order_ <- run_order(confs)
+          run_order_ <- run_order(confs = confs,
+                                  ignore_status = ignore_status)
           
           for (i in 1:min(nb_runs, sum(tbl_global$status == "waiting"))) {
             # create batch script
             
             # run batch script
-            run_task(conf_path = paste0(conf_paths[run_order_[i]], "/conf.yml"))
+            run_task(conf_path = paste0(conf_paths[run_order_[i]], "/conf.yml"),
+                     ignore_status = ignore_status)
           }
         }
       }
@@ -133,13 +137,13 @@ launcher <- function(dir_path,
     nb_runs
     
   }, simpleError  = function(e){
-    futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="td.io")
+    futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="launcher.io")
     0
     
   }, warning = function(w){
-    futile.logger::flog.warn(gsub("(\n)*$", "", w$message), name = "td.io")
+    futile.logger::flog.warn(gsub("(\n)*$", "", w$message), name = "launcher.io")
   }, message = function(m){
-    futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "td.io") 
+    futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "launcher.io") 
   })
   
   return(nb_runs)

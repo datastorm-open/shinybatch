@@ -4,12 +4,12 @@
 \alias{run_task}
 \title{Run the task defined in a conf file}
 \usage{
-run_task(conf_path, ignore_status = FALSE)
+run_task(conf_path, ignore_status = c("running", "finished", "error"))
 }
 \arguments{
 \item{conf_path}{\code{character}. Path to the conf file.}
 
-\item{ignore_status}{\code{logical} (FALSE). Whether or not to launch a task if its status is not "waiting".}
+\item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
 }
 \value{
 the result of the task (function applied on prepared args).
@@ -57,7 +57,7 @@ run_task(paste0(conf$dir, "conf.yml"))
 list.files(conf$dir)
 conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
 output <- readRDS(paste0(conf$dir, "output/res.RDS"))
-log <- read.delim(paste0(conf$dir, "output/log_run.txt"), header = F)
+log <- read.delim(list.files(paste0(conf$dir, "output/"), pattern = "log_run", full.names = T), header = F)
 
 }}
 }
