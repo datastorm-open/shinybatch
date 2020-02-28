@@ -11,7 +11,7 @@
 #' @return NULL.
 #' @export
 #' 
-#' @import cronR
+#' @import 
 #'
 #' @examples
 #' \dontrun{\donttest{
