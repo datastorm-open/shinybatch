@@ -182,7 +182,7 @@ cron_start <- function(dir_cron,
     cron_args$description <- "Calls launcher() function every 5 minutes" 
   }
   
-  do.call(cronR::cron_add, cron_args)
+  do.call(cron_add, cron_args)
   
   return(NULL)
 }
