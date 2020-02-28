@@ -24,6 +24,7 @@ configure_task(dir_path, fun_path, fun_name, conf_descr = NULL,
 }
 \value{
 a list containing the conf fields. Attribute 'path' of the result contains the path to the conf directory.
+The arg field contains either the location of the argument (in "dir_path/inputs/arg_name.RDS") or the argument itself if it is of length 1.
 }
 \description{
 Initialise conf file for batch tasks

@@ -9,6 +9,7 @@
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
 #'
 #' @return a list containing the conf fields. Attribute 'path' of the result contains the path to the conf directory.
+#' The arg field contains either the location of the argument (in "dir_path/inputs/arg_name.RDS") or the argument itself if it is of length 1.
 #' @export
 #' 
 #' @import yaml

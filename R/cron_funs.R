@@ -85,6 +85,12 @@
 cron_init <- function(dir_cron,
                       head_rows = NULL) {
   
+  # cronR does not work on Windows
+  if (! requireNamespace("cronR", quietly = TRUE)) {
+    stop("Cannot use cron_init() without package cronR. Wont work on Windows.",
+         call. = FALSE)
+  }
+  
   # checks
   if (is.null(dir_cron)) {
     stop("'dir_cron' must be of class <character>.")
@@ -130,6 +136,12 @@ cron_start <- function(dir_cron,
                        create_file = FALSE,
                        head_rows = NULL,
                        ...) {
+  
+  # cronR does not work on Windows
+  if (! requireNamespace("cronR", quietly = TRUE)) {
+    stop("Cannot use cron_init() without package cronR. Wont work on Windows.",
+         call. = FALSE)
+  }
   
   # checks
   if (is.null(dir_cron)) {
