@@ -9,7 +9,8 @@ tasks_overview_server(input, output, session, dir_path,
   allowed_run_info_cols = c("date_init", "date_start_run",
   "date_end_run", "priority", "status"), allow_descr = TRUE,
   allowed_function_cols = c("path", "name"), allow_args = TRUE,
-  allowed_status = c("waiting", "running", "finished", "error"))
+  allowed_status = c("waiting", "running", "finished", "error"),
+  table_fun = function(x) x, ...)
 
 tasks_overview_UI(id)
 }
@@ -31,6 +32,10 @@ tasks_overview_UI(id)
 \item{allow_args}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.}
 
 \item{allowed_status}{\code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.}
+
+\item{table_fun}{\code{function} (function(x) x). Function to be applied on the summary table, making it easy to customize it. First arg must be the summmary table.}
+
+\item{...}{\code{}. Additional args to be given to the table_fun function.}
 
 \item{id}{\code{character}. shiny id to allow multiple instanciation.}
 }
@@ -89,7 +94,9 @@ server <- function(input, output, session) {
              allowed_run_info_cols = NULL,
              allowed_function_cols = "",
              allow_descr = T,
-             allow_args = T)
+             allow_args = T,
+             table_fun = function(x, y) x[, new_col := y],
+             y = "created using table_fun")
 }
 shiny::shinyApp(ui = ui, server = server)
 
