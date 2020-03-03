@@ -10,6 +10,8 @@
 #' @param allow_descr \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.
 #' @param allowed_function_cols \code{character} (c("names", "path")). Function elements to be kept.
 #' @param allow_args \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.
+#' @param table_fun \code{function} (function(x) x). Function to be applied on the summary table, making it easy to customize it. First arg must be the summmary table.
+#' @param ... \code{}. Additional args to be given to the table_fun function.
 #' 
 #' @return shiny module.
 #' 
@@ -67,7 +69,9 @@
 #'              allowed_run_info_cols = NULL,
 #'              allowed_function_cols = "",
 #'              allow_descr = T,
-#'              allow_args = T)
+#'              allow_args = T,
+#'              table_fun = function(x, y) x[, new_col := y],
+#'              y = "created using table_fun")
 #' }
 #' shiny::shinyApp(ui = ui, server = server)
 #' 
@@ -80,7 +84,9 @@ tasks_overview_server <- function(input, output, session,
                                   allow_descr = TRUE,
                                   allowed_function_cols = c("path", "name"),
                                   allow_args = TRUE,
-                                  allowed_status = c("waiting", "running", "finished", "error")) {
+                                  allowed_status = c("waiting", "running", "finished", "error"),
+                                  table_fun = function(x) x,
+                                  ...) {
   
   # reactive controls
   if (! shiny::is.reactive(dir_path)) {
@@ -157,6 +163,11 @@ tasks_overview_server <- function(input, output, session,
     tbl_global <- tbl_features()$tbl_global
     
     if (! is.null(tbl_global)) {
+      # apply table_fun
+      args <- list(...)
+      args[[names(formals(table_fun))[1]]] <- tbl_global
+      do.call(table_fun, args)
+      
       # filter status
       if (! is.null(get_allowed_status()) && "status" %in% names(tbl_global)) {
         tbl_global <- tbl_global[get("status") %in% get_allowed_status()] 

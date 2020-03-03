@@ -54,7 +54,7 @@ configure_task <- function(dir_path,
   }
   if (! (is.null(conf_descr) || 
          (is.list(conf_descr) && length(conf_descr) > 0 && 
-          ! is.null(names(conf_descr)) && any(names(conf_descr) == "")))) {
+          ! is.null(names(conf_descr)) && ! any(names(conf_descr) == "")))) {
     stop("'conf_descr' must be a <named list>.")
   }
   if (! is.character(fun_path)) {
