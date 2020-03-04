@@ -10,7 +10,7 @@ configure_task(dir_path, fun_path, fun_name, conf_descr = NULL,
 \arguments{
 \item{dir_path}{\code{character}. Where to create the new directory.}
 
-\item{fun_path}{\code{character}. Path to the script of the function.}
+\item{fun_path}{\code{character}. Path to the R main script to source.}
 
 \item{fun_name}{\code{character}. Name of the function in fun_path script.}
 
