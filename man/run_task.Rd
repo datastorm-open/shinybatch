@@ -5,7 +5,7 @@
 \title{Run the task defined in a conf file}
 \usage{
 run_task(conf_path, ignore_status = c("running", "finished", "error"),
-  save_rds = TRUE, compress = TRUE, return = TRUE)
+  save_rds = TRUE, compress = TRUE, return = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{conf_path}{\code{character}. Path to the conf file.}
@@ -17,6 +17,8 @@ run_task(conf_path, ignore_status = c("running", "finished", "error"),
 \item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
 
 \item{return}{\code{logical} Get back result in R ? Default to TRUE}
+
+\item{verbose}{\code{logical} See running task message ? Default to FALSE}
 }
 \value{
 the result of the task (function applied on prepared args).
