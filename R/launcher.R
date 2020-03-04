@@ -4,7 +4,9 @@
 #' @param max_runs \code{integer}. Maximum number of simultaneous running tasks.
 #' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
 #' @param memory_size \code{integer}. Maximum memory size allowed for the runs.
-#'
+#' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
+#' @param verbose \code{logical} See running task message ? Default to FALSE
+#' 
 #' @return the number of launched tasks.
 #' @export
 #' 
@@ -65,17 +67,16 @@
 launcher <- function(dir_path,
                      max_runs = 1,
                      ignore_status = c("running", "finished", "error"),
-                     memory_size = NULL) {
+                     memory_size = NULL, compress = TRUE, verbose = FALSE) {
   
   # checks
   if (! is.character(dir_path)) {
     stop("'dir_path' must be of class <character>.")
   }
-  if (! is.numeric(max_runs) && max_runs > 0) {
-    stop("'max_runs' must be a positive integer.")
-  } else {
-    max_runs <- round(max_runs)
+  if (! dir.exists(dir_path)) {
+    stop("'dir_path' directory doesn't exist. (", dir_path, ")")
   }
+  
   
   # init log
   futile.logger::flog.appender(futile.logger::appender.file(paste0(dir_path, "/log_launcher.txt")), 
@@ -88,23 +89,37 @@ launcher <- function(dir_path,
   futile.logger::flog.threshold("INFO", name = "launcher.io")
   
   nb_runs <- withCallingHandlers({
-    message("Execution du launcher...")
+    if(verbose){
+      message("Starting launcher execution..")
+    } else {
+      futile.logger::flog.info("Starting launcher execution...", name = "launcher.io") 
+    }
+
+    if (! is.numeric(max_runs) && max_runs > 0) {
+      stop("'max_runs' must be a positive integer.", call. = FALSE)
+    } else {
+      max_runs <- round(max_runs)
+    }
+    if(is.null(ignore_status)) ignore_status <- ""
+    if (! is.character(ignore_status)) {
+      stop("'ignore_status' must be of class <character>.", call. = FALSE)
+    }
     
     # retreive conf files
     confs <- tryCatch({
-      conf_paths <- if (! is.null(dir_path)) {
-        list.dirs(dir_path, full.names = T, recursive = F)} 
-      else {
+      conf_paths <- if (!is.null(dir_path)) {
+        list.dirs(dir_path, full.names = T, recursive = F)
+      } else {
         NULL
       }
       
       lapply(conf_paths, function(x) {
         yaml::read_yaml(paste0(x, "/conf.yml"))
-      })},
-      error = function(e) {
-        stop(paste0("Path '", dir_path, "' doesnt exist."))
-      }
-    )
+      })
+    },
+    error = function(e) {
+      stop(paste0("Error reading configuration files : ", e$message), call. = FALSE)
+    })
     
     # run tasks
     nb_runs <- 0
@@ -127,13 +142,18 @@ launcher <- function(dir_path,
             
             # run batch script
             run_task(conf_path = paste0(conf_paths[run_order_[i]], "/conf.yml"),
-                     ignore_status = ignore_status)
+                     ignore_status = ignore_status, verbose = verbose, compress = compress, return = FALSE)
           }
         }
       }
     }
     
-    message("... fin du launcher.")
+    if(verbose){
+      message("... launcher terminated.")
+    } else {
+      futile.logger::flog.info("... launcher terminated.", name = "launcher.io") 
+    }
+    
     nb_runs
     
   }, simpleError  = function(e){

@@ -5,7 +5,8 @@
 \title{Evaluates and triggers the number of tasks to launch to reach the maximum allowed}
 \usage{
 launcher(dir_path, max_runs = 1, ignore_status = c("running",
-  "finished", "error"), memory_size = NULL)
+  "finished", "error"), memory_size = NULL, compress = TRUE,
+  verbose = FALSE)
 }
 \arguments{
 \item{dir_path}{\code{character}. Where to find the tasks directory.}
@@ -15,6 +16,10 @@ launcher(dir_path, max_runs = 1, ignore_status = c("running",
 \item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
 
 \item{memory_size}{\code{integer}. Maximum memory size allowed for the runs.}
+
+\item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
+
+\item{verbose}{\code{logical} See running task message ? Default to FALSE}
 }
 \value{
 the number of launched tasks.
