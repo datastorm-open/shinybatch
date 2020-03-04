@@ -4,12 +4,17 @@
 \alias{run_task}
 \title{Run the task defined in a conf file}
 \usage{
-run_task(conf_path, ignore_status = c("running", "finished", "error"))
+run_task(conf_path, ignore_status = c("running", "finished", "error"),
+  save_rds = TRUE, return = TRUE)
 }
 \arguments{
 \item{conf_path}{\code{character}. Path to the conf file.}
 
 \item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
+
+\item{save_rds}{\code{logical} Save output in output/res.RDS ? Default to TRUE}
+
+\item{return}{\code{logical} Get back result in R ? Default to TRUE}
 }
 \value{
 the result of the task (function applied on prepared args).

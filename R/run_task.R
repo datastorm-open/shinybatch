@@ -2,7 +2,9 @@
 #'
 #' @param conf_path \code{character}. Path to the conf file.
 #' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
-#'
+#' @param save_rds \code{logical} Save output in output/res.RDS ? Default to TRUE
+#' @param return \code{logical} Get back result in R ? Default to TRUE
+#' 
 #' @return the result of the task (function applied on prepared args).
 #' @export
 #' 
@@ -53,39 +55,47 @@
 #' 
 #' }}
 run_task <- function(conf_path,
-                     ignore_status = c("running", "finished", "error")) {
+                     ignore_status = c("running", "finished", "error"), 
+                     save_rds = TRUE, return = TRUE) {
   
   current_wd <- getwd()
   
   # checks
   if (! is.character(conf_path)) {
-    stop("'conf_path' must be of class <character>.")
+    stop("'conf_path' must be of class <character>.", call. = FALSE)
   }
+  if (! file.exists(conf_path)) {
+    stop("'conf_path' file doesn't exist. (", conf_path, ")", call. = FALSE)
+  }
+  if(is.null(ignore_status)) ignore_status <- ""
   if (! is.character(ignore_status)) {
-    stop("'ignore_status' must be of class <character>.")
+    stop("'ignore_status' must be of class <character>.", call. = FALSE)
   }
+  
+  stopifnot(is.logical(save_rds))
+  stopifnot(is.logical(return))
   
   # read conf 
   conf <- tryCatch(yaml::read_yaml(conf_path), 
                    error = function(e) {
-                     stop(paste0("Path '", conf_path, "' doesnt exist."))
+                     stop(paste0("Error reading '", conf_path, "'  : ", e$message), call. = FALSE)
                    })
   
   fun_res <- NULL
   
   if (! conf$run_info$status %in% ignore_status) {
-    conf$run_info$date_start_run <- as.character(Sys.time())
-    conf$run_info$status <- "running"
-    
-    check_dir <- dir.create(paste0(dirname(conf_path), "/output"))
-    if (! check_dir) {
-      stop("Cannot create output directory ", paste0(dirname(conf_path), "/output"))
+    dir_result <- paste0(dirname(conf_path), "/output")
+    if(!dir.exists(dir_result)){
+      check_dir <- dir.create(dir_result)
+      if (! check_dir) {
+        stop("Cannot create output directory ", paste0(dirname(conf_path), "/output"), call. = FALSE)
+      }
     }
     
     # init log
     time <- Sys.time()
-    time <- gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE)
-    futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log_run_", time, ".txt")), 
+    format_time <- gsub(".", "", format(time, format = "%Y%m%d_%H%M%OS2"), fixed = TRUE)
+    futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log_run_", format_time, ".txt")), 
                                  name = "run_task.io")
     # set layout
     layout <- futile.logger::layout.format('[~t] [~l] ~m')
@@ -95,7 +105,13 @@ run_task <- function(conf_path,
     futile.logger::flog.threshold("INFO", name = "run_task.io")
     
     fun_res <- withCallingHandlers({
-      message("Execution du run_task...")
+      
+      # message("Starting task execution...")
+      futile.logger::flog.info("Starting task execution...", name = "run_task.io") 
+      
+      conf$run_info$date_start_run <- as.character(time)
+      conf$run_info$status <- "running"
+      yaml::write_yaml(conf,file = conf_path)
       
       # retrieve fun args
       fun_args <- conf$args
@@ -116,18 +132,20 @@ run_task <- function(conf_path,
       # apply fun + create log
       tryCatch(source(conf[["function"]]$path),
                error = function(e) {
-                 stop(paste0("File '", conf[["function"]]$path, "' cannot be sourced."))
+                 stop(paste0("File '", conf[["function"]]$path, "' cannot be sourced."), call. = FALSE)
                })
       
       setwd(paste0(dirname(conf_path), "/output")) 
       
       # run fun
       res <- do.call(conf[["function"]]$name, fun_args)
-      message("... fin du run_task.")
+      # message("... task terminated.")
+      futile.logger::flog.info("... task terminated.", name = "run_task.io") 
+      
       res
       
     }, simpleError  = function(e){
-      futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="run_task.io")
+      futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e$message), name="run_task.io")
       
       # update conf file if error
       conf$run_info$date_end_run <- as.character(Sys.time())
@@ -143,9 +161,11 @@ run_task <- function(conf_path,
       futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "run_task.io") 
     })
     
-    saveRDS(fun_res, 
-            file = paste0(dirname(conf_path), "/output/res.RDS"))
-    
+    if(save_rds){
+      saveRDS(fun_res, 
+              file = paste0(dirname(conf_path), "/output/res.RDS"))
+    }
+
     # update conf file
     conf$run_info$date_end_run <- as.character(Sys.time())
     conf$run_info$status <- "finished"
@@ -155,5 +175,9 @@ run_task <- function(conf_path,
   
   setwd(current_wd)
   
-  return(fun_res)
+  if(return){
+    return(fun_res)
+  } else {
+    return(invisible(NULL))
+  }
 }
