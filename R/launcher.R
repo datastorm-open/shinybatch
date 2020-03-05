@@ -3,7 +3,6 @@
 #' @param dir_path \code{character}. Where to find the tasks directory.
 #' @param max_runs \code{integer}. Maximum number of simultaneous running tasks.
 #' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
-#' @param memory_size \code{integer}. Maximum memory size allowed for the runs.
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
 #' @param verbose \code{logical} See running task message ? Default to FALSE
 #' 
@@ -52,32 +51,26 @@
 #'                                          z = iris),
 #'                          priority = 2)
 #' 
-#' launcher(dir_conf)
+#' launcher(dir_conf, verbose = T)
 #' # display res of conf_2 in /output dir
 #' readRDS(paste0(conf_2$dir, "output/res.RDS"))
 #' 
-#' launcher(dir_conf)
+#' launcher(dir_conf, verbose = T)
 #' # display res of conf_1 in /output dir
 #' readRDS(paste0(conf_1$dir, "output/res.RDS"))
 #' 
-#' launcher(dir_conf) 
+#' launcher(dir_conf, verbose = T) 
 #' 
-#' launcher(dir_conf, ignore_status = c("running", "error")) 
+#' # launch again a finished task
+#' launcher(dir_conf, ignore_status = c("running", "error"), verbose = T) 
 #' 
 #' log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
 #' 
 #' }}
-# dir_path = dir_conf
-# max_runs = 1
-# ignore_status = c("running", "finished", "error")
-# memory_size = NULL
-# compress = TRUE
-# verbose = FALSE
-
 launcher <- function(dir_path,
                      max_runs = 1,
                      ignore_status = c("running", "finished", "error"),
-                     memory_size = NULL, compress = TRUE, verbose = FALSE) {
+                     compress = TRUE, verbose = FALSE) {
   
   # checks
   if (! is.character(dir_path)) {
@@ -99,9 +92,9 @@ launcher <- function(dir_path,
   
   nb_to_run <- withCallingHandlers({
     if (verbose) {
-      message("Starting launcher execution..")
+      message("\n Starting launcher execution..")
     } else {
-      futile.logger::flog.info("Starting launcher execution...", name = "launcher.io") 
+      futile.logger::flog.info("\n Starting launcher execution...", name = "launcher.io") 
     }
     
     if (! (is.numeric(max_runs) && max_runs > 0)) {
@@ -132,6 +125,13 @@ launcher <- function(dir_path,
     
     # run tasks
     nb_to_run <- 0
+    
+    if (verbose) {
+      message(paste0("\n Number of detected conf files : ", length(confs), "."))
+    } else {
+      futile.logger::flog.info(message(paste0("\n Number of detected conf files : ", length(confs), ".")))
+    }
+    
     if (length(confs) > 0) {
       tbl_global <- conf_to_dt(confs = confs,
                                allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
@@ -139,7 +139,19 @@ launcher <- function(dir_path,
                                allowed_function_cols = "",
                                allow_args = F)$tbl_global
       
-        nb_to_run <- min(max_runs - sum(! tbl_global$status == "running"), sum(! tbl_global$status %in% ignore_status))
+        nb_to_run <- min(max_runs - sum(tbl_global$status == "running"), sum(! tbl_global$status %in% ignore_status))
+        
+        if (verbose) {
+          message(paste0("\n Number of tasks available for a run : ", sum(! tbl_global$status %in% ignore_status), "."))
+          message(paste0(" Maximum number of simultaneous runs : ", max_runs, "."))
+          message(paste0(" Number of currently running tasks : ", sum(tbl_global$status == "running"), "."))
+          message(paste0(" Number of tasks to be started : ", max(0, nb_to_run), "."))
+        } else {
+          futile.logger::flog.info(message(paste0("\n Number of tasks available for a run : ", sum(! tbl_global$status %in% ignore_status), ".")))
+          futile.logger::flog.info(message(paste0(" Maximum number of simultaneous runs : ", max_runs, ".")))
+          futile.logger::flog.info(message(paste0(" Number of currently running tasks : ", sum(tbl_global$status == "running"), ".")))
+          futile.logger::flog.info(message(paste0(" Number of tasks to be started : ", max(0, nb_to_run), ".")))
+        }
         
         if (nb_to_run > 0) {
           run_order_ <- run_order(confs = confs,
@@ -155,12 +167,12 @@ launcher <- function(dir_path,
               rscript_path <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
             }
             
-            if (is.null(rscript_path)) {
+            if (! file.exists(rscript_path)) {
               stop("Could not find Rscript, thus could not launch the batch task.")
               
             } else {
               # create cmd
-              fun_call <- paste0("run_task(conf_path = '", paste0(conf[run_order_[i]]$dir, "conf.yml"), "'",
+              fun_call <- paste0("run_task(conf_path = '", paste0(confs[[run_order_[i]]]$dir, "conf.yml"), "'",
                                  ", ignore_status = c('", paste0(ignore_status, collapse = "', '"), "')",
                                  ", verbose = ", verbose, 
                                  ", compress = ", compress, 
@@ -170,18 +182,30 @@ launcher <- function(dir_path,
                               " --vanilla  -e \"{", 
                               "require(shinybatch) ; ",
                               fun_call, " ;}\"")
-                
+              
               # run in batch
               system(cmd, intern = FALSE, wait = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
+              
+              if (verbose) {
+                message(paste0("\n Task launched (", i, "/", nb_to_run, ") : ", 
+                               rev(strsplit(confs[[run_order_[i]]]$dir, split = "/")[[1]])[1]), ".")
+                message(paste0(" Task priority : ", confs[[run_order_[i]]]$run_info$priority, 
+                               " ; task status : ", confs[[run_order_[i]]]$run_info$status, "."))
+              } else {
+                futile.logger::flog.info(message(paste0("\n Task launched (", i, "/", nb_to_run, ") : ", 
+                                                        rev(strsplit(confs[[run_order_[i]]]$dir, split = "/")[[1]])[1]), "."))
+                futile.logger::flog.info(message(paste0(" Task priority : ", confs[[run_order_[i]]]$run_info$priority, 
+                                                        " ; task status : ", confs[[run_order_[i]]]$run_info$status, ".")))
+              }
             }
           }
       }
     }
     
     if (verbose) {
-      message("... launcher terminated.")
+      message("\n ... launcher terminated. \n\n - - - - - - - - - - \n")
     } else {
-      futile.logger::flog.info("... launcher terminated.", name = "launcher.io") 
+      futile.logger::flog.info("\n ... launcher terminated.", name = "launcher.io") 
     }
     
     nb_to_run

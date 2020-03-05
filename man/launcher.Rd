@@ -5,8 +5,7 @@
 \title{Evaluates and triggers the number of tasks to launch to reach the maximum allowed}
 \usage{
 launcher(dir_path, max_runs = 1, ignore_status = c("running",
-  "finished", "error"), memory_size = NULL, compress = TRUE,
-  verbose = FALSE)
+  "finished", "error"), compress = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{dir_path}{\code{character}. Where to find the tasks directory.}
@@ -14,8 +13,6 @@ launcher(dir_path, max_runs = 1, ignore_status = c("running",
 \item{max_runs}{\code{integer}. Maximum number of simultaneous running tasks.}
 
 \item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
-
-\item{memory_size}{\code{integer}. Maximum memory size allowed for the runs.}
 
 \item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
 
@@ -41,6 +38,7 @@ con <- file(paste0(dir_fun, "/fun_script.R"))
 writeLines(c("my_fun <- function(x, y, z) {",
              "  res <- x + y ;",
              "  message('Running !') ;",
+             "  warning('Warning !') ;",
              "  res",
              "}"),
            con)
@@ -66,15 +64,18 @@ conf_2 <- configure_task(dir_path = dir_conf,
                                          z = iris),
                          priority = 2)
 
-launcher(dir_conf)
+launcher(dir_conf, verbose = T)
 # display res of conf_2 in /output dir
 readRDS(paste0(conf_2$dir, "output/res.RDS"))
 
-launcher(dir_conf)
+launcher(dir_conf, verbose = T)
 # display res of conf_1 in /output dir
 readRDS(paste0(conf_1$dir, "output/res.RDS"))
 
-launcher(dir_conf) 
+launcher(dir_conf, verbose = T) 
+
+# launch again a finished task
+launcher(dir_conf, ignore_status = c("running", "error"), verbose = T) 
 
 log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
 

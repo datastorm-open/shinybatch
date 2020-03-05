@@ -8,7 +8,7 @@ time <- Sys.time()
 conf <- configure_task(dir_path = dir,
                        conf_descr = list(title = "my_title",
                                          description = "my_descr"),
-                       fun_path = "my_fun_path",
+                       fun_path = dir, # as an example
                        fun_name = "my_fun_name",
                        fun_args = list(x = 1,
                                        y = 0:4,
@@ -29,7 +29,7 @@ test_that("test outputs", {
   
   expect_equal(conf$descriptive, list(title = "my_title", description = "my_descr"))
   expect_equal(conf$`function`, list(
-    "path" = "my_fun_path",
+    "path" = dir,
     "name" = "my_fun_name")
   )
   
