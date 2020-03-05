@@ -166,19 +166,11 @@ launcher <- function(dir_path,
                                  ", compress = ", compress, 
                                  ", return = FALSE)")
               
-              if (os == "Windows") {
-                cmd <- paste0(rscript_path, 
+              cmd <- paste0(rscript_path, 
                               " --vanilla  -e \"{", 
                               "require(shinybatch) ; ",
-                              fun_call, " ;}\" &")
-              } else {
-                cmd <- paste0("nohup ", 
-                              rscript_path, 
-                              " --vanilla  -e \"{", 
-                              "require(shinybatch) ; ",
-                              fun_call, " ;}\" &")
+                              fun_call, " ;}\"")
                 
-              }
               # run in batch
               system(cmd, intern = FALSE, wait = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
             }
