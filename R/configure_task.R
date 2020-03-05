@@ -60,6 +60,9 @@ configure_task <- function(dir_path,
   if (! is.character(fun_path)) {
     stop("'fun_path' must be of class <character>.")
   }
+  if (! file.exists(fun_path)) {
+    stop("'fun_path' file doesn't existed : ", fun_path)
+  }
   if (! is.character(fun_name)) {
     stop("'fun_name' must be of class <character>.")
   }
@@ -73,8 +76,11 @@ configure_task <- function(dir_path,
   }
   
   # write conf
+  fun_path <- gsub("\\", "/", fun_path, fixed = T)
+  
   time <- Sys.time()
   sep_path <- "/"
+  dir_path <- gsub("\\", "/", dir_path, fixed = T)
   dir_path <- paste0(dir_path, sep_path,
                      gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE),  
                      sep_path)
