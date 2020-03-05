@@ -76,11 +76,11 @@ configure_task <- function(dir_path,
   }
   
   # write conf
-  fun_path <- gsub("\\", "/", fun_path, fixed = T)
+  sep_path <- "/"
+  fun_path <- gsub("\\", sep_path, fun_path, fixed = T)
   
   time <- Sys.time()
-  sep_path <- "/"
-  dir_path <- gsub("\\", "/", dir_path, fixed = T)
+  dir_path <- gsub("/$", "", gsub("\\", sep_path, dir_path, fixed = T))
   dir_path <- paste0(dir_path, sep_path,
                      gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE),  
                      sep_path)
