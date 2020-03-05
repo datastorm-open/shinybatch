@@ -23,7 +23,7 @@ cron_start(dir_cron, dir_conf, max_runs, cmd = NULL,
 
 \item{create_file}{\code{boolean} (FALSE). Whether or not to create the cron_script before to launch it.}
 
-\item{...}{\code{}. Additional arguments passed to \code{\link[cronR]{cron_add}}.}
+\item{...}{\code{}. Additional arguments passed to \code{\link[cronR]{cron_add}} (Linux) or \code{\link[taskscheduleR]{taskscheduler_create}} (Windows).}
 }
 \value{
 NULL.

@@ -99,7 +99,7 @@ cron_init <- function(dir_cron,
   
   os <- Sys.info()[['sysname']]
   
-  if (is.null(head_rows) && os != "Windows") {
+  if (is.null(head_rows)) {
     script_lines <- c("#!/usr/bin/env Rscript", 
                    "args = commandArgs(trailingOnly = TRUE)",
                    "",
@@ -170,7 +170,7 @@ cron_start <- function(dir_cron,
   
   if (os == "Windows") {
     if (! "rscript" %in% names(cron_args)) {
-      cron_args$rscript <- paste0(dir_cron, "/cron_script.R ")
+      cron_args$rscript <- paste0(dir_cron, "/cron_script.R")
     }
     if (! "schedule" %in% names(cron_args)) {
       cron_args$schedule <- "MINUTE" 
@@ -179,12 +179,13 @@ cron_start <- function(dir_cron,
     if (! "taskname" %in% names(cron_args)) {
       cron_args$taskname <- "cron_script" 
     }
+    cron_args$rscript_args <- c(dir_conf, max_runs)
     
     do.call(taskscheduleR::taskscheduler_create, cron_args)
     
   } else {
     if (is.null(cmd)) {
-      cmd <- paste0("Rscript ", paste0(dir_cron, "/cron_script.R "), dir_conf, " ", max_runs) 
+      cmd <- paste0("Rscript ", paste0(dir_cron, "/cron_script.R"), dir_conf, " ", max_runs) 
     }
     
     if (! "command" %in% names(cron_args)) {

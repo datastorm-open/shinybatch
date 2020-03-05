@@ -137,8 +137,10 @@ launcher <- function(dir_path,
                                   ignore_status = ignore_status)
           
           for (i in 1:min(nb_runs, sum(! tbl_global$status %in% ignore_status))) {
+            os <- Sys.info()[['sysname']]
+            
             # retrieve OS rscript_path
-            if (Sys.info()[['sysname']] == "Windows") {
+            if (os == "Windows") {
               rscript_path <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript.exe")
             } else {
               rscript_path <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
