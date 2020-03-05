@@ -97,14 +97,14 @@ launcher <- function(dir_path,
   # and threshold
   futile.logger::flog.threshold("INFO", name = "launcher.io")
   
-  nb_runs <- withCallingHandlers({
+  nb_to_run <- withCallingHandlers({
     if (verbose) {
       message("Starting launcher execution..")
     } else {
       futile.logger::flog.info("Starting launcher execution...", name = "launcher.io") 
     }
     
-    if (! is.numeric(max_runs) && max_runs > 0) {
+    if (! (is.numeric(max_runs) && max_runs > 0)) {
       stop("'max_runs' must be a positive integer.", call. = FALSE)
     } else {
       max_runs <- round(max_runs)
@@ -131,7 +131,7 @@ launcher <- function(dir_path,
     })
     
     # run tasks
-    nb_runs <- 0
+    nb_to_run <- 0
     if (length(confs) > 0) {
       tbl_global <- conf_to_dt(confs = confs,
                                allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
@@ -139,13 +139,13 @@ launcher <- function(dir_path,
                                allowed_function_cols = "",
                                allow_args = F)$tbl_global
       
-        nb_runs <- sum(!tbl_global$status %in% ignore_status)
+        nb_to_run <- min(max_runs, sum(! tbl_global$status %in% ignore_status))
         
-        if (nb_runs > 0) {
+        if (nb_to_run > 0) {
           run_order_ <- run_order(confs = confs,
                                   ignore_status = ignore_status)
           
-          for (i in 1:min(nb_runs, max_runs)) {
+          for (i in 1:nb_to_run) {
             os <- Sys.info()[['sysname']]
             
             # retrieve OS rscript_path
@@ -184,7 +184,7 @@ launcher <- function(dir_path,
       futile.logger::flog.info("... launcher terminated.", name = "launcher.io") 
     }
     
-    nb_runs
+    nb_to_run
     
   }, simpleError  = function(e) {
     futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="launcher.io")
@@ -196,5 +196,5 @@ launcher <- function(dir_path,
     futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "launcher.io") 
   })
   
-  return(nb_runs)
+  return(nb_to_run)
 }
