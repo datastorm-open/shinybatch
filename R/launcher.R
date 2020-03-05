@@ -139,7 +139,7 @@ launcher <- function(dir_path,
                                allowed_function_cols = "",
                                allow_args = F)$tbl_global
       
-        nb_to_run <- min(max_runs, sum(! tbl_global$status %in% ignore_status))
+        nb_to_run <- min(max_runs - sum(! tbl_global$status == "running"), sum(! tbl_global$status %in% ignore_status))
         
         if (nb_to_run > 0) {
           run_order_ <- run_order(confs = confs,
@@ -160,7 +160,7 @@ launcher <- function(dir_path,
               
             } else {
               # create cmd
-              fun_call <- paste0("run_task(conf_path = '", paste0(gsub("\\", "/", conf_paths[run_order_[i]], fixed = T), "/conf.yml"), "'",
+              fun_call <- paste0("run_task(conf_path = '", paste0(conf[run_order_[i]]$dir, "conf.yml"), "'",
                                  ", ignore_status = c('", paste0(ignore_status, collapse = "', '"), "')",
                                  ", verbose = ", verbose, 
                                  ", compress = ", compress, 
