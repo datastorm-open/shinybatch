@@ -64,6 +64,13 @@
 #' log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
 #' 
 #' }}
+# dir_path = dir_conf
+# max_runs = 1
+# ignore_status = c("running", "finished", "error")
+# memory_size = NULL
+# compress = TRUE
+# verbose = FALSE
+
 launcher <- function(dir_path,
                      max_runs = 1,
                      ignore_status = c("running", "finished", "error"),
@@ -129,14 +136,13 @@ launcher <- function(dir_path,
                                allowed_function_cols = "",
                                allow_args = F)$tbl_global
       
-      if (sum(! tbl_global$status %in% ignore_status) > 0) {
-        nb_runs <- max_runs - sum(tbl_global$status == "running")
+        nb_runs <- sum(!tbl_global$status %in% ignore_status)
         
         if (nb_runs > 0) {
           run_order_ <- run_order(confs = confs,
                                   ignore_status = ignore_status)
           
-          for (i in 1:min(nb_runs, sum(! tbl_global$status %in% ignore_status))) {
+          for (i in 1:min(nb_runs, max_runs)) {
             os <- Sys.info()[['sysname']]
             
             # retrieve OS rscript_path
@@ -147,25 +153,33 @@ launcher <- function(dir_path,
             }
             
             if (is.null(rscript_path)) {
-              stop("Could not find rscript_path, thus could not launch the batch task.")
+              stop("Could not find Rscript, thus could not launch the batch task.")
               
             } else {
               # create cmd
-              fun_call <- paste0("run_task(conf_path = '", paste0(conf_paths[run_order_[i]], "/conf.yml"), "'",
+              fun_call <- paste0("run_task(conf_path = '", paste0(gsub("\\", "/", conf_paths[run_order_[i]], fixed = T), "/conf.yml"), "'",
                                  ", ignore_status = c('", paste0(ignore_status, collapse = "', '"), "')",
                                  ", verbose = ", verbose, 
                                  ", compress = ", compress, 
                                  ", return = FALSE)")
-              cmd <- paste0("nohup ", rscript_path, " --vanilla  -e \"{", 
-                            "require(shinybatch) ; ",
-                            fun_call, " ;}\" &")
               
+              if (os == "Windows") {
+                cmd <- paste0(rscript_path, 
+                              " --vanilla  -e \"{", 
+                              "require(shinybatch) ; ",
+                              fun_call, " ;}\" &")
+              } else {
+                cmd <- paste0("nohup ", 
+                              rscript_path, 
+                              " --vanilla  -e \"{", 
+                              "require(shinybatch) ; ",
+                              fun_call, " ;}\" &")
+                
+              }
               # run in batch
-              system(cmd,
-                     intern = FALSE, wait = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE) 
+              system(cmd, intern = FALSE, wait = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
             }
           }
-        }
       }
     }
     
