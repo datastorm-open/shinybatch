@@ -26,6 +26,7 @@
 #' writeLines(c("my_fun <- function(x, y, z) {",
 #'              "  res <- x + y ;",
 #'              "  message('Running !') ;",
+#'              "  warning('Warning !') ;",
 #'              "  res",
 #'              "}"),
 #'            con)
@@ -60,6 +61,8 @@
 #' readRDS(paste0(conf_1$dir, "output/res.RDS"))
 #' 
 #' launcher(dir_conf) 
+#' 
+#' launcher(dir_conf, ignore_status = c("running", "error")) 
 #' 
 #' log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
 #' 
