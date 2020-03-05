@@ -60,6 +60,9 @@ configure_task <- function(dir_path,
   if (! is.character(fun_path)) {
     stop("'fun_path' must be of class <character>.")
   }
+  if (! file.exists(fun_path)) {
+    stop("'fun_path' file doesn't existed : ", fun_path)
+  }
   if (! is.character(fun_name)) {
     stop("'fun_name' must be of class <character>.")
   }
@@ -73,17 +76,19 @@ configure_task <- function(dir_path,
   }
   
   # write conf
+  fun_path <- gsub("\\", "/", fun_path, fixed = T)
+  
   time <- Sys.time()
-  dir_path <- file.path(paste0(dir_path, "/",
-                               gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE),  
-                               "/"))
+  sep_path <- "/"
+  dir_path <- gsub("\\", "/", dir_path, fixed = T)
+  dir_path <- paste0(dir_path, sep_path,
+                     gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE),  
+                     sep_path)
   
   suppressWarnings(dir.create(dir_path, recursive = T))
   if (! dir.exists(dir_path)) {
     stop("Can't create output directory ", dir_path)
   }
-  
-  dir_path <- paste0(dir_path, "/")
   
   conf <- list(
     "run_info" = list(
@@ -112,7 +117,7 @@ configure_task <- function(dir_path,
         conf$args[[arg_name]] <- arg
         # else save in RDS and add path to the yaml
       } else {
-        input_dir <- file.path(paste0(dir_path, "inputs"))
+        input_dir <- paste0(dir_path, "inputs")
         if (! dir.exists(input_dir)) {
           check_dir <- dir.create(input_dir)
           if(!check_dir){
@@ -120,7 +125,7 @@ configure_task <- function(dir_path,
           }
         }
         
-        path <- paste0(dir_path, "inputs/", arg_name, ".RDS")
+        path <- paste0(dir_path, "inputs", sep_path, arg_name, ".RDS")
         
         saveRDS(arg, file = path, compress = compress)
         
@@ -134,6 +139,6 @@ configure_task <- function(dir_path,
   
   # save yaml
   yaml::write_yaml(conf,file = paste0(dir_path, "conf.yml"))
-
+  
   return(conf)
 }

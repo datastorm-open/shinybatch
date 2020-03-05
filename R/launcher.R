@@ -26,6 +26,7 @@
 #' writeLines(c("my_fun <- function(x, y, z) {",
 #'              "  res <- x + y ;",
 #'              "  message('Running !') ;",
+#'              "  warning('Warning !') ;",
 #'              "  res",
 #'              "}"),
 #'            con)
@@ -60,6 +61,8 @@
 #' readRDS(paste0(conf_1$dir, "output/res.RDS"))
 #' 
 #' launcher(dir_conf) 
+#' 
+#' launcher(dir_conf, ignore_status = c("running", "error")) 
 #' 
 #' log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
 #' 
@@ -163,19 +166,11 @@ launcher <- function(dir_path,
                                  ", compress = ", compress, 
                                  ", return = FALSE)")
               
-              if (os == "Windows") {
-                cmd <- paste0(rscript_path, 
+              cmd <- paste0(rscript_path, 
                               " --vanilla  -e \"{", 
                               "require(shinybatch) ; ",
-                              fun_call, " ;}\" &")
-              } else {
-                cmd <- paste0("nohup ", 
-                              rscript_path, 
-                              " --vanilla  -e \"{", 
-                              "require(shinybatch) ; ",
-                              fun_call, " ;}\" &")
+                              fun_call, " ;}\"")
                 
-              }
               # run in batch
               system(cmd, intern = FALSE, wait = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
             }
