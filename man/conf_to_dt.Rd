@@ -49,7 +49,8 @@ conf_1 <- list(
   "args" = list(
     x = "1",
     y = "TRUE"
-  )
+  ),
+  "dir" = "path/to/dir"
 )
 
 conf_2 <- list(
@@ -68,7 +69,8 @@ conf_2 <- list(
   "args" = list(
     x = 2,
     y = "/path/conf_2/inputs/y.RDS"
-  )
+  ),
+  "dir" = "path/to/dir"
 )
 
 confs <- list(conf_1, conf_2)

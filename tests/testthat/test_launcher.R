@@ -49,6 +49,9 @@ test_that("test outputs", {
   # launch highest priority
   expect_equal(launcher(dir_conf), 
                1)
+  
+  Sys.sleep(1) # time to launch the batch script
+  
   expect_equal(readRDS(paste0(conf_2$dir, "output/res.RDS")),
                1:5)
   expect_equal(yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status,
@@ -59,6 +62,9 @@ test_that("test outputs", {
   # launch last conf file
   expect_equal(launcher(dir_conf), 
                1)
+  
+  Sys.sleep(1) # time to launch the batch script
+  
   expect_equal(readRDS(paste0(conf_1$dir, "output/res.RDS")), 
                0:4)
   expect_equal(yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status,
@@ -112,6 +118,8 @@ test_that("test outputs", {
   expect_equal(launcher(dir_conf,
                         max_runs = 2), 
                2)
+  
+  Sys.sleep(1) # time to launch the batch script
   
   expect_equal(readRDS(paste0(conf_1$dir, "output/res.RDS")),
                0:4)

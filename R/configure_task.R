@@ -2,7 +2,7 @@
 #'
 #' @param dir_path \code{character}. Where to create the new directory.
 #' @param conf_descr \code{named list} (NULL). Description fields chosen by the user. 
-#' @param fun_path \code{character}. Path to the R main script to source.
+#' @param fun_path \code{character}. Path to the script of the function.
 #' @param fun_name \code{character}. Name of the function in fun_path script.
 #' @param fun_args \code{named list} (NULL). Args of the function, must all be named.
 #' @param priority \code{numeric} (0L). Number used to define which task should be launched first.
@@ -46,11 +46,11 @@ configure_task <- function(dir_path,
                            priority = 0L,
                            compress = TRUE) {
   # checks 
-  if (!is.character(dir_path)) {
+  if (! is.character(dir_path)) {
     stop("'dir_path' must be of class <character>.")
   }
   if (! dir.exists(dir_path)) {
-    stop("'dir_path' directory doesn't exist. (", dir_path, ")")
+    stop("'dir_path' directory doesn't exist (", dir_path, ").")
   }
   if (! (is.null(conf_descr) || 
          (is.list(conf_descr) && length(conf_descr) > 0 && 
@@ -74,19 +74,16 @@ configure_task <- function(dir_path,
   
   # write conf
   time <- Sys.time()
-  dir_conf_path <- file.path(
-    paste0(dir_path, "/",
-           gsub(".", "", format(time, format = "%Y%m%d_%H%M%OS2"), fixed = TRUE),  
-           "/"
-    )
-  )
+  dir_path <- file.path(paste0(dir_path, "/",
+                               gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE),  
+                               "/"))
   
-  check_dir <- dir.create(dir_conf_path, recursive = T)
-  if (! check_dir) {
-    stop("Can't create output directory ", dir_conf_path)
+  suppressWarnings(dir.create(dir_path, recursive = T))
+  if (! dir.exists(dir_path)) {
+    stop("Can't create output directory ", dir_path)
   }
   
-  dir_conf_path <- paste0(dir_conf_path, "/")
+  dir_path <- paste0(dir_path, "/")
   
   conf <- list(
     "run_info" = list(
@@ -115,7 +112,7 @@ configure_task <- function(dir_path,
         conf$args[[arg_name]] <- arg
         # else save in RDS and add path to the yaml
       } else {
-        input_dir <- file.path(paste0(dir_conf_path, "inputs"))
+        input_dir <- file.path(paste0(dir_path, "inputs"))
         if (! dir.exists(input_dir)) {
           check_dir <- dir.create(input_dir)
           if(!check_dir){
@@ -123,7 +120,7 @@ configure_task <- function(dir_path,
           }
         }
         
-        path <- paste0(dir_conf_path, "inputs/", arg_name, ".RDS")
+        path <- paste0(dir_path, "inputs/", arg_name, ".RDS")
         
         saveRDS(arg, file = path, compress = compress)
         
@@ -133,10 +130,10 @@ configure_task <- function(dir_path,
   }
   
   # add path to res
-  conf$dir <- dir_conf_path
+  conf$dir <- dir_path
   
   # save yaml
-  yaml::write_yaml(conf,file = paste0(dir_conf_path, "conf.yml"))
-  
+  yaml::write_yaml(conf,file = paste0(dir_path, "conf.yml"))
+
   return(conf)
 }

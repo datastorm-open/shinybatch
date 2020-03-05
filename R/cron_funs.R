@@ -6,7 +6,7 @@
 #' @param cmd \code{character} (NULL). Custom batch command to replace the default one.
 #' @param create_file \code{boolean} (FALSE). Whether or not to create the cron_script before to launch it.
 #' @param head_rows \code{character} (NULL). Custom head rows to replace the default ones.
-#' @param ... \code{}. Additional arguments passed to \code{\link{cron_add}}
+#' @param ... \code{}. Additional arguments passed to \code{\link[cronR]{cron_add}} (Linux) or \code{\link[taskscheduleR]{taskscheduler_create}} (Windows).
 #' 
 #' @return NULL.
 #' @export
@@ -97,14 +97,16 @@ cron_init <- function(dir_cron,
     stop("'dir_cron' directory doesn't exist. (", dir_cron, ")")
   }
   
-  if (is.null(head_rows)) {
-    head_rows <- c("#!/usr/bin/env Rscript", 
+  os <- Sys.info()[['sysname']]
+  
+  if (is.null(head_rows) && os != "Windows") {
+    script_lines <- c("#!/usr/bin/env Rscript", 
                    "args = commandArgs(trailingOnly = TRUE)",
                    "",
                    "shinybatch::launcher(dir_path = args[1],", 
                    "                     max_runs = as.integer(args[2]))")
   } else {
-    head_rows <- c(head_rows, 
+    script_lines <- c(head_rows, 
                    "",
                    "shinybatch::launcher(dir_path = args[1],", 
                    "                     max_runs = as.integer(args[2]))")
@@ -113,7 +115,7 @@ cron_init <- function(dir_cron,
   # write file
   tryCatch({
     con <- file(paste0(dir_cron, "/cron_script.R"))
-    writeLines(head_rows, con)
+    writeLines(script_lines, con)
     close(con)
   },
   error = function(e) {
@@ -155,6 +157,8 @@ cron_start <- function(dir_cron,
     stop("'dir_conf' directory doesn't exist. (", dir_conf, ")")
   }
   
+  os <- Sys.info()[['sysname']]
+  
   # calls cron_init() if required
   if (create_file) {
     cron_init(dir_cron,
@@ -162,25 +166,42 @@ cron_start <- function(dir_cron,
   }
   
   # launches cron
-  if (is.null(cmd)) {
-    cmd <- paste0("Rscript ", paste0(dir_cron, "/cron_script.R "), dir_conf, " ", max_runs) 
-  }
-  
   cron_args <- list(...)
-  if (! "command" %in% names(cron_args)) {
-    cron_args$command <- cmd
-  }
-  if (! "frequency" %in% names(cron_args)) {
-    cron_args$frequency <- "*/5 * * * *" # every 5 min
-  }
-  if (! "id" %in% names(cron_args)) {
-    cron_args$id <- "cron_script" 
-  }
-  if (! "description" %in% names(cron_args)) {
-    cron_args$description <- "Calls launcher() function every 5 minutes" 
-  }
   
-  do.call(cron_add, cron_args)
+  if (os == "Windows") {
+    if (! "rscript" %in% names(cron_args)) {
+      cron_args$rscript <- paste0(dir_cron, "/cron_script.R ")
+    }
+    if (! "schedule" %in% names(cron_args)) {
+      cron_args$schedule <- "MINUTE" 
+      cron_args$modifier <- 5 # every 5 min
+    }
+    if (! "taskname" %in% names(cron_args)) {
+      cron_args$taskname <- "cron_script" 
+    }
+    
+    do.call(taskscheduleR::taskscheduler_create, cron_args)
+    
+  } else {
+    if (is.null(cmd)) {
+      cmd <- paste0("Rscript ", paste0(dir_cron, "/cron_script.R "), dir_conf, " ", max_runs) 
+    }
+    
+    if (! "command" %in% names(cron_args)) {
+      cron_args$command <- cmd
+    }
+    if (! "frequency" %in% names(cron_args)) {
+      cron_args$frequency <- "*/5 * * * *" # every 5 min
+    }
+    if (! "id" %in% names(cron_args)) {
+      cron_args$id <- "cron_script" 
+    }
+    if (! "description" %in% names(cron_args)) {
+      cron_args$description <- "Calls launcher() function every 5 minutes" 
+    }
+    
+    do.call(cronR::cron_add, cron_args) 
+  }
   
   return(NULL)
 }

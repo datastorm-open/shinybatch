@@ -77,7 +77,6 @@ launcher <- function(dir_path,
     stop("'dir_path' directory doesn't exist. (", dir_path, ")")
   }
   
-  
   # init log
   futile.logger::flog.appender(futile.logger::appender.file(paste0(dir_path, "/log_launcher.txt")), 
                                name = "launcher.io")
@@ -89,25 +88,25 @@ launcher <- function(dir_path,
   futile.logger::flog.threshold("INFO", name = "launcher.io")
   
   nb_runs <- withCallingHandlers({
-    if(verbose){
+    if (verbose) {
       message("Starting launcher execution..")
     } else {
       futile.logger::flog.info("Starting launcher execution...", name = "launcher.io") 
     }
-
+    
     if (! is.numeric(max_runs) && max_runs > 0) {
       stop("'max_runs' must be a positive integer.", call. = FALSE)
     } else {
       max_runs <- round(max_runs)
     }
-    if(is.null(ignore_status)) ignore_status <- ""
+    if (is.null(ignore_status)) ignore_status <- ""
     if (! is.character(ignore_status)) {
       stop("'ignore_status' must be of class <character>.", call. = FALSE)
     }
     
-    # retreive conf files
+    # retrieve conf files
     confs <- tryCatch({
-      conf_paths <- if (!is.null(dir_path)) {
+      conf_paths <- if (! is.null(dir_path)) {
         list.dirs(dir_path, full.names = T, recursive = F)
       } else {
         NULL
@@ -130,25 +129,45 @@ launcher <- function(dir_path,
                                allowed_function_cols = "",
                                allow_args = F)$tbl_global
       
-      if (sum(tbl_global$status == "waiting") > 0) {
+      if (sum(! tbl_global$status %in% ignore_status) > 0) {
         nb_runs <- max_runs - sum(tbl_global$status == "running")
         
         if (nb_runs > 0) {
           run_order_ <- run_order(confs = confs,
                                   ignore_status = ignore_status)
           
-          for (i in 1:min(nb_runs, sum(tbl_global$status == "waiting"))) {
-            # create batch script
+          for (i in 1:min(nb_runs, sum(! tbl_global$status %in% ignore_status))) {
+            # retrieve OS rscript_path
+            if (Sys.info()[['sysname']] == "Windows") {
+              rscript_path <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript.exe")
+            } else {
+              rscript_path <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
+            }
             
-            # run batch script
-            run_task(conf_path = paste0(conf_paths[run_order_[i]], "/conf.yml"),
-                     ignore_status = ignore_status, verbose = verbose, compress = compress, return = FALSE)
+            if (is.null(rscript_path)) {
+              stop("Could not find rscript_path, thus could not launch the batch task.")
+              
+            } else {
+              # create cmd
+              fun_call <- paste0("run_task(conf_path = '", paste0(conf_paths[run_order_[i]], "/conf.yml"), "'",
+                                 ", ignore_status = c('", paste0(ignore_status, collapse = "', '"), "')",
+                                 ", verbose = ", verbose, 
+                                 ", compress = ", compress, 
+                                 ", return = FALSE)")
+              cmd <- paste0("nohup ", rscript_path, " --vanilla  -e \"{", 
+                            "require(shinybatch) ; ",
+                            fun_call, " ;}\" &")
+              
+              # run in batch
+              system(cmd,
+                     intern = FALSE, wait = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE) 
+            }
           }
         }
       }
     }
     
-    if(verbose){
+    if (verbose) {
       message("... launcher terminated.")
     } else {
       futile.logger::flog.info("... launcher terminated.", name = "launcher.io") 
@@ -156,13 +175,13 @@ launcher <- function(dir_path,
     
     nb_runs
     
-  }, simpleError  = function(e){
+  }, simpleError  = function(e) {
     futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e), name="launcher.io")
     0
     
-  }, warning = function(w){
+  }, warning = function(w) {
     futile.logger::flog.warn(gsub("(\n)*$", "", w$message), name = "launcher.io")
-  }, message = function(m){
+  }, message = function(m) {
     futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "launcher.io") 
   })
   

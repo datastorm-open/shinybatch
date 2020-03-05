@@ -34,7 +34,8 @@
 #'   "args" = list(
 #'     x = "1",
 #'     y = "TRUE"
-#'   )
+#'   ),
+#'   "dir" = "path/to/dir"
 #' )
 #' 
 #' conf_2 <- list(
@@ -53,7 +54,8 @@
 #'   "args" = list(
 #'     x = 2,
 #'     y = "/path/conf_2/inputs/y.RDS"
-#'   )
+#'   ),
+#'   "dir" = "path/to/dir"
 #' )
 #' 
 #' confs <- list(conf_1, conf_2)
@@ -119,15 +121,17 @@ conf_to_dt <- function(confs,
         allowed_run_info_cols
       )
       
-      idv_cols <- c(allowed_function_cols, 
-                    if (is.logical(allow_args)) {
-                      if (allow_args) {
-                        names(cur_conf$args)
-                      } else {""}
-                    } else {allow_args})
+      idv_cols <- c(
+        allowed_function_cols, 
+        if (is.logical(allow_args)) {
+          if (allow_args) {
+            names(cur_conf$args)
+          } else {""}
+        } else {allow_args}
+      )
       
-      tbl_global[[n_conf]] <- data.table::as.data.table(c(cur_conf$run_info, cur_conf$descriptive)
-      )[, intersect(global_cols, c(names(cur_conf$run_info), names(cur_conf$descriptive))), with = F]
+      tbl_global[[n_conf]] <- data.table::as.data.table(c(cur_conf["dir"], cur_conf$run_info, cur_conf$descriptive)
+      )[, c("dir", intersect(global_cols, c(names(cur_conf$run_info), names(cur_conf$descriptive)))), with = F]
       
       tbls_idv[[n_conf]] <- data.table::as.data.table(c(cur_conf[["function"]], cur_conf$args)
       )[, intersect(idv_cols, c(names(cur_conf[["function"]]), names(cur_conf$args))), with = F]

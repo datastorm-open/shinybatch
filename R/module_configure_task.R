@@ -149,7 +149,7 @@ configure_task_UI <- function(id) {
   fluidRow(
     conditionalPanel(condition = paste0("output['", ns("is_args"), "']"),
                      column(12, 
-                            div(actionButton(ns("go_task"), label = "Execute the task !", width = "40%"),
+                            div(actionButton(ns("go_task"), label = "Execute the task", width = "40%"),
                                 align = "center")      
                      )
     ),

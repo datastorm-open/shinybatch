@@ -161,12 +161,13 @@ tasks_overview_server <- function(input, output, session,
   # get DT table of global feature 
   tbl_global_DT <- reactive({
     tbl_global <- tbl_features()$tbl_global
+    tbl_global <- tbl_global[, setdiff(names(tbl_global), "dir"), with = F]
     
-    if (! is.null(tbl_global)) {
+    if (! (is.null(tbl_global) || length(tbl_global) == 0)) {
       # apply table_fun
       args <- list(...)
       args[[names(formals(table_fun))[1]]] <- tbl_global
-      do.call(table_fun, args)
+      tbl_global <- do.call(table_fun, args)
       
       # filter status
       if (! is.null(get_allowed_status()) && "status" %in% names(tbl_global)) {
@@ -198,7 +199,7 @@ tasks_overview_server <- function(input, output, session,
   
   # check tbl_global_dt
   output$is_global_dt <- reactive({
-    ! is.null(tbl_features()$tbl_global) || nrow(tbl_features()$tbl_global) > 0
+    ! (is.null(tbl_features()$tbl_global) || length(tbl_features()$tbl_global) == 0) || nrow(tbl_features()$tbl_global) > 0
   })
   outputOptions(output, "is_global_dt", suspendWhenHidden = FALSE)
   
@@ -244,6 +245,26 @@ tasks_overview_server <- function(input, output, session,
     }
   })
   outputOptions(output, "is_idv_dt", suspendWhenHidden = FALSE)
+  
+  # retrieve path and status of selected row
+  res_module <- reactive({
+    sel_row <- input[["tbl_global_DT_out_rows_selected"]]
+    
+    isolate({
+      res <- list()
+      
+      if (! is.null(sel_row)) {
+        tbl_global <- tbl_features()$tbl_global
+        
+        res$path <- paste0(tbl_global[sel_row, ][["dir"]] , "output")
+        res$status <- tbl_global[sel_row, ][["status"]] 
+      }
+    })
+    
+    res
+  })
+  
+  return(res_module)
 }
 
 
@@ -257,7 +278,7 @@ tasks_overview_UI <- function(id) {
   fluidRow(
     conditionalPanel(condition = paste0("output['", ns("is_dir"), "']"),
                      column(12, 
-                            div(actionButton(ns("go_overview"), label = "Display the tasks !", width = "40%"),
+                            div(actionButton(ns("go_overview"), label = "Display the tasks", width = "40%"),
                                 align = "center")
                      ),
                      conditionalPanel(condition = paste0("input['", ns("go_overview"), "'] > 0"),

@@ -1,0 +1,160 @@
+require(shiny)
+require(shinydashboard)
+require(DT)
+
+# create directory for conf
+dir_conf <- paste0(tempdir(), "/conf")
+if (dir.exists(dir_conf)) unlink(dir_conf, recursive = TRUE)
+dir.create(dir_conf, recursive = T)
+
+# create directory for fun
+dir_fun <- paste0(tempdir(), "/fun")
+if (dir.exists(dir_fun)) unlink(dir_fun, recursive = TRUE)
+dir.create(dir_fun)
+con <- file(paste0(dir_fun, "/fun_script.R"))
+writeLines(c("my_fun <- function(n, mean, sd, sleep) {",
+             "  Sys.sleep(sleep) ;",
+             "  rnorm(n, mean, sd) ;",
+             "}"),
+           con)
+close(con)
+
+# init CRON
+dir_cron <- paste0(tempdir(), "/cron")
+if (dir.exists(dir_cron)) unlink(dir_cron, recursive = TRUE)
+dir.create(dir_cron, recursive = T)
+cron_start(dir_cron = dir_cron,
+           dir_conf = dir_conf,
+           max_runs = 1,
+           cmd = NULL,
+           create_file = T,
+           head_rows = NULL,
+           frequency = "minutely")
+
+# define UI
+ui <- shinydashboard::dashboardPage(
+  dashboardHeader(title = "Shinybatch"),
+  dashboardSidebar(disable = T),
+  shinydashboard::dashboardBody(
+    fluidRow(
+      shinydashboard::tabBox(width = 12,
+                             tabPanel("Configure tasks",
+                                      fluidRow(
+                                        column(2,
+                                               numericInput("fun_nb_points", "Number of points",
+                                                            min = 1, max = 10000, value = 100, step = 1)
+                                        ),
+                                        column(3,
+                                               sliderInput("fun_mean", "Mean",
+                                                           min = -10, max = 10, value = 0, step = 0.1)
+                                        ),
+                                        column(3,
+                                               sliderInput("fun_sd", "Standard deviation",
+                                                           min = 0, max = 100, value = 1, step = 0.5)
+                                        ),
+                                        column(2,
+                                               numericInput("sleep_time", "Sleep time (s)",
+                                                            min = 0, max = 30, value = 0, step = 1)
+                                        )
+                                      ),
+                                      fluidRow(
+                                        column(2,
+                                               numericInput("priority", "Priority",
+                                                            min = 0, max = 10, value = 1, step = 1)
+                                        ),
+                                        column(3,
+                                               textInput("title", "Title", 
+                                                         value = "Task title")
+                                        ),
+                                        column(3,
+                                               textInput("description", "Description", 
+                                                         value = "Task description")
+                                        )
+                                      ),
+                                      hr(),
+                                      fluidRow(
+                                        column(12,
+                                               configure_task_UI("my_id_1")
+                                        ) 
+                                      )
+                                      
+                             ),
+                             tabPanel("View tasks",
+                                      fluidRow(
+                                        column(12,
+                                               tasks_overview_UI("my_id_1")
+                                        )
+                                      ),
+                                      conditionalPanel(condition = "output.launch_task",
+                                                       br(),
+                                                       hr(),
+                                                       fluidRow(
+                                                         conditionalPanel(condition = "output.launch_task",
+                                                                          column(12,
+                                                                                 div(actionButton("go_task", "Display task result", width = "40%"),
+                                                                                     align = "center")
+                                                                          ) 
+                                                         ),
+                                                         column(12,
+                                                                conditionalPanel(condition = "input.go_task > 0",
+                                                                                 plotOutput("task_plot")                                 
+                                                                )
+                                                         )
+                                                       )
+                                      )
+                             )
+      )               
+    )
+  )
+)
+
+# define server 
+# call both shinybatch modules + display result
+server <- function(input, output, session) {
+  
+  # call module to configure a task
+  # connect app inputs to the module
+  callModule(configure_task_server, "my_id_1",
+             dir_path = dir_conf,
+             conf_descr = reactive(list("title" = input$title,
+                                        "description" = input$description)),
+             fun_path = paste0(dir_fun, "/fun_script.R"),
+             fun_name = "my_fun",
+             fun_args = reactive(list(n = input$fun_nb_points,
+                                      mean = input$fun_mean,
+                                      sd = input$fun_sd,
+                                      sleep = input$sleep_time)),
+             priority = reactive(input$priority))
+  
+  # call module to view tasks
+  sel_task <- callModule(tasks_overview_server, "my_id_1",
+                         dir_path = dir_conf,
+                         allowed_status = c("waiting", "running", "finished", "error"),
+                         allowed_run_info_cols = NULL,
+                         allowed_function_cols = NULL,
+                         allow_descr = T,
+                         allow_args = T)
+  
+  # check if sel_task can be displayed
+  output$launch_task <- reactive({
+    ! is.null(sel_task()) && length(sel_task()) > 0 && sel_task()$status == "finished"
+  })
+  outputOptions(output, "launch_task", suspendWhenHidden = FALSE)
+  
+  # display task
+  output$task_plot <- renderPlot({
+    cpt <- input$go_task
+    sel_task <- sel_task()
+    
+    isolate({
+      if (cpt > 0 && length(sel_task) > 0) {
+        
+        data <- readRDS(paste0(sel_task()$path, "/res.RDS"))
+        
+        plot(density(data), col = "#3c8dbc", lwd = 2, main = "Density plot of generated observations", xlab = "", ylab = "Density", axes = F)
+        axis(1)
+        axis(2)
+      }
+    })
+  })
+}
