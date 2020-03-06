@@ -9,3 +9,6 @@ run_demo_app()
 \description{
 Launch shinybatch demo app
 }
+\details{
+The created cron is automatically destroyed when quitting Shiny.
+}

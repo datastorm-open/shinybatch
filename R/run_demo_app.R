@@ -3,6 +3,8 @@
 #' @return NULL
 #' @export
 #' 
+#' @details The created cron is automatically destroyed when quitting Shiny.
+#' 
 run_demo_app <- function() {
   ui = NULL
   server = NULL

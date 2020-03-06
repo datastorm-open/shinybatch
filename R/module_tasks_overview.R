@@ -13,7 +13,7 @@
 #' @param table_fun \code{function} (function(x) x). Function to be applied on the summary table, making it easy to customize it. First arg must be the summmary table.
 #' @param ... \code{}. Additional args to be given to the table_fun function.
 #' 
-#' @return shiny module.
+#' @return the status of the selected line (one run) of the summmary table and the path to the directory in which its output is stored.
 #' 
 #' @export
 #' 

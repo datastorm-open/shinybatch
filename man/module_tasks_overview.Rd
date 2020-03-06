@@ -40,7 +40,7 @@ tasks_overview_UI(id)
 \item{id}{\code{character}. shiny id to allow multiple instanciation.}
 }
 \value{
-shiny module.
+the status of the selected line (one run) of the summmary table and the path to the directory in which its output is stored.
 }
 \description{
 Module to visualize all the created tasks.

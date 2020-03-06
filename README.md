@@ -32,10 +32,10 @@ Priority can be any number, with 0 as default. The highest the priority, the soo
 
 Valid status are:
 
-- waiting
-- running
-- finished
-- error
+- **waiting**
+- **running**
+- **finished**
+- **error**
 
 The ``desccriptive`` part contains informations given by the user. The title and description fields are only example.
 
@@ -61,11 +61,11 @@ Some outputs are created:
 
 ### Description of the launcher
 
-The launcher retrieves all the tasks in the directory and build a the table of their *run_info*. Based on this, it verifies that there are tasks with *status* **waiting**. Then, if the maximum number of simultaneously running tasks is not reached, it launches new tasks according to their priority.
+The launcher retrieves all the tasks in the directory and build a the table of their *run_info*. Based on this, it verifies that there are tasks with *status* that allow a run, e.g. all but those in *ignore_status*. Then, if the maximum number of simultaneously running tasks is not reached, it launches new tasks according to their priority.
 
 The task with higher priority is defined as the one:
 
-- with *status* == **waiting**,
+- with *status* not in *ignore_status* (default is all but **waiting**),
 - which has the highest *priority*,
 - and then the oldest *date_init*.
 
@@ -101,7 +101,7 @@ dir <- tempdir()
 conf <- configure_task(dir_path = dir,
                        conf_descr = list(title = "my_title",
                                          description = "my_descr"),
-                       fun_path = "my/fun/path/",
+                       fun_path = dir, # as an example,
                        fun_name = "my_fun_name",
                        fun_args = list(x = 1,
                                        y = 0:4,
@@ -202,19 +202,25 @@ conf_2 <- configure_task(dir_path = dir_conf,
                                          z = iris),
                          priority = 2)
 
-launcher(dir_conf) # 1
+launcher(dir_conf, verbose = T) # 1
+Sys.sleep(1)
 # display res of conf_2 in /output dir
 (res_conf_1 <- readRDS(paste0(conf_2$dir, "output/res.RDS")))
 yaml::read_yaml(paste0(conf_1$dir, "conf.yml"))$run_info$status # waiting
 yaml::read_yaml(paste0(conf_2$dir, "conf.yml"))$run_info$status # finished
 
-launcher(dir_conf) # 1
+launcher(dir_conf, verbose = T) # 1
+Sys.sleep(1)
 # display res of conf_1 in /output dir
 (res_conf_2 <- readRDS(paste0(conf_1$dir, "output/res.RDS")))
 yaml::read_yaml(paste0(conf_1$dir, "conf.yml"))$run_info$status # finished
 yaml::read_yaml(paste0(conf_2$dir, "conf.yml"))$run_info$status # finished
 
-launcher(dir_conf) # 0
+# no more task to run
+launcher(dir_conf, verbose = T) # 0
+# now allow to re-run finished tasks
+launcher(dir_conf, ignore_status = c("running", "error"), verbose = T) # 1
+Sys.sleep(1)
 
 (log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F))
 
@@ -227,7 +233,8 @@ unlink(dir_fun, recursive = T)
 
 **Use the cron to launch the  tasks**
 ```{r}
-# create examples of files to be called by the cron
+# create example of files to be called by the cron
+# (this fun is called in cron_start)
 cron_init(dir_cron = tempdir(),
           head_rows = NULL)
 read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
@@ -236,9 +243,12 @@ cron_init(dir_cron = tempdir(),
           head_rows = c("My_head_row_1", "My_head_row_2"))
 read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
 
-# try cron
+
+# start a cron
+# create confs to check that it works on it
+
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf")
+dir_conf <- paste0(tempdir(), "/conf/")
 dir.create(dir_conf, recursive = T)
 
 # create temporary directory for fun
@@ -273,23 +283,48 @@ conf_2 <- configure_task(dir_path = dir_conf,
                                          z = iris),
                          priority = 2)
 
+# on LINUX
 require(cronR)
-cron_start(dir_cron = "/home/tdubois/",
+cron_start(dir_cron = tempdir(),
            dir_conf = dir_conf,
            max_runs = 1,
            cmd = NULL,
            create_file = T,
            head_rows = NULL,
-           frequency = "minutely")
+           frequency = "minutely",
+           id = "cron_script_ex")
 
 cron_ls() # display running crons
 
-# wait up to 1 min for conf_2 and up to 2 mins (priority = 2) for conf_1 (priority = 1)
+# wait up to 1 min for conf_2 and up to 2 mins for conf_1
 yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 
-# then kill running crons
-cron_clear(ask = F) 
+# then kill started cron
+cron_rm(id = "cron_script_ex") # kill all running crons
+
+(log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F))
+
+# on WINDOWS
+require(taskscheduleR)
+cron_start(dir_cron = tempdir(),
+           dir_conf = dir_conf,
+           max_runs = 1,
+           create_file = T,
+           head_rows = NULL,
+           schedule = "MINUTE",
+           taskname = "cron_script_ex")
+
+taskscheduler_ls() # display running crons (lots of info)
+
+# wait up to 1 min for conf_2 and up to 2 mins for conf_1
+yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
+yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
+
+# then kill started cron
+taskscheduler_delete("cron_script_ex") # kill specified running cron
+
+(log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F))
 
 # remove directory
 unlink(dir_conf, recursive = T)
@@ -298,7 +333,29 @@ unlink(dir_fun, recursive = T)
 
 <br>
 
-**Shiny modules**
+**Demo app**
+
+A demo app to create and automatically launch an example task : the generation of normally distributed observations.
+As a credible usecase, the results of the runs are retrieved and can be displayed.
+
+The demo app can be launched with function ``run_demo_app()``. 
+
+<img src="inst/img/demo_app_conf_task.PNG" width="2000">
+
+<img src="inst/img/demo_app_view_task_1.PNG" width="2000">
+
+<img src="inst/img/demo_app_view_task_2.PNG" width="2000">
+
+<br>
+
+**Shiny modules called in demo app**
+
+These modules contain the basic framework to use all the previous functions in a Shiny app.
+In addition to these modules, the demo app simply includes : 
+
+- **global** : the path to the confs directory, the path to the script of the function to be run, the call to cron_start() ;
+- ***ui** : shiny inputs (description args for the conf ; parameters for the function to be called bythe cron) ;
+- **server** : a renderPlot (a graph of the data create in a run).
 
 - **Configure a new task**
  
@@ -319,3 +376,9 @@ call:
 call:
 
 <img src="inst/img/see_tasks_shiny_code.PNG" width="400">
+
+This module returns : 
+- the status of the selected line (one run) of the summmary table,
+- the path to the directory in which its output is stored.
+
+Thus we know when a run is finished and we can load its result to reuse/display it : (readRDS(paste0(path, "/res.RDS"))).

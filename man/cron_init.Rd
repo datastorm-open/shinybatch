@@ -31,10 +31,14 @@ NULL.
 \description{
 Create and start the cron on the launcher function
 }
+\details{
+Default cron name for both os is "cron_script". To remove a cron, use cron_rm(id = "") on Linux and taskscheduler_delete(taskname = "") on Windows.
+}
 \examples{
 \dontrun{\donttest{
 
 # create example of files to be called by the cron 
+# (this fun is called in cron_start)
 cron_init(dir_cron = tempdir(),
           head_rows = NULL)
 read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
@@ -43,7 +47,10 @@ cron_init(dir_cron = tempdir(),
           head_rows = c("My_head_row_1", "My_head_row_2"))
 read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
 
-# start cron
+
+# start a cron
+# create confs to check that it works on it
+
 # create temporary directory for conf
 dir_conf <- paste0(tempdir(), "/conf/")
 dir.create(dir_conf, recursive = T)
@@ -80,14 +87,16 @@ conf_2 <- configure_task(dir_path = dir_conf,
                                          z = iris),
                          priority = 2)
 
+# on LINUX
 require(cronR)
-cron_start(dir_cron = "/home/tdubois/",
+cron_start(dir_cron = tempdir(),
            dir_conf = dir_conf,
            max_runs = 1,
            cmd = NULL,
            create_file = T,
            head_rows = NULL,
-           frequency = "minutely")
+           frequency = "minutely",
+           id = "cron_script_ex")
            
 cron_ls() # display running crons
 
@@ -95,7 +104,25 @@ cron_ls() # display running crons
 yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 
-cron_clear(ask = F) # kill running crons
+cron_rm(id = "cron_script_ex") # kill all running crons
+
+# on WINDOWS
+require(taskscheduleR)
+cron_start(dir_cron = tempdir(),
+           dir_conf = dir_conf,
+           max_runs = 1,
+           create_file = T,
+           head_rows = NULL,
+           schedule = "MINUTE",
+           taskname = "cron_script_ex")
+           
+taskscheduler_ls() # display running crons (lots of info)
+
+# wait up to 1 min for conf_2 and up to 2 mins for conf_1
+yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
+yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
+
+taskscheduler_delete("cron_script_ex") # kill specified running cron
 
 }}
 
