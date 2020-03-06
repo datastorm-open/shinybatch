@@ -98,7 +98,7 @@
 #' yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 #' yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 #' 
-#' taskscheduler_delete() # kill specified running cron
+#' taskscheduler_delete("cron_script") # kill specified running cron
 #' 
 #' }}
 #' 

@@ -23,13 +23,29 @@ close(con)
 dir_cron <- paste0(tempdir(), "/cron")
 if (dir.exists(dir_cron)) unlink(dir_cron, recursive = TRUE)
 dir.create(dir_cron, recursive = T)
-cron_start(dir_cron = dir_cron,
-           dir_conf = dir_conf,
-           max_runs = 1,
-           cmd = NULL,
-           create_file = T,
-           head_rows = NULL,
-           frequency = "minutely")
+
+os <- Sys.info()[['sysname']]
+
+if (os == "Windows") {
+  require(taskscheduleR)
+  cron_start(dir_cron = dir_cron,
+             dir_conf = dir_conf,
+             max_runs = 1,
+             create_file = T,
+             head_rows = NULL,
+             schedule = "MINUTE",
+             taskname = "cron_script")
+  
+} else {
+  require(cronR)
+  cron_start(dir_cron = dir_cron,
+             dir_conf = dir_conf,
+             max_runs = 1,
+             cmd = NULL,
+             create_file = T,
+             head_rows = NULL,
+             frequency = "minutely") 
+}
 
 # define UI
 ui <- shinydashboard::dashboardPage(
