@@ -34,7 +34,7 @@ if (os == "Windows") {
              create_file = T,
              head_rows = NULL,
              schedule = "MINUTE",
-             taskname = "cron_script")
+             taskname = "cron_script_demo_app")
   
 } else {
   require(cronR)
@@ -44,7 +44,8 @@ if (os == "Windows") {
              cmd = NULL,
              create_file = T,
              head_rows = NULL,
-             frequency = "minutely") 
+             frequency = "minutely",
+             id = "cron_script_demo_app") 
 }
 
 # define UI

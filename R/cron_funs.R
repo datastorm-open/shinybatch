@@ -10,6 +10,8 @@
 #' 
 #' @return NULL.
 #' @export
+#' 
+#' @details Default cron name for both os is "cron_script". To remove a cron, use cron_rm(id = "") on Linux and taskscheduler_delete(taskname = "") on Windows.
 #'
 #' @examples
 #' \dontrun{\donttest{
@@ -72,7 +74,8 @@
 #'            cmd = NULL,
 #'            create_file = T,
 #'            head_rows = NULL,
-#'            frequency = "minutely")
+#'            frequency = "minutely",
+#'            id = "cron_script_ex")
 #'            
 #' cron_ls() # display running crons
 #'
@@ -80,7 +83,7 @@
 #' yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 #' yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 #' 
-#' cron_clear(ask = F) # kill all running crons
+#' cron_rm(id = "cron_script_ex") # kill all running crons
 #' 
 #' # on WINDOWS
 #' require(taskscheduleR)
@@ -90,7 +93,7 @@
 #'            create_file = T,
 #'            head_rows = NULL,
 #'            schedule = "MINUTE",
-#'            taskname = "cron_script")
+#'            taskname = "cron_script_ex")
 #'            
 #' taskscheduler_ls() # display running crons (lots of info)
 #'
@@ -98,7 +101,7 @@
 #' yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 #' yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 #' 
-#' taskscheduler_delete("cron_script") # kill specified running cron
+#' taskscheduler_delete("cron_script_ex") # kill specified running cron
 #' 
 #' }}
 #' 

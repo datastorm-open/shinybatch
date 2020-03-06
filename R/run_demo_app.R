@@ -14,7 +14,13 @@ run_demo_app <- function() {
                   server = server, 
                   onStart = function() {
                     onStop(function() {
-                      cronR::cron_clear(F)
+                      os <- Sys.info()[['sysname']]
+                      
+                      if (os == "Windows") {
+                        taskscheduleR::taskscheduler_delete(taskname = "cron_script_demo_app")
+                      } else {
+                        cronR::cron_rm(id = "cron_script_demo_app") 
+                      }
                     })
                   })
 }
