@@ -14,9 +14,8 @@
 #' @examples
 #' \dontrun{\donttest{
 #' 
-#' ### examples on Linux :
-#' 
 #' # create example of files to be called by the cron 
+#' # (this fun is called in cron_start)
 #' cron_init(dir_cron = tempdir(),
 #'           head_rows = NULL)
 #' read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
@@ -25,7 +24,10 @@
 #'           head_rows = c("My_head_row_1", "My_head_row_2"))
 #' read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
 #' 
-#' # start cron
+#' 
+#' # start a cron
+#' # create confs to check that it works on it
+#' 
 #' # create temporary directory for conf
 #' dir_conf <- paste0(tempdir(), "/conf/")
 #' dir.create(dir_conf, recursive = T)
@@ -62,8 +64,9 @@
 #'                                          z = iris),
 #'                          priority = 2)
 #' 
+#' # on LINUX
 #' require(cronR)
-#' cron_start(dir_cron = "/home/tdubois/",
+#' cron_start(dir_cron = tempdir(),
 #'            dir_conf = dir_conf,
 #'            max_runs = 1,
 #'            cmd = NULL,
@@ -77,9 +80,25 @@
 #' yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 #' yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 #' 
-#' cron_clear(ask = F) # kill running crons
+#' cron_clear(ask = F) # kill all running crons
 #' 
-#' ### examples on Windows
+#' # on WINDOWS
+#' require(taskscheduleR)
+#' cron_start(dir_cron = tempdir(),
+#'            dir_conf = dir_conf,
+#'            max_runs = 1,
+#'            create_file = T,
+#'            head_rows = NULL,
+#'            schedule = "MINUTE",
+#'            taskname = "cron_script")
+#'            
+#' taskscheduler_ls() # display running crons (lots of info)
+#'
+#' # wait up to 1 min for conf_2 and up to 2 mins for conf_1
+#' yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
+#' yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
+#' 
+#' taskscheduler_delete() # kill specified running cron
 #' 
 #' }}
 #' 
