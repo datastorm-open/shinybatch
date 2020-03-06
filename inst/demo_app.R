@@ -44,13 +44,13 @@ ui <- shinydashboard::dashboardPage(
                                                numericInput("fun_nb_points", "Number of points",
                                                             min = 1, max = 10000, value = 100, step = 1)
                                         ),
-                                        column(3,
+                                        column(2,
                                                sliderInput("fun_mean", "Mean",
-                                                           min = -10, max = 10, value = 0, step = 0.1)
+                                                           min = -10, max = 10, value = 0, step = 0.1, width = "100%")
                                         ),
-                                        column(3,
+                                        column(2,
                                                sliderInput("fun_sd", "Standard deviation",
-                                                           min = 0, max = 100, value = 1, step = 0.5)
+                                                           min = 0, max = 100, value = 1, step = 0.5, width = "100%")
                                         ),
                                         column(2,
                                                numericInput("sleep_time", "Sleep time (s)",
@@ -64,11 +64,11 @@ ui <- shinydashboard::dashboardPage(
                                         ),
                                         column(3,
                                                textInput("title", "Title", 
-                                                         value = "Task title")
+                                                         value = "Task title", width = "100%")
                                         ),
                                         column(3,
                                                textInput("description", "Description", 
-                                                         value = "Task description")
+                                                         value = "Task description", width = "100%")
                                         )
                                       ),
                                       hr(),
@@ -147,9 +147,9 @@ server <- function(input, output, session) {
     sel_task <- sel_task()
     
     isolate({
-      if (cpt > 0 && length(sel_task) > 0) {
+      if (cpt > 0 && length(sel_task) > 0 && sel_task$status == "finished") {
         
-        data <- readRDS(paste0(sel_task()$path, "/res.RDS"))
+        data <- readRDS(paste0(sel_task$path, "/res.RDS"))
         
         plot(density(data), col = "#3c8dbc", lwd = 2, main = "Density plot of generated observations", xlab = "", ylab = "Density", axes = F)
         axis(1)

@@ -179,7 +179,7 @@ launcher <- function(dir_path,
                                  ", return = FALSE)")
               
               cmd <- paste0(rscript_path, 
-                              " --vanilla  -e \"{", 
+                              " --vanilla -e \"{", 
                               "require(shinybatch) ; ",
                               fun_call, " ;}\"")
               

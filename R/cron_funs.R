@@ -14,6 +14,8 @@
 #' @examples
 #' \dontrun{\donttest{
 #' 
+#' ### examples on Linux :
+#' 
 #' # create example of files to be called by the cron 
 #' cron_init(dir_cron = tempdir(),
 #'           head_rows = NULL)
@@ -25,7 +27,7 @@
 #' 
 #' # start cron
 #' # create temporary directory for conf
-#' dir_conf <- paste0(tempdir(), "/conf")
+#' dir_conf <- paste0(tempdir(), "/conf/")
 #' dir.create(dir_conf, recursive = T)
 #' 
 #' # create temporary directory for fun
@@ -77,17 +79,13 @@
 #' 
 #' cron_clear(ask = F) # kill running crons
 #' 
+#' ### examples on Windows
+#' 
 #' }}
 #' 
 #' @rdname cron_init
 cron_init <- function(dir_cron,
                       head_rows = NULL) {
-  
-  # cronR does not work on Windows
-  if (! requireNamespace("cronR", quietly = TRUE)) {
-    stop("Cannot use cron_init() without package cronR. Wont work on Windows.",
-         call. = FALSE)
-  }
   
   # checks
   if (is.null(dir_cron)) {
@@ -96,8 +94,6 @@ cron_init <- function(dir_cron,
   if (! dir.exists(dir_cron)) {
     stop("'dir_cron' directory doesn't exist. (", dir_cron, ")")
   }
-  
-  os <- Sys.info()[['sysname']]
   
   if (is.null(head_rows)) {
     script_lines <- c("#!/usr/bin/env Rscript", 
@@ -136,13 +132,7 @@ cron_start <- function(dir_cron,
                        create_file = FALSE,
                        head_rows = NULL,
                        ...) {
-  
-  # cronR does not work on Windows
-  if (! requireNamespace("cronR", quietly = TRUE)) {
-    stop("Cannot use cron_init() without package cronR. Wont work on Windows.",
-         call. = FALSE)
-  }
-  
+
   # checks
   if (is.null(dir_cron)) {
     stop("'dir_cron' must be of class <character>.")
@@ -185,7 +175,7 @@ cron_start <- function(dir_cron,
     
   } else {
     if (is.null(cmd)) {
-      cmd <- paste0("Rscript ", paste0(dir_cron, "/cron_script.R"), dir_conf, " ", max_runs) 
+      cmd <- paste0("Rscript ", paste0(dir_cron, "/cron_script.R "), dir_conf, " ", max_runs) 
     }
     
     if (! "command" %in% names(cron_args)) {
@@ -198,7 +188,7 @@ cron_start <- function(dir_cron,
       cron_args$id <- "cron_script" 
     }
     if (! "description" %in% names(cron_args)) {
-      cron_args$description <- "Calls launcher() function every 5 minutes" 
+      cron_args$description <- "Calls launcher() function every specified minutes" 
     }
     
     do.call(cronR::cron_add, cron_args) 

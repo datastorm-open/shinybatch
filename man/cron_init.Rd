@@ -45,7 +45,7 @@ read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
 
 # start cron
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf")
+dir_conf <- paste0(tempdir(), "/conf/")
 dir.create(dir_conf, recursive = T)
 
 # create temporary directory for fun
