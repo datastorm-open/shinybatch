@@ -27,17 +27,9 @@
 #' dir_conf <- paste0(tempdir(), "/conf")
 #' dir.create(dir_conf, recursive = T)
 #' 
-#' # create temporary directory for fun
-#' dir_fun <- paste0(tempdir(), "/fun")
-#' dir.create(dir_fun)
-#' con <- file(paste0(dir_fun, "/fun_script.R"))
-#' writeLines(c("my_fun <- function(x, y, z) {",
-#'              "  res <- x + y ;",
-#'              "  message('Running !') ;",
-#'              "  res",
-#'              "}"),
-#'            con)
-#' close(con)
+#'# ex fun 
+#' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
+#' fun_name = "sb_fun_ex"
 #' 
 #' # create 2 confs
 #' conf_1 <- configure_task(dir_path = dir_conf,
@@ -52,8 +44,8 @@
 #' conf_2 <- configure_task(dir_path = dir_conf,
 #'                          conf_descr = list(title = "my_title_2",
 #'                                            description = "my_descr_2"),
-#'                          fun_path = paste0(dir_fun, "/fun_script.R"),
-#'                          fun_name = "my_fun",
+#'                          fun_path = fun_path,
+#'                          fun_name = fun_name,
 #'                          fun_args = list(x = 1,
 #'                                          y = 0:4,
 #'                                          z = iris),
