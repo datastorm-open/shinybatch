@@ -10,15 +10,20 @@ configure_task_server(
   output,
   session,
   dir_path,
-  conf_descr = NULL,
   fun_path,
   fun_name,
+  conf_descr = NULL,
   fun_args = NULL,
   priority = 0L,
   compress = TRUE
 )
 
-configure_task_UI(id)
+configure_task_UI(
+  id,
+  labels = list(btn = "Execute the task", err =
+    "Args ['dir_path', 'fun_path' and 'fun_name'] cannot be NULL."),
+  ...
+)
 }
 \arguments{
 \item{input}{shiny input}
@@ -29,11 +34,11 @@ configure_task_UI(id)
 
 \item{dir_path}{\code{character}. Where to create the new directory.}
 
-\item{conf_descr}{\code{named list} (NULL). Description fields chosen by the user.}
-
 \item{fun_path}{\code{character}. Path to the script of the function.}
 
 \item{fun_name}{\code{character}. Name of the function in fun_path script.}
+
+\item{conf_descr}{\code{named list} (NULL). Description fields chosen by the user.}
 
 \item{fun_args}{\code{named list} (NULL). Args of the function, must all be named.}
 
@@ -42,6 +47,10 @@ configure_task_UI(id)
 \item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
 
 \item{id}{\code{character}. shiny id to allow multiple instanciation.}
+
+\item{labels}{\code{character}. ui labels}
+
+\item{...}{\code{actionButton} arguments}
 }
 \value{
 shiny module.
@@ -60,7 +69,7 @@ fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
 fun_name = "sb_fun_ex"
 
 # create and save conf
-ui <- shiny::fluidPage(configure_task_UI("my_id_1"))
+ui <- shiny::fluidPage(configure_task_UI("my_id_1", width = "80%"))
 server <- function(input, output, session) {
   callModule(configure_task_server, "my_id_1",
              dir_path = dir_conf,
@@ -77,9 +86,10 @@ shiny::shinyApp(ui = ui, server = server)
 
 # catch results
 list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
-read_conf <- yaml::read_yaml(paste0(path, "/", "conf.yml"))
-y <- readRDS(paste0(path, "/", "inputs/y.RDS"))
-z <- readRDS(paste0(path, "/", "inputs/z.RDS"))
+path
+read_conf <- yaml::read_yaml(paste0(path[1], "/", "conf.yml"))
+y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"))
+z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"))
 
 }}
 

@@ -1,6 +1,8 @@
 #' Module to configure a task.
 #'
 #' @param id \code{character}. shiny id to allow multiple instanciation.
+#' @param labels \code{character}. ui labels
+#' @param ... \code{actionButton} arguments
 #' @param input shiny input
 #' @param output shiny input
 #' @param session shiny input
@@ -28,7 +30,7 @@
 #' fun_name = "sb_fun_ex"
 #' 
 #' # create and save conf
-#' ui <- shiny::fluidPage(configure_task_UI("my_id_1"))
+#' ui <- shiny::fluidPage(configure_task_UI("my_id_1", width = "80%"))
 #' server <- function(input, output, session) {
 #'   callModule(configure_task_server, "my_id_1",
 #'              dir_path = dir_conf,
@@ -45,18 +47,19 @@
 #' 
 #' # catch results
 #' list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
-#' read_conf <- yaml::read_yaml(paste0(path, "/", "conf.yml"))
-#' y <- readRDS(paste0(path, "/", "inputs/y.RDS"))
-#' z <- readRDS(paste0(path, "/", "inputs/z.RDS"))
+#' path
+#' read_conf <- yaml::read_yaml(paste0(path[1], "/", "conf.yml"))
+#' y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"))
+#' z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"))
 #' 
 #' }}
 #' 
 #' @rdname module_configure_task
 configure_task_server <- function(input, output, session,
                                   dir_path,
-                                  conf_descr = NULL,
                                   fun_path,
                                   fun_name,
+                                  conf_descr = NULL,
                                   fun_args = NULL,
                                   priority = 0L,
                                   compress = TRUE) {
@@ -123,7 +126,7 @@ configure_task_server <- function(input, output, session,
           showModal(modalDialog(
             easyClose = TRUE,
             footer = NULL,
-            HTML(paste0("Error when configuring the task : <br> <br>", try))
+            HTML(paste0("Error when configuring the task : <br> <br>", try[[1]]))
           ))
         }
       }
@@ -135,19 +138,32 @@ configure_task_server <- function(input, output, session,
 #' @export
 #' 
 #' @rdname module_configure_task
-configure_task_UI <- function(id) {
+configure_task_UI <- function(id, 
+                              labels = list(
+                                btn = "Execute the task",
+                                err = "Args ['dir_path', 'fun_path' and 'fun_name'] cannot be NULL."
+                                ), ...) {
   ns <- NS(id)
+  
+  stopifnot(all(c("btn", "err") %in% names(labels)))
+  info_btn <- list(...)
+  if(!"width" %in% names(info_btn)){
+    info_btn$width <- "40%"
+  } 
+  info_btn$inputId <- ns("go_task")
+  info_btn$label <- labels$bt
   
   fluidRow(
     conditionalPanel(condition = paste0("output['", ns("is_args"), "']"),
                      column(12, 
-                            div(actionButton(ns("go_task"), label = "Execute the task", width = "40%"),
+                            div(
+                              do.call(actionButton, info_btn),
                                 align = "center")      
                      )
     ),
     
     conditionalPanel(condition = paste0("output['", ns("is_args"), "'] === false"),
-                     div(h4("Args ['dir_path', 'fun_path' and 'fun_name'] cannot be NULL."), align = "center")
+                     div(h4(labels$err), align = "center")
     )
   )
 }
