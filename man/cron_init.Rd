@@ -7,8 +7,15 @@
 \usage{
 cron_init(dir_cron, head_rows = NULL)
 
-cron_start(dir_cron, dir_conf, max_runs, cmd = NULL,
-  create_file = FALSE, head_rows = NULL, ...)
+cron_start(
+  dir_cron,
+  dir_conf,
+  max_runs,
+  cmd = NULL,
+  create_file = FALSE,
+  head_rows = NULL,
+  ...
+)
 }
 \arguments{
 \item{dir_cron}{\code{character}. Where to create the new directory.}

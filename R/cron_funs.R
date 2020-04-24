@@ -181,6 +181,12 @@ cron_start <- function(dir_cron,
   cron_args <- list(...)
   
   if (os == "Windows") {
+    
+    if (!requireNamespace("taskscheduleR", quietly = TRUE)) {
+      stop("Package \"taskscheduleR\" needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
+    
     if (! "rscript" %in% names(cron_args)) {
       cron_args$rscript <- paste0(dir_cron, "/cron_script.R")
     }
@@ -196,6 +202,11 @@ cron_start <- function(dir_cron,
     do.call(taskscheduleR::taskscheduler_create, cron_args)
     
   } else {
+    if (!requireNamespace("cronR", quietly = TRUE)) {
+      stop("Package \"cronR\" needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
+    
     if (is.null(cmd)) {
       cmd <- paste0("Rscript ", paste0(dir_cron, "/cron_script.R "), dir_conf, " ", max_runs) 
     }

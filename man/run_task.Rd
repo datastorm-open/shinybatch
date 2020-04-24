@@ -4,8 +4,14 @@
 \alias{run_task}
 \title{Run the task defined in a conf file}
 \usage{
-run_task(conf_path, ignore_status = c("running", "finished", "error"),
-  save_rds = TRUE, compress = TRUE, return = TRUE, verbose = FALSE)
+run_task(
+  conf_path,
+  ignore_status = c("running", "finished", "error"),
+  save_rds = TRUE,
+  compress = TRUE,
+  return = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{conf_path}{\code{character}. Path to the conf file.}
