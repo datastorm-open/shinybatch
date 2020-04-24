@@ -62,10 +62,12 @@ conf_2 <- configure_task(dir_path = dir_conf,
 
 launcher(dir_conf, verbose = T)
 # display res of conf_2 in /output dir
+Sys.sleep(2) # waiting scheduler computation
 readRDS(paste0(conf_2$dir, "output/res.RDS"))
 
 launcher(dir_conf, verbose = T)
 # display res of conf_1 in /output dir
+Sys.sleep(2) # waiting scheduler computation
 readRDS(paste0(conf_1$dir, "output/res.RDS"))
 
 launcher(dir_conf, verbose = T) 
