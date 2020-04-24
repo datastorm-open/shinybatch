@@ -1,52 +1,26 @@
 require(shiny)
 require(shinydashboard)
 require(DT)
+require(shinybatch)
 
 # create directory for conf
 dir_conf <- paste0(tempdir(), "/conf")
 if (dir.exists(dir_conf)) unlink(dir_conf, recursive = TRUE)
 dir.create(dir_conf, recursive = T)
 
-# create directory for fun
-dir_fun <- paste0(tempdir(), "/fun")
-if (dir.exists(dir_fun)) unlink(dir_fun, recursive = TRUE)
-dir.create(dir_fun)
-con <- file(paste0(dir_fun, "/fun_script.R"))
-writeLines(c("my_fun <- function(n, mean, sd, sleep) {",
-             "  Sys.sleep(sleep) ;",
-             "  rnorm(n, mean, sd) ;",
-             "}"),
-           con)
-close(con)
+# get fun path
+fun_path = system.file("ex_fun/sb_fun_ex_demo_app.R", package = "shinybatch")
 
-# init CRON
-dir_cron <- paste0(tempdir(), "/cron")
-if (dir.exists(dir_cron)) unlink(dir_cron, recursive = TRUE)
-dir.create(dir_cron, recursive = T)
+# init shceduler
+dir_scheduler <- paste0(tempdir(), "/cron")
+if (dir.exists(dir_scheduler)) unlink(dir_scheduler, recursive = TRUE)
+dir.create(dir_scheduler, recursive = T)
 
-os <- Sys.info()[['sysname']]
-
-if (os == "Windows") {
-  require(taskscheduleR)
-  cron_start(dir_cron = dir_cron,
+scheduler_add(dir_scheduler = dir_scheduler,
              dir_conf = dir_conf,
              max_runs = 1,
-             create_file = T,
              head_rows = NULL,
-             schedule = "MINUTE",
-             taskname = "cron_script_demo_app")
-  
-} else {
-  require(cronR)
-  cron_start(dir_cron = dir_cron,
-             dir_conf = dir_conf,
-             max_runs = 1,
-             cmd = NULL,
-             create_file = T,
-             head_rows = NULL,
-             frequency = "minutely",
-             id = "cron_script_demo_app") 
-}
+             taskname = "cr_sc_demo")
 
 # define UI
 ui <- shinydashboard::dashboardPage(
@@ -99,7 +73,7 @@ ui <- shinydashboard::dashboardPage(
                              tabPanel("View tasks",
                                       fluidRow(
                                         column(12,
-                                               tasks_overview_UI("my_id_1")
+                                               tasks_overview_UI("my_id_2")
                                         )
                                       ),
                                       conditionalPanel(condition = "output.launch_task",
@@ -135,7 +109,7 @@ server <- function(input, output, session) {
              dir_path = dir_conf,
              conf_descr = reactive(list("title" = input$title,
                                         "description" = input$description)),
-             fun_path = paste0(dir_fun, "/fun_script.R"),
+             fun_path = fun_path,
              fun_name = "my_fun",
              fun_args = reactive(list(n = input$fun_nb_points,
                                       mean = input$fun_mean,
@@ -144,7 +118,7 @@ server <- function(input, output, session) {
              priority = reactive(input$priority))
   
   # call module to view tasks
-  sel_task <- callModule(tasks_overview_server, "my_id_1",
+  sel_task <- callModule(tasks_overview_server, "my_id_2",
                          dir_path = dir_conf,
                          allowed_status = c("waiting", "running", "finished", "error"),
                          allowed_run_info_cols = NULL,
@@ -175,3 +149,12 @@ server <- function(input, output, session) {
     })
   })
 }
+
+# launch app
+# shiny::shinyApp(ui = ui, 
+#                 server = server, 
+#                 onStart = function() {
+#                   onStop(function() {
+#                     scheduler_remove(taskname = "cr_sc_demo")
+#                   })
+#                 })

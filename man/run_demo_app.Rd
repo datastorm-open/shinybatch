@@ -10,5 +10,5 @@ run_demo_app()
 Launch shinybatch demo app
 }
 \details{
-The created cron is automatically destroyed when quitting Shiny.
+The created sheduler is automatically destroyed when quitting Shiny.
 }

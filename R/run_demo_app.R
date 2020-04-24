@@ -3,7 +3,7 @@
 #' @return NULL
 #' @export
 #' 
-#' @details The created cron is automatically destroyed when quitting Shiny.
+#' @details The created sheduler is automatically destroyed when quitting Shiny.
 #' 
 run_demo_app <- function() {
   ui = NULL
@@ -16,13 +16,7 @@ run_demo_app <- function() {
                   server = server, 
                   onStart = function() {
                     onStop(function() {
-                      os <- Sys.info()[['sysname']]
-                      
-                      if (os == "Windows") {
-                        taskscheduleR::taskscheduler_delete(taskname = "cron_script_demo_app")
-                      } else {
-                        cronR::cron_rm(id = "cron_script_demo_app") 
-                      }
+                        scheduler_remove(taskname = "cr_sc_demo")
                     })
                   })
 }

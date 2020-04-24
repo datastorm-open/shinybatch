@@ -29,7 +29,7 @@ test_that("test outputs", {
   
   expect_equal(conf$descriptive, list(title = "my_title", description = "my_descr"))
   expect_equal(conf$`function`, list(
-    "path" = dir,
+    "path" = gsub("\\", "/", dir, fixed = T),
     "name" = "my_fun_name")
   )
   
