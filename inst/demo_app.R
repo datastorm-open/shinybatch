@@ -17,10 +17,10 @@ if (dir.exists(dir_scheduler)) unlink(dir_scheduler, recursive = TRUE)
 dir.create(dir_scheduler, recursive = T)
 
 scheduler_add(dir_scheduler = dir_scheduler,
-             dir_conf = dir_conf,
-             max_runs = 1,
-             head_rows = NULL,
-             taskname = "cr_sc_demo")
+              dir_conf = dir_conf,
+              max_runs = 1,
+              head_rows = NULL,
+              taskname = "cr_sc_demo")
 
 # define UI
 ui <- shinydashboard::dashboardPage(

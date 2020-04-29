@@ -6,14 +6,12 @@
 #' @details The created sheduler is automatically destroyed when quitting Shiny.
 #' 
 run_demo_app <- function() {
-  ui = NULL
-  server = NULL
   
-  source("inst/demo_app.R", local = T)
+  source(system.file("demo_app.R", package = "shinybatch"))
   
   # launch app
-  shiny::shinyApp(ui = ui, 
-                  server = server, 
+  shiny::shinyApp(ui = get("ui"), 
+                  server = get("server"), 
                   onStart = function() {
                     onStop(function() {
                         scheduler_remove(taskname = "cr_sc_demo")
