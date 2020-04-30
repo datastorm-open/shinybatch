@@ -2,6 +2,7 @@
 % Please edit documentation in R/conf_to_dt.R
 \name{conf_to_dt}
 \alias{conf_to_dt}
+\alias{dir_conf_to_dt}
 \title{Convert a list of conf into two data.tables of global and individual features.}
 \usage{
 conf_to_dt(
@@ -12,17 +13,28 @@ conf_to_dt(
   allowed_function_cols = c("path", "name"),
   allow_args = TRUE
 )
+
+dir_conf_to_dt(
+  dir_path,
+  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority",
+    "status"),
+  allow_descr = TRUE,
+  allowed_function_cols = c("path", "name"),
+  allow_args = TRUE
+)
 }
 \arguments{
 \item{confs}{\code{list of list}. List of conf list(s) from yaml file(s).}
 
-\item{allowed_run_info_cols}{\code{character} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.}
+\item{allowed_run_info_cols}{\code{characteror or boolean} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.}
 
 \item{allow_descr}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.}
 
-\item{allowed_function_cols}{\code{character} (c("names", "path")). Function elements to be kept.}
+\item{allowed_function_cols}{\code{character or boolean} (c("names", "path")). Function elements to be kept.}
 
 \item{allow_args}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.}
+
+\item{dir_path}{\code{character}. Path to the directory with tasks.}
 }
 \value{
 a list of two tables 'tbl_global' and 'tbl_idv':
@@ -79,7 +91,7 @@ conf_2 <- list(
 
 confs <- list(conf_1, conf_2)
 
-conf_to_dt(confs)
+conf_to_dt(confs, allowed_run_info_cols = FALSE)
 
 conf_to_dt(confs, 
            allow_descr = F,
@@ -100,4 +112,5 @@ conf_to_dt(confs,
            allow_args = F)
 
 }} 
+
 }

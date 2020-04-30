@@ -82,12 +82,12 @@ ui <- shinydashboard::dashboardPage(
                                                        fluidRow(
                                                          conditionalPanel(condition = "output.launch_task",
                                                                           column(12,
-                                                                                 div(actionButton("go_task", "Display task result", width = "40%"),
+                                                                                 div(actionButton("show_task", "Display task result", width = "40%"),
                                                                                      align = "center")
                                                                           ) 
                                                          ),
                                                          column(12,
-                                                                conditionalPanel(condition = "input.go_task > 0",
+                                                                conditionalPanel(condition = "input.show_task > 0",
                                                                                  plotOutput("task_plot")                                 
                                                                 )
                                                          )
@@ -121,6 +121,7 @@ server <- function(input, output, session) {
   # call module to view tasks
   sel_task <- callModule(tasks_overview_server, "my_id_2",
                          dir_path = dir_conf,
+                         update_mode = "reactive",
                          allowed_status = c("waiting", "running", "finished", "error"),
                          allowed_run_info_cols = NULL,
                          allowed_function_cols = NULL,
@@ -135,7 +136,7 @@ server <- function(input, output, session) {
   
   # display task
   output$task_plot <- renderPlot({
-    cpt <- input$go_task
+    cpt <- input$show_task
     sel_task <- sel_task()
     
     isolate({
@@ -151,9 +152,9 @@ server <- function(input, output, session) {
   })
 }
 
-# launch app
-# shiny::shinyApp(ui = ui, 
-#                 server = server, 
+# # launch app
+# shiny::shinyApp(ui = ui,
+#                 server = server,
 #                 onStart = function() {
 #                   onStop(function() {
 #                     scheduler_remove(taskname = "cr_sc_demo")
