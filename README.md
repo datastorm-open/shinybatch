@@ -2,7 +2,7 @@
 
 This package provides a simple framework to create, launch *automatically* and retrieve *time-consuming operations* (tasks) **in batch mode** from a **Shiny app**.
 
-The tasks are automatically launched using a sheduler, e.g. a timer that periodically launches a (batch) operation.
+The tasks are automatically launched using a scheduler, e.g. a timer that periodically launches a (batch) operation.
     - a CRON in linux/Mac using **cronR** package
     - In windows with **taskscheduleR** and Windows task scheduler
 

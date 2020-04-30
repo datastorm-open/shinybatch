@@ -3,7 +3,7 @@
 #' @return NULL
 #' @export
 #' 
-#' @details The created sheduler is automatically destroyed when quitting Shiny.
+#' @details The created scheduler is automatically destroyed when quitting Shiny.
 #' 
 run_demo_app <- function() {
   
