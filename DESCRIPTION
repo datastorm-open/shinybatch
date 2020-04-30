@@ -1,12 +1,12 @@
 Package: shinybatch
 Title: Launch Tasks in Batch
 Version: 0.1
-Authors@R: 
-    person(given = "Datastorm",
-           family = "Datastorm",
-           role = c("aut", "cre"),
-           email = "datastorm@datastorm.fr",
-           comment = c())
+Authors@R: c(
+    person("Benoit", "Thieurmel", role = c("aut", "cre"),
+      email = "benoit.thieurmel@datastorm.fr"),
+    person(given = "Thibaut", family = "Dubois", 
+    email = "thibaut.dubois@datastorm.fr", role = c("aut", "ctb"))
+    )
 Description: Functions to launchs batch tasks in R and Shiny.
 Depends: R (>= 3.5.0)
 License: GPL-3

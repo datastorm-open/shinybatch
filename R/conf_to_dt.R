@@ -1,9 +1,10 @@
 #' Convert a list of conf into two data.tables of global and individual features.
 #'
+#' @param dir_path \code{character}. Path to the directory with tasks.
 #' @param confs \code{list of list}. List of conf list(s) from yaml file(s).
-#' @param allowed_run_info_cols \code{character} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.
+#' @param allowed_run_info_cols \code{characteror or boolean} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.
 #' @param allow_descr \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.
-#' @param allowed_function_cols \code{character} (c("names", "path")). Function elements to be kept.
+#' @param allowed_function_cols \code{character or boolean} (c("names", "path")). Function elements to be kept.
 #' @param allow_args \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.
 #'
 #' @return a list of two tables 'tbl_global' and 'tbl_idv':
@@ -60,7 +61,7 @@
 #' 
 #' confs <- list(conf_1, conf_2)
 #' 
-#' conf_to_dt(confs)
+#' conf_to_dt(confs, allowed_run_info_cols = FALSE)
 #' 
 #' conf_to_dt(confs, 
 #'            allow_descr = F,
@@ -81,6 +82,8 @@
 #'            allow_args = F)
 #' 
 #' }} 
+#' 
+#' @rdname configuration_info
 conf_to_dt <- function(confs,
                        allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
                        allow_descr = TRUE,
@@ -90,9 +93,21 @@ conf_to_dt <- function(confs,
   # checks
   if (is.null(allowed_run_info_cols)) {
     allowed_run_info_cols <- c("date_init", "date_start_run", "date_end_run", "priority", "status")
+  } else if(is.logical(allowed_run_info_cols)) {
+    if(allowed_run_info_cols){
+      allowed_run_info_cols <- c("date_init", "date_start_run", "date_end_run", "priority", "status")
+    } else {
+      allowed_run_info_cols <- ""
+    }
   }
   if (is.null(allowed_function_cols)) {
     allowed_function_cols <- c("path", "name")
+  } else if(is.logical(allowed_function_cols)) {
+    if(allowed_function_cols){
+      allowed_function_cols <- c("path", "name")
+    } else {
+      allowed_function_cols <- ""
+    }
   }
   if (! is.character(allowed_run_info_cols)) {
     stop("'allowed_run_info_cols' must be of class <character>.")
@@ -151,4 +166,35 @@ conf_to_dt <- function(confs,
   }
   
   return(list("tbl_global" = tbl_global, "tbls_idv" = tbls_idv)) 
+}
+
+#' @rdname configuration_info
+#' @export
+dir_conf_to_dt <- function(dir_path,
+                           allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
+                           allow_descr = TRUE,
+                           allowed_function_cols = c("path", "name"),
+                           allow_args = TRUE){
+  
+  # checks 
+  if (! is.character(dir_path)) {
+    stop("'dir_path' must be of class <character>.")
+  }
+  if (! dir.exists(dir_path)) {
+    stop("'dir_path' directory doesn't exist (", dir_path, ").")
+  }
+  
+  confs <- lapply(list.dirs(dir_path, full.names = T, recursive = F), function(x) {
+      yaml::read_yaml(paste0(x, "/conf.yml"))
+    })
+  
+  if(length(confs) == 0){
+    return(invisible(NULL))
+  } else {
+    conf_to_dt(confs = confs,
+               allowed_run_info_cols = allowed_run_info_cols,
+               allow_descr = allow_descr,
+               allowed_function_cols = allowed_function_cols,
+               allow_args = allow_args)
+  }
 }

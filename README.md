@@ -208,15 +208,16 @@ In addition to these modules, the demo app simply includes :
 call:
 
 ````
-?configure_task_UI
+?configure_task_server
 
-# ui
-configure_task_UI("my_id_1") 
+# ui : just create a actionButton
+actionButton("go_task", "Execute the task !")
 
 # server
 # call module to configure a task
 # connect app inputs to the module
 callModule(configure_task_server, "my_id_1",
+  btn = reactive(input$go_task),
   dir_path = dir_conf,
   conf_descr = reactive(list("title" = input$title,
     "description" = input$description)),

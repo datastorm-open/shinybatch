@@ -11,6 +11,10 @@
 #' @param allowed_function_cols \code{character} (c("names", "path")). Function elements to be kept.
 #' @param allow_args \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.
 #' @param table_fun \code{function} (function(x) x). Function to be applied on the summary table, making it easy to customize it. First arg must be the summmary table.
+#' @param labels \code{list} UI labels
+#' @param update_mode \code{character} : "reactive" (default) use \code{shiny::reactivePoll} to see if tasks info have changed. 
+#' "button" add and use a \code{shiny::actionButton} to update task info table.
+#' @param intervalMillis \code{integer}. In case of "reactive" update_mode, time betweens calls
 #' @param ... \code{}. Additional args to be given to the table_fun function.
 #' 
 #' @return the status of the selected line (one run) of the summmary table and the path to the directory in which its output is stored.
@@ -77,8 +81,12 @@ tasks_overview_server <- function(input, output, session,
                                   allowed_function_cols = c("path", "name"),
                                   allow_args = TRUE,
                                   allowed_status = c("waiting", "running", "finished", "error"),
+                                  update_mode = c("reactive", "button"),
+                                  intervalMillis = 1000,
                                   table_fun = function(x) x,
                                   ...) {
+  
+  update_mode <- match.arg(update_mode)
   
   # reactive controls
   if (! shiny::is.reactive(dir_path)) {
@@ -118,37 +126,57 @@ tasks_overview_server <- function(input, output, session,
   })
   outputOptions(output, "is_dir", suspendWhenHidden = FALSE)
   
-  # create features tables
-  tbl_features <- reactive({
-    cpt <- input$go_overview
-    
-    isolate({
-      if (cpt > 0) {
-        confs <- tryCatch({
-          lapply(list.dirs(dir_path, full.names = T, recursive = F), function(x) {
-            yaml::read_yaml(paste0(x, "/conf.yml"))
-          })},
+  if(update_mode %in% "button"){
+    tbl_features <- reactive({
+      cpt <- input$go_overview
+      
+      isolate({
+        if (cpt > 0) {
+          tryCatch({
+            dir_conf_to_dt(dir_path = get_dir_path(),
+                           allowed_run_info_cols = get_allowed_run_info_cols(),
+                           allow_descr = get_allow_descr(),
+                           allowed_function_cols = get_allowed_function_cols(),
+                           allow_args = get_allow_args())
+          },
           error = function(e) {
             showModal(modalDialog(
               easyClose = TRUE,
               footer = NULL,
-              paste0("Path '", dir_path, "' doesnt exist.")
+              e$message
             ))
             
             NULL
           }
-        )
-        
-        conf_to_dt(confs = confs,
-                   allowed_run_info_cols = get_allowed_run_info_cols(),
-                   allow_descr = get_allow_descr(),
-                   allowed_function_cols = get_allowed_function_cols(),
-                   allow_args = get_allow_args())
-      } else {
-        NULL
-      }
+          )
+        } else {
+          NULL
+        }
+      })
     })
-  })
+  } else {
+    
+    tbl_features <- reactivePoll(intervalMillis, session,
+                                 checkFunc = function() {
+                                   confs <- lapply(list.dirs(isolate(get_dir_path()), full.names = T, recursive = F), function(x) {
+                                     conf_path <- paste0(x, "/conf.yml")
+                                     if(file.exists(conf_path)){
+                                       file.info(conf_path)$mtime[1]
+                                     } else {
+                                       ""
+                                     }
+                                   })
+                                 },
+                                 # This function returns the content of log_file
+                                 valueFunc = function() {
+                                   dir_conf_to_dt(dir_path = get_dir_path(),
+                                                  allowed_run_info_cols = get_allowed_run_info_cols(),
+                                                  allow_descr = get_allow_descr(),
+                                                  allowed_function_cols = get_allowed_function_cols(),
+                                                  allow_args = get_allow_args())
+                                 }
+    )
+  }
   
   # get DT table of global feature 
   tbl_global_DT <- reactive({
@@ -256,6 +284,11 @@ tasks_overview_server <- function(input, output, session,
     res
   })
   
+  output$is_btn_mode <- reactive({
+    update_mode %in% "button"
+  })
+  outputOptions(output, "is_btn_mode", suspendWhenHidden = FALSE)
+  
   return(res_module)
 }
 
@@ -264,16 +297,30 @@ tasks_overview_server <- function(input, output, session,
 #' @export
 #' 
 #' @rdname module_tasks_overview
-tasks_overview_UI <- function(id) {
+tasks_overview_UI <- function(id, 
+                              labels = list(
+                                btn = "Display/update the tasks",
+                                empty_global = "Empty table of global features.",
+                                empty_individual = "Empty table of individual features.",
+                                error_dir_access = "Cannot access given directory."
+                              )) {
   ns <- NS(id)
+  
+  
+  if(is.null(labels$btn)) labels$btn = "Display/update the tasks"
+  if(is.null(labels$empty_global)) labels$empty_global = "Empty table of global features."
+  if(is.null(labels$empty_individual)) labels$empty_individual = "Empty table of individual features."
+  if(is.null(labels$error_dir_access)) labels$error_dir_access = "Cannot access given directory." 
   
   fluidRow(
     conditionalPanel(condition = paste0("output['", ns("is_dir"), "']"),
-                     column(12, 
-                            div(actionButton(ns("go_overview"), label = "Display the tasks", width = "40%"),
-                                align = "center")
+                     conditionalPanel(condition = paste0("output['", ns("is_btn_mode"), "']"),
+                                      column(12, 
+                                             div(actionButton(ns("go_overview"), label = labels$btn, width = "40%"),
+                                                 align = "center")
+                                      )
                      ),
-                     conditionalPanel(condition = paste0("input['", ns("go_overview"), "'] > 0"),
+                     conditionalPanel(condition = paste0("(output['", ns("is_btn_mode"), "'] && input['", ns("go_overview"), "'] > 0) || output['", ns("is_btn_mode"), "'] === false"),
                                       conditionalPanel(condition = paste0("output['", ns("is_global_dt"), "']"), 
                                                        column(12,
                                                               DT::DTOutput(ns("tbl_global_DT_out"))
@@ -282,7 +329,7 @@ tasks_overview_UI <- function(id) {
                                       conditionalPanel(condition = paste0("! output['", ns("is_global_dt"), "']"), 
                                                        column(12,
                                                               fluidRow(
-                                                                div(h4("Empty table of global features.", style = "color: darkblue;"), align = "center") 
+                                                                div(h4(labels$empty_global, style = "color: darkblue;"), align = "center") 
                                                               )
                                                        )
                                       ),
@@ -298,7 +345,7 @@ tasks_overview_UI <- function(id) {
                                                                         column(12,
                                                                                tags$hr(),
                                                                                fluidRow(
-                                                                                 div(h4("Empty table of individual features.", style = "color: darkblue;"), align = "center") 
+                                                                                 div(h4(labels$empty_individual, style = "color: darkblue;"), align = "center") 
                                                                                )
                                                                         )
                                                        )
@@ -307,7 +354,7 @@ tasks_overview_UI <- function(id) {
     ),
     
     conditionalPanel(condition = paste0("output['", ns("is_dir"), "'] === false"),
-                     div(h4("Cannot access given directory."), align = "center")
+                     div(h4(labels$error_dir_access), align = "center")
     )
   )
 }

@@ -16,11 +16,19 @@ tasks_overview_server(
   allowed_function_cols = c("path", "name"),
   allow_args = TRUE,
   allowed_status = c("waiting", "running", "finished", "error"),
+  update_mode = c("reactive", "button"),
+  intervalMillis = 1000,
   table_fun = function(x) x,
   ...
 )
 
-tasks_overview_UI(id)
+tasks_overview_UI(
+  id,
+  labels = list(btn = "Display/update the tasks", empty_global =
+    "Empty table of global features.", empty_individual =
+    "Empty table of individual features.", error_dir_access =
+    "Cannot access given directory.")
+)
 }
 \arguments{
 \item{input}{shiny input}
@@ -41,11 +49,18 @@ tasks_overview_UI(id)
 
 \item{allowed_status}{\code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.}
 
+\item{update_mode}{\code{character} : "reactive" (default) use \code{shiny::reactivePoll} to see if tasks info have changed. 
+"button" add and use a \code{shiny::actionButton} to update task info table.}
+
+\item{intervalMillis}{\code{integer}. In case of "reactive" update_mode, time betweens calls}
+
 \item{table_fun}{\code{function} (function(x) x). Function to be applied on the summary table, making it easy to customize it. First arg must be the summmary table.}
 
 \item{...}{\code{}. Additional args to be given to the table_fun function.}
 
 \item{id}{\code{character}. shiny id to allow multiple instanciation.}
+
+\item{labels}{\code{list} UI labels}
 }
 \value{
 the status of the selected line (one run) of the summmary table and the path to the directory in which its output is stored.

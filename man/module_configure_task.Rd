@@ -2,27 +2,22 @@
 % Please edit documentation in R/module_configure_task.R
 \name{configure_task_server}
 \alias{configure_task_server}
-\alias{configure_task_UI}
 \title{Module to configure a task.}
 \usage{
 configure_task_server(
   input,
   output,
   session,
+  btn,
   dir_path,
   fun_path,
   fun_name,
   conf_descr = NULL,
   fun_args = NULL,
   priority = 0L,
-  compress = TRUE
-)
-
-configure_task_UI(
-  id,
-  labels = list(btn = "Execute the task", err =
-    "Args ['dir_path', 'fun_path' and 'fun_name'] cannot be NULL."),
-  ...
+  compress = TRUE,
+  labels = list(success = "Task configured !", error =
+    "Error when configuring the task")
 )
 }
 \arguments{
@@ -31,6 +26,8 @@ configure_task_UI(
 \item{output}{shiny input}
 
 \item{session}{shiny input}
+
+\item{btn}{\code{reactive}. Link to a actionButton for call \code{configure_task} function}
 
 \item{dir_path}{\code{character}. Where to create the new directory.}
 
@@ -46,11 +43,7 @@ configure_task_UI(
 
 \item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
 
-\item{id}{\code{character}. shiny id to allow multiple instanciation.}
-
-\item{labels}{\code{character}. ui labels}
-
-\item{...}{\code{actionButton} arguments}
+\item{labels}{\code{list}. Modal dialog title.}
 }
 \value{
 shiny module.
@@ -69,9 +62,12 @@ fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
 fun_name = "sb_fun_ex"
 
 # create and save conf
-ui <- shiny::fluidPage(configure_task_UI("my_id_1", width = "80%"))
+ui <- shiny::fluidPage(
+    shiny::actionButton("conf_task", "Configure task")
+)
 server <- function(input, output, session) {
   callModule(configure_task_server, "my_id_1",
+             btn = reactive(input$conf_task),
              dir_path = dir_conf,
              conf_descr = list(title = "my_title",
                                description = "my_descr"),
@@ -88,8 +84,8 @@ shiny::shinyApp(ui = ui, server = server)
 list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
 path
 read_conf <- yaml::read_yaml(paste0(path[1], "/", "conf.yml"))
-y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"))
-z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"))
+y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"));y
+z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"));z
 
 }}
 
