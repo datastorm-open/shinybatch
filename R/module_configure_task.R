@@ -1,11 +1,9 @@
 #' Module to configure a task.
 #'
-#' @param id \code{character}. shiny id to allow multiple instanciation.
-#' @param labels \code{character}. ui labels
-#' @param ... \code{actionButton} arguments
 #' @param input shiny input
 #' @param output shiny input
 #' @param session shiny input
+#' @param btn \code{reactive}. Link to a actionButton for call \code{configure_task} function
 #' @param dir_path \code{character}. Where to create the new directory.
 #' @param conf_descr \code{named list} (NULL). Description fields chosen by the user. 
 #' @param fun_path \code{character}. Path to the script of the function.
@@ -13,6 +11,7 @@
 #' @param fun_args \code{named list} (NULL). Args of the function, must all be named.
 #' @param priority \code{numeric} (0L). Number used to define which task should be launched first.
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
+#' @param labels \code{list}. Modal dialog title.
 #' 
 #' @return shiny module.
 #' @export
@@ -30,9 +29,12 @@
 #' fun_name = "sb_fun_ex"
 #' 
 #' # create and save conf
-#' ui <- shiny::fluidPage(configure_task_UI("my_id_1", width = "80%"))
+#' ui <- shiny::fluidPage(
+#'     shiny::actionButton("conf_task", "Configure task")
+#' )
 #' server <- function(input, output, session) {
 #'   callModule(configure_task_server, "my_id_1",
+#'              btn = reactive(input$conf_task),
 #'              dir_path = dir_conf,
 #'              conf_descr = list(title = "my_title",
 #'                                description = "my_descr"),
@@ -49,20 +51,25 @@
 #' list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
 #' path
 #' read_conf <- yaml::read_yaml(paste0(path[1], "/", "conf.yml"))
-#' y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"))
-#' z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"))
+#' y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"));y
+#' z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"));z
 #' 
 #' }}
 #' 
 #' @rdname module_configure_task
 configure_task_server <- function(input, output, session,
+                                  btn,
                                   dir_path,
                                   fun_path,
                                   fun_name,
                                   conf_descr = NULL,
                                   fun_args = NULL,
                                   priority = 0L,
-                                  compress = TRUE) {
+                                  compress = TRUE, 
+                                  labels = list(
+                                    success = "Task configured !",
+                                    error = "Error when configuring the task"
+                                  )) {
   
   # reactive controls
   if (! shiny::is.reactive(dir_path)) {
@@ -100,7 +107,11 @@ configure_task_server <- function(input, output, session,
   } else {
     get_compress <- compress
   }
-  
+  if (! shiny::is.reactive(labels)) {
+    get_labels <- shiny::reactive(labels)
+  } else {
+    get_labels <- labels
+  }
   # check args
   output$is_args <- reactive({
     ! (is.null(get_dir_path()) ||
@@ -110,60 +121,42 @@ configure_task_server <- function(input, output, session,
   outputOptions(output, "is_args", suspendWhenHidden = FALSE)
   
   observe({
-    cpt <- input$go_task
+    btn <- btn()
     
     isolate({
-      if (cpt > 0) {
+      if (btn > 0) {
         try <- try(configure_task(dir_path = get_dir_path(),
                                   conf_descr = get_conf_descr(),
                                   fun_path = get_fun_path(),
                                   fun_name = get_fun_name(),
                                   fun_args = get_fun_args(),
                                   priority = get_priority(),
-                                  compress = get_compress()), silent = T)
+                                  compress = get_compress(), call. = FALSE), silent = T)
         
         if (class(try) == "try-error") {
-          showModal(modalDialog(
-            easyClose = TRUE,
-            footer = NULL,
-            HTML(paste0("Error when configuring the task : <br> <br>", try[[1]]))
-          ))
+          showModal(
+            modalDialog(
+              easyClose = TRUE,
+              footer = NULL,
+              title = tags$p(ifelse(is.null(get_labels()$error), 
+                                            "Error when configuring the task",
+                                            get_labels()$error), style = "color:red;"),
+              try[[1]]
+            )
+          )
+        } else {
+          showModal(
+            modalDialog(
+              size = "s",
+              easyClose = TRUE,
+              footer = NULL,
+              tags$h4(ifelse(is.null(get_labels()$success),
+                             "Task configured !",
+                             get_labels()$success), style = "color:green;")
+            )
+          )
         }
       }
     })
   })
-}
-
-
-#' @export
-#' 
-#' @rdname module_configure_task
-configure_task_UI <- function(id, 
-                              labels = list(
-                                btn = "Execute the task",
-                                err = "Args ['dir_path', 'fun_path' and 'fun_name'] cannot be NULL."
-                                ), ...) {
-  ns <- NS(id)
-  
-  stopifnot(all(c("btn", "err") %in% names(labels)))
-  info_btn <- list(...)
-  if(!"width" %in% names(info_btn)){
-    info_btn$width <- "40%"
-  } 
-  info_btn$inputId <- ns("go_task")
-  info_btn$label <- labels$bt
-  
-  fluidRow(
-    conditionalPanel(condition = paste0("output['", ns("is_args"), "']"),
-                     column(12, 
-                            div(
-                              do.call(actionButton, info_btn),
-                                align = "center")      
-                     )
-    ),
-    
-    conditionalPanel(condition = paste0("output['", ns("is_args"), "'] === false"),
-                     div(h4(labels$err), align = "center")
-    )
-  )
 }

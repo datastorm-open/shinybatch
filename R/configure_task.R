@@ -7,7 +7,8 @@
 #' @param fun_args \code{named list} (NULL). Args of the function, must all be named.
 #' @param priority \code{numeric} (0L). Number used to define which task should be launched first.
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
-#'
+#' @param call. \code{logical} (TRUE) logical, indicating if the call should become part of the error message
+#' 
 #' @return a list containing the conf fields. Attribute 'path' of the result contains the path to the conf directory.
 #' The arg field contains either the location of the argument (in "dir_path/inputs/arg_name.RDS") or the argument itself if it is of length 1.
 #' @export
@@ -44,35 +45,36 @@ configure_task <- function(dir_path,
                            conf_descr = NULL,
                            fun_args = NULL,
                            priority = 0L,
-                           compress = TRUE) {
+                           compress = TRUE, 
+                           call. = TRUE) {
   # checks 
   if (! is.character(dir_path)) {
-    stop("'dir_path' must be of class <character>.")
+    stop("'dir_path' must be of class <character>.", call. = call.)
   }
   if (! dir.exists(dir_path)) {
-    stop("'dir_path' directory doesn't exist (", dir_path, ").")
+    stop("'dir_path' directory doesn't exist (", dir_path, ").", call. = call.)
   }
   if (! (is.null(conf_descr) || 
          (is.list(conf_descr) && length(conf_descr) > 0 && 
           ! is.null(names(conf_descr)) && ! any(names(conf_descr) == "")))) {
-    stop("'conf_descr' must be a <named list>.")
+    stop("'conf_descr' must be a <named list>.", call. = call.)
   }
   if (! is.character(fun_path)) {
-    stop("'fun_path' must be of class <character>.")
+    stop("'fun_path' must be of class <character>.", call. = call.)
   }
   if (! file.exists(fun_path)) {
-    stop("'fun_path' file doesn't existed : ", fun_path)
+    stop("'fun_path' file doesn't existed : ", fun_path, call. = call.)
   }
   if (! is.character(fun_name)) {
-    stop("'fun_name' must be of class <character>.")
+    stop("'fun_name' must be of class <character>.", call. = call.)
   }
   if (! (is.null(fun_args) || 
          (is.list(fun_args) && length(fun_args) > 0 && 
           ! is.null(names(fun_args)) && ! any(names(fun_args) == "")))) {
-    stop("'fun_args' must be a <named list> of 'fun_name' arguments.")
+    stop("'fun_args' must be a <named list> of 'fun_name' arguments.", call. = call.)
   }
   if (! class(priority) %in% c("numeric", "integer")) {
-    stop("'priority' must be of class <numeric> or <integer>.")
+    stop("'priority' must be of class <numeric> or <integer>.", call. = call.)
   }
   
   # write conf
@@ -87,7 +89,7 @@ configure_task <- function(dir_path,
   
   suppressWarnings(dir.create(dir_path, recursive = T))
   if (! dir.exists(dir_path)) {
-    stop("Can't create output directory ", dir_path)
+    stop("Can't create output directory ", dir_path, call. = call.)
   }
   
   conf <- list(

@@ -64,8 +64,8 @@ ui <- shinydashboard::dashboardPage(
                                       ),
                                       hr(),
                                       fluidRow(
-                                        column(12,
-                                               configure_task_UI("my_id_1")
+                                        column(4, offset = 4,
+                                               actionButton("go_task", "Configure task")
                                         ) 
                                       )
                                       
@@ -106,6 +106,7 @@ server <- function(input, output, session) {
   # call module to configure a task
   # connect app inputs to the module
   callModule(configure_task_server, "my_id_1",
+             btn = reactive(input$go_task),
              dir_path = dir_conf,
              conf_descr = reactive(list("title" = input$title,
                                         "description" = input$description)),

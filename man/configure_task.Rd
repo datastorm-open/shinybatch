@@ -11,7 +11,8 @@ configure_task(
   conf_descr = NULL,
   fun_args = NULL,
   priority = 0L,
-  compress = TRUE
+  compress = TRUE,
+  call. = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ configure_task(
 \item{priority}{\code{numeric} (0L). Number used to define which task should be launched first.}
 
 \item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
+
+\item{call.}{\code{logical} (TRUE) logical, indicating if the call should become part of the error message}
 }
 \value{
 a list containing the conf fields. Attribute 'path' of the result contains the path to the conf directory.

@@ -2,7 +2,6 @@
 
 export(conf_to_dt)
 export(configure_task)
-export(configure_task_UI)
 export(configure_task_server)
 export(launcher)
 export(run_demo_app)
