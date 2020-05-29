@@ -7,12 +7,22 @@
 \alias{scheduler_ls}
 \title{Scheduler management of the launcher function}
 \usage{
-scheduler_init(dir_scheduler, filename = paste0("sb_", format(Sys.time(),
-  format = "\%Y\%m\%d"), ".R"), head_rows = NULL)
+scheduler_init(
+  dir_scheduler,
+  filename = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d"), ".R"),
+  head_rows = NULL
+)
 
-scheduler_add(dir_scheduler, dir_conf, max_runs, taskname = paste0("sb_",
-  format(Sys.time(), format = "\%Y\%m\%d")), filename = paste0(taskname,
-  ".R"), create_file = TRUE, head_rows = NULL, ...)
+scheduler_add(
+  dir_scheduler,
+  dir_conf,
+  max_runs,
+  taskname = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d")),
+  filename = paste0(taskname, ".R"),
+  create_file = TRUE,
+  head_rows = NULL,
+  ...
+)
 
 scheduler_remove(taskname, ...)
 

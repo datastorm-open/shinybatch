@@ -5,15 +5,23 @@
 \alias{dir_conf_to_dt}
 \title{Convert a list of conf into two data.tables of global and individual features.}
 \usage{
-conf_to_dt(confs, allowed_run_info_cols = c("date_init",
-  "date_start_run", "date_end_run", "priority", "status"),
-  allow_descr = TRUE, allowed_function_cols = c("path", "name"),
-  allow_args = TRUE)
+conf_to_dt(
+  confs,
+  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority",
+    "status"),
+  allow_descr = TRUE,
+  allowed_function_cols = c("path", "name"),
+  allow_args = TRUE
+)
 
-dir_conf_to_dt(dir_path, allowed_run_info_cols = c("date_init",
-  "date_start_run", "date_end_run", "priority", "status"),
-  allow_descr = TRUE, allowed_function_cols = c("path", "name"),
-  allow_args = TRUE)
+dir_conf_to_dt(
+  dir_path,
+  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority",
+    "status"),
+  allow_descr = TRUE,
+  allowed_function_cols = c("path", "name"),
+  allow_args = TRUE
+)
 }
 \arguments{
 \item{confs}{\code{list of list}. List of conf list(s) from yaml file(s).}
