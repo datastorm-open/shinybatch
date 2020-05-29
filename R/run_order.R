@@ -8,6 +8,7 @@
 #' @return the order of priority of the given confs according to their priority argument and
 #' date of creation.
 #'
+#' @export
 run_order <- function(confs,
                       ignore_status = c("running", "finished", "error")) {
   
