@@ -1,5 +1,5 @@
 #' Convert a list of conf into two data.tables of global and individual features.
-#' test_synchro
+#' 
 #' @param dir_path \code{character}. Path to the directory with tasks.
 #' @param confs \code{list of list}. List of conf list(s) from yaml file(s).
 #' @param allowed_run_info_cols \code{characteror or boolean} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.
