@@ -64,8 +64,8 @@ ui <- shinydashboard::dashboardPage(
                                       ),
                                       hr(),
                                       fluidRow(
-                                        column(4, offset = 4,
-                                               actionButton("go_task", "Configure task")
+                                        column(6, offset = 3,
+                                               actionButton("go_task", "Configure the task", width = "100%")
                                         ) 
                                       )
                                       

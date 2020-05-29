@@ -7,22 +7,12 @@
 \alias{scheduler_ls}
 \title{Scheduler management of the launcher function}
 \usage{
-scheduler_init(
-  dir_scheduler,
-  filename = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d"), ".R"),
-  head_rows = NULL
-)
+scheduler_init(dir_scheduler, filename = paste0("sb_", format(Sys.time(),
+  format = "\%Y\%m\%d"), ".R"), head_rows = NULL)
 
-scheduler_add(
-  dir_scheduler,
-  dir_conf,
-  max_runs,
-  taskname = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d")),
-  filename = paste0(taskname, ".R"),
-  create_file = TRUE,
-  head_rows = NULL,
-  ...
-)
+scheduler_add(dir_scheduler, dir_conf, max_runs, taskname = paste0("sb_",
+  format(Sys.time(), format = "\%Y\%m\%d")), filename = paste0(taskname,
+  ".R"), create_file = TRUE, head_rows = NULL, ...)
 
 scheduler_remove(taskname, ...)
 
@@ -102,8 +92,8 @@ conf_2 <- configure_task(dir_path = dir_conf,
                                          z = iris),
                          priority = 2)
 
-# on LINUX -> Needed cronR package
-# on Windows -> Needed taskscheduleR package
+# on LINUX -> Needs cronR package
+# on Windows -> Needs taskscheduleR package
 
 scheduler_add(dir_scheduler = tempdir(),
            dir_conf = dir_conf,

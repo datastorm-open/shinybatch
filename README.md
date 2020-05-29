@@ -2,9 +2,17 @@
 
 This package provides a simple framework to create, launch *automatically* and retrieve *time-consuming operations* (tasks) **in batch mode** from a **Shiny app**.
 
-The tasks are automatically launched using a scheduler, e.g. a timer that periodically launches a (batch) operation.
-    - a CRON in linux/Mac using **cronR** package
-    - In windows with **taskscheduleR** and Windows task scheduler
+The tasks are automatically launched using a scheduler, e.g. a timer that periodically launches a (batch) operation.  
+
+- with a CRON in Linux/Mac, using package **cronR** 
+- with Windows Task Scheduler in Windows, using package **taskscheduleR** 
+
+### Installation
+
+
+```` 
+devtools::install_github("datastorm-open/shinybatch")
+````
 
 
 ### Package main functions
@@ -45,7 +53,7 @@ dir: /path/to/task/dir/
 ````
 
 
-The ``run_info`` part contains general information about the task.
+The ``run_info`` part contains general informations about the task.
 
 Priority can be any number, with 0 as default. The highest the priority, the sooner it is launched.
 
@@ -60,14 +68,14 @@ The ``descriptive`` part contains free informations given by the user. The title
 
 The ``function`` part contains the location of the fun script (for sourcing) and its name (for calling).
 
-The ``args`` part contains either the location of the argument (in *dir_conf/inputs/arg_name.RDS*) or the argument itself if it is of length 1. For more complex argument, we store the data in *.RDS*
+The ``args`` part contains either the location of the argument (in *dir_conf/inputs/arg_name.RDS*) or the argument itself if it is of length 1. For more complex arguments, we store the data as *.RDS*
 
 The ``dir`` argument contains the location of the directory in which is stored the *conf.yml* file.
 
 When a task has been succesfully run, some fields are updated:
 
 - date_start_run and date_end_run are filled,
-- status is set to 'running' then to 'finished'.
+- status is set to 'running', then to 'finished'.
 
 Some outputs are created:
 
@@ -93,14 +101,14 @@ Before calling the scheduler, we first create the file that it will launch with 
 args = commandArgs(trailingOnly = TRUE)
 
 shinybatch::launcher(dir_path = args[1], 
-                    max_runs = as.integer(args[2])
+                     max_runs = as.integer(args[2])
 )
 ````
 
 ... but the head lines can be customized by filling the *head_rows* argument.
 
 
-Once the file has been created, the cron is launched using the **scheduler_add** function with the default commond : 
+Once the file has been created, the cron is launched using the **scheduler_add** function with the default command : 
 
 ``Rscript /path/to/scheduler_script.R /path/to/conf 1``, 
 
@@ -162,7 +170,7 @@ dir.create(dir_conf, recursive = T)
 conf_1 <- configure_task(
   dir_path = dir_conf,
   conf_descr = list(title_1 = "my_title_1",
-               description_1 = "my_descr_1"),
+                    description_1 = "my_descr_1"),
   fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch"), # as an example,
   fun_name = "sb_fun_ex",
   fun_args = list(x = 0, y = 0:4,  z = iris),
@@ -171,16 +179,17 @@ conf_1 <- configure_task(
 conf_2 <- configure_task(
   dir_path = dir_conf,
   conf_descr = list(title_1 = "my_title_2",
-               description_1 = "my_descr_2"),
+                    description_1 = "my_descr_2"),
   fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch"), # as an example,
   fun_name = "sb_fun_ex",
   fun_args = list(x = 0, y = 0:4,  z = iris),
   priority = 2)
 
-# on LINUX -> Needed cronR package
-# on Windows -> Needed taskscheduleR package
+# on LINUX -> Needs cronR package
+# on Windows -> Needs taskscheduleR package
 
-scheduler_add(dir_scheduler = tempdir(),
+scheduler_add(
+           dir_scheduler = tempdir(),
            dir_conf = dir_conf,
            max_runs = 1,
            create_file = T,
@@ -199,36 +208,38 @@ scheduler_rm(id = "cron_script_ex") # kill all running crons
 **Shiny modules**
 
 These modules contain the basic framework to use all the previous functions in a Shiny app.
-In addition to these modules, the demo app simply includes : 
+Both are used in the demo app which presents a simple usecase.
 
 - **Configure a new task**
  
 <img src="inst/img/launch_task_shiny.PNG" width="2000">
 
+<img src="inst/img/launch_task_shiny_2.PNG" width="2000">
+
 call:
 
-````
+```{r}
 ?configure_task_server
 
-# ui : just create a actionButton
-actionButton("go_task", "Execute the task !")
+# ui : just create an actionButton
+actionButton("go_task", "Configure the task !")
 
 # server
 # call module to configure a task
 # connect app inputs to the module
 callModule(configure_task_server, "my_id_1",
-  btn = reactive(input$go_task),
-  dir_path = dir_conf,
-  conf_descr = reactive(list("title" = input$title,
-    "description" = input$description)),
-  fun_path = paste0(dir_fun, "/fun_script.R"),
-  fun_name = "my_fun",
-  fun_args = reactive(list(n = input$fun_nb_points,
-    mean = input$fun_mean,
-    sd = input$fun_sd,
-    sleep = input$sleep_time)),
-  priority = reactive(input$priority))
-```` 
+           btn = reactive(input$go_task),
+           dir_path = dir_conf,
+           conf_descr = reactive(list("title" = input$title,
+                                      "description" = input$description)),
+           fun_path = paste0(dir_fun, "/fun_script.R"),
+           fun_name = "my_fun",
+           fun_args = reactive(list(n = input$fun_nb_points,
+                                    mean = input$fun_mean,
+                                    sd = input$fun_sd,
+                                    sleep = input$sleep_time)),
+           priority = reactive(input$priority))
+```
 
 
 - **Display configured tasks**
@@ -239,7 +250,7 @@ callModule(configure_task_server, "my_id_1",
 
 call:
 
-````
+```{r}
 ?tasks_overview_UI
 
 # ui
@@ -248,17 +259,17 @@ tasks_overview_UI("my_id_2")
 # server
 # call module to view tasks
 sel_task <- callModule(tasks_overview_server, "my_id_2",
-  dir_path = dir_conf,
-  allowed_status = c("waiting", "running", "finished", "error"),
-  allowed_run_info_cols = NULL,
-  allowed_function_cols = NULL,
-  allow_descr = T,
-  allow_args = T)
-                         
-````
+                       dir_path = dir_conf,
+                       allowed_status = c("waiting", "running", "finished", "error"),
+                       allowed_run_info_cols = NULL,
+                       allowed_function_cols = NULL,
+                       allow_descr = T,
+                       allow_args = T)
+```
 
 This module returns : 
-- the status of the selected line (one run) of the summmary table,
+
+- the status of the selected line (one run) of the summary table,
 - the path to the directory in which its output is stored.
 
 Thus we know when a run is finished and we can load its result to reuse/display it : (readRDS(paste0(path, "/res.RDS"))).
@@ -268,7 +279,7 @@ Thus we know when a run is finished and we can load its result to reuse/display 
 A demo app to create and automatically launch an example task : the generation of normally distributed observations.
 
 - **global** : the path to the confs directory, the path to the script of the function to be run, the call to scheduler_add() ;
-- **ui** : shiny inputs (description args for the conf ; parameters for the function to be called bythe cron) ;
+- **ui** : shiny inputs (description args for the conf ; parameters for the function to be called by the cron) ;
 - **server** : a renderPlot (a graph of the data create in a run).
 
 As a credible usecase, the results of the runs are retrieved and can be displayed.

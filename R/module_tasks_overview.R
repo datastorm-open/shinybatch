@@ -39,8 +39,8 @@
 #' conf_1 <- configure_task(dir_path = dir_conf,
 #'                          conf_descr = list(title = "my_title_1",
 #'                                            description = "my_descr_1"),
-#'                          fun_path = "my_fun_path_1",
-#'                          fun_name = "my_fun_name_1",
+#'                          fun_path = fun_path,
+#'                          fun_name = fun_name,,
 #'                          fun_args = list(x = 1,
 #'                                          y = 0:4,
 #'                                          z = iris),
@@ -67,7 +67,7 @@
 #'              allow_descr = T,
 #'              allow_args = T,
 #'              table_fun = function(x, y) x[, new_col := y],
-#'              y = "created using table_fun")
+#'              y = "created using arg. 'table_fun'")
 #' }
 #' shiny::shinyApp(ui = ui, server = server)
 #' 

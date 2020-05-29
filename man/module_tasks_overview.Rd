@@ -5,30 +5,18 @@
 \alias{tasks_overview_UI}
 \title{Module to visualize all the created tasks.}
 \usage{
-tasks_overview_server(
-  input,
-  output,
-  session,
-  dir_path,
-  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority",
-    "status"),
-  allow_descr = TRUE,
-  allowed_function_cols = c("path", "name"),
-  allow_args = TRUE,
+tasks_overview_server(input, output, session, dir_path,
+  allowed_run_info_cols = c("date_init", "date_start_run",
+  "date_end_run", "priority", "status"), allow_descr = TRUE,
+  allowed_function_cols = c("path", "name"), allow_args = TRUE,
   allowed_status = c("waiting", "running", "finished", "error"),
-  update_mode = c("reactive", "button"),
-  intervalMillis = 1000,
-  table_fun = function(x) x,
-  ...
-)
+  update_mode = c("reactive", "button"), intervalMillis = 1000,
+  table_fun = function(x) x, ...)
 
-tasks_overview_UI(
-  id,
-  labels = list(btn = "Display/update the tasks", empty_global =
-    "Empty table of global features.", empty_individual =
-    "Empty table of individual features.", error_dir_access =
-    "Cannot access given directory.")
-)
+tasks_overview_UI(id, labels = list(btn = "Display/update the tasks",
+  empty_global = "Empty table of global features.", empty_individual =
+  "Empty table of individual features.", error_dir_access =
+  "Cannot access given directory."))
 }
 \arguments{
 \item{input}{shiny input}
@@ -83,8 +71,8 @@ fun_name = "sb_fun_ex"
 conf_1 <- configure_task(dir_path = dir_conf,
                          conf_descr = list(title = "my_title_1",
                                            description = "my_descr_1"),
-                         fun_path = "my_fun_path_1",
-                         fun_name = "my_fun_name_1",
+                         fun_path = fun_path,
+                         fun_name = fun_name,,
                          fun_args = list(x = 1,
                                          y = 0:4,
                                          z = iris),
@@ -111,7 +99,7 @@ server <- function(input, output, session) {
              allow_descr = T,
              allow_args = T,
              table_fun = function(x, y) x[, new_col := y],
-             y = "created using table_fun")
+             y = "created using arg. 'table_fun'")
 }
 shiny::shinyApp(ui = ui, server = server)
 

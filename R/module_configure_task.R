@@ -30,7 +30,11 @@
 #' 
 #' # create and save conf
 #' ui <- shiny::fluidPage(
-#'     shiny::actionButton("conf_task", "Configure task")
+#'   fluidRow(
+#'     column(offset = 3, 6,
+#'            shiny::actionButton("conf_task", "Configure the task", width = "100%")        
+#'     )
+#'   )
 #' )
 #' server <- function(input, output, session) {
 #'   callModule(configure_task_server, "my_id_1",

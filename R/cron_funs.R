@@ -63,8 +63,8 @@
 #'                                          z = iris),
 #'                          priority = 2)
 #' 
-#' # on LINUX -> Needed cronR package
-#' # on Windows -> Needed taskscheduleR package
+#' # on LINUX -> Needs cronR package
+#' # on Windows -> Needs taskscheduleR package
 #' 
 #' scheduler_add(dir_scheduler = tempdir(),
 #'            dir_conf = dir_conf,

@@ -4,16 +4,8 @@
 \alias{configure_task}
 \title{Initialise conf file for batch tasks}
 \usage{
-configure_task(
-  dir_path,
-  fun_path,
-  fun_name,
-  conf_descr = NULL,
-  fun_args = NULL,
-  priority = 0L,
-  compress = TRUE,
-  call. = TRUE
-)
+configure_task(dir_path, fun_path, fun_name, conf_descr = NULL,
+  fun_args = NULL, priority = 0L, compress = TRUE, call. = TRUE)
 }
 \arguments{
 \item{dir_path}{\code{character}. Where to create the new directory.}
