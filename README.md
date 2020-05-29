@@ -9,11 +9,9 @@ The tasks are automatically launched using a scheduler, e.g. a timer that period
 
 ### Installation
 
-
 ```` 
 devtools::install_github("datastorm-open/shinybatch")
 ````
-
 
 ### Package main functions
 
