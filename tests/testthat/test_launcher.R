@@ -41,7 +41,7 @@ test_that("test outputs", {
   expect_equal(launcher(dir_conf), 
                1)
   
-  Sys.sleep(1) # time to launch the batch script
+  Sys.sleep(2) # time to launch the batch script
   
   expect_equal(readRDS(paste0(conf_2$dir, "output/res.RDS")),
                1:5)
@@ -54,7 +54,7 @@ test_that("test outputs", {
   expect_equal(launcher(dir_conf), 
                1)
   
-  Sys.sleep(1) # time to launch the batch script
+  Sys.sleep(2) # time to launch the batch script
   
   expect_equal(readRDS(paste0(conf_1$dir, "output/res.RDS")), 
                0:4)
