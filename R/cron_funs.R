@@ -230,10 +230,10 @@ scheduler_remove <- function(taskname, ...) {
            call. = FALSE)
     }
     
+    # full exctract of taskscheduleR::taskscheduler_delete()
     cmd <- sprintf("schtasks /Delete /TN %s /F", shQuote(taskname, 
                                                          type = "cmd"))
-    sink(tempfile())
-    system(cmd, intern = TRUE)
+    system(cmd, intern = TRUE, invisible = T)
     
   } else {
     if (!requireNamespace("cronR", quietly = TRUE)) {
