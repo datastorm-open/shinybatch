@@ -1,9 +1,9 @@
 #' Scheduler management of the launcher function
 #'
 #' @param dir_scheduler \code{character}. Where to create the new directory.
-#' @param dir_conf \code{character}. launcher arg : where to find the tasks directorys.
+#' @param dir_conf \code{character}. launcher arg : where to find the tasks directories.
 #' @param max_runs \code{integer}. launcher arg : maximum number of simultaneous running tasks.
-#' @param create_file \code{boolean} (TRUE). Whether or not to create the cron_script before to launch it.
+#' @param create_file \code{boolean} (TRUE). Whether or not to create the cron_script before launching it.
 #' @param head_rows \code{character} (NULL). Custom head rows to replace the default ones.
 #' @param taskname \code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)
 #' @param filename \code{character} a character string with the name of the rscript file.
@@ -79,7 +79,7 @@
 #' yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 #' yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 #' 
-#' scheduler_rm(id = "cron_script_ex") # kill all running crons
+#' scheduler_remove(taskname = "cron_script_ex") # kill all running crons
 #' 
 #' }}
 #' 
