@@ -22,4 +22,7 @@ Imports:
 Suggests: 
     testthat,
     cronR,
-    taskscheduleR
+    taskscheduleR,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

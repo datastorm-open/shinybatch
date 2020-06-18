@@ -115,7 +115,7 @@ run_task <- function(conf_path,
       if (length(fun_args) > 0) {
         for (n_arg in 1:length(fun_args)) {
           arg <- fun_args[[n_arg]]
-
+          
           if (! is.null(names(arg)) && names(arg) == "_path") {
             fun_args[[n_arg]] <- tryCatch(readRDS(arg[["_path"]]),
                                           error = function(e) {
@@ -134,7 +134,13 @@ run_task <- function(conf_path,
       setwd(paste0(dirname(conf_path), "/output")) 
       
       # run fun
-      res <- do.call(conf[["function"]]$name, fun_args)
+      
+      # add a try to catch exception (for instance when failing to run code in Python with reticulate)
+      res <- try(do.call(conf[["function"]]$name, fun_args), silent = T)
+      if (class(res) == "try-error") {
+        stop(attr(res, "condition")$message)
+      }
+      
       if(verbose){
         message("... task terminated.")
       } else {
@@ -164,7 +170,7 @@ run_task <- function(conf_path,
               file = paste0(dirname(conf_path), "/output/res.RDS"), 
               compress = compress)
     }
-
+    
     # update conf file
     conf$run_info$date_end_run <- as.character(Sys.time())
     conf$run_info$status <- "finished"

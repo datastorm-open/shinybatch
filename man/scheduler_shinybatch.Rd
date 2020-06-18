@@ -7,22 +7,12 @@
 \alias{scheduler_ls}
 \title{Scheduler management of the launcher function}
 \usage{
-scheduler_init(
-  dir_scheduler,
-  filename = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d"), ".R"),
-  head_rows = NULL
-)
+scheduler_init(dir_scheduler, filename = paste0("sb_", format(Sys.time(),
+  format = "\%Y\%m\%d"), ".R"), head_rows = NULL)
 
-scheduler_add(
-  dir_scheduler,
-  dir_conf,
-  max_runs,
-  taskname = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d")),
-  filename = paste0(taskname, ".R"),
-  create_file = TRUE,
-  head_rows = NULL,
-  ...
-)
+scheduler_add(dir_scheduler, dir_conf, max_runs, taskname = paste0("sb_",
+  format(Sys.time(), format = "\%Y\%m\%d")), filename = paste0(taskname,
+  ".R"), create_file = TRUE, head_rows = NULL, ...)
 
 scheduler_remove(taskname, ...)
 
@@ -35,13 +25,13 @@ scheduler_ls(...)
 
 \item{head_rows}{\code{character} (NULL). Custom head rows to replace the default ones.}
 
-\item{dir_conf}{\code{character}. launcher arg : where to find the tasks directorys.}
+\item{dir_conf}{\code{character}. launcher arg : where to find the tasks directories.}
 
 \item{max_runs}{\code{integer}. launcher arg : maximum number of simultaneous running tasks.}
 
 \item{taskname}{\code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)}
 
-\item{create_file}{\code{boolean} (TRUE). Whether or not to create the cron_script before to launch it.}
+\item{create_file}{\code{boolean} (TRUE). Whether or not to create the cron_script before launching it.}
 
 \item{...}{\code{}. Additional arguments passed to \code{\link[cronR]{cron_add}}, \code{\link[cronR]{cron_rm}}, \code{\link[cronR]{cron_ls}} (Linux) or \code{\link[taskscheduleR]{taskscheduler_create}} (Windows).}
 }
@@ -106,11 +96,11 @@ conf_2 <- configure_task(dir_path = dir_conf,
 # on Windows -> Needs taskscheduleR package
 
 scheduler_add(dir_scheduler = tempdir(),
-           dir_conf = dir_conf,
-           max_runs = 1,
-           create_file = T,
-           head_rows = NULL, 
-           taskname = "cron_script_ex")
+              dir_conf = dir_conf,
+              max_runs = 1,
+              create_file = T,
+              head_rows = NULL, 
+              taskname = "cron_script_ex")
            
 scheduler_ls() # display running crons
 
@@ -118,7 +108,7 @@ scheduler_ls() # display running crons
 yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 
-scheduler_rm(id = "cron_script_ex") # kill all running crons
+scheduler_remove(taskname = "cron_script_ex") # kill all running crons
 
 }}
 
