@@ -115,8 +115,7 @@ run_task <- function(conf_path,
       if (length(fun_args) > 0) {
         for (n_arg in 1:length(fun_args)) {
           arg <- fun_args[[n_arg]]
-          arg_name <- names(fun_args)[[n_arg]]
-          
+
           if (! is.null(names(arg)) && names(arg) == "_path") {
             fun_args[[n_arg]] <- tryCatch(readRDS(arg[["_path"]]),
                                           error = function(e) {

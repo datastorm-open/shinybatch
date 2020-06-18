@@ -67,11 +67,11 @@
 #' # on Windows -> Needs taskscheduleR package
 #' 
 #' scheduler_add(dir_scheduler = tempdir(),
-#'            dir_conf = dir_conf,
-#'            max_runs = 1,
-#'            create_file = T,
-#'            head_rows = NULL, 
-#'            taskname = "cron_script_ex")
+#'               dir_conf = dir_conf,
+#'               max_runs = 1,
+#'               create_file = T,
+#'               head_rows = NULL, 
+#'               taskname = "cron_script_ex")
 #'            
 #' scheduler_ls() # display running crons
 #'
@@ -196,7 +196,7 @@ scheduler_add <- function(dir_scheduler,
     
     if (! "command" %in% names(cron_args)) {
       rscript_path <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
-      cmd <- paste0(rscript_path, " ", paste0(dir_scheduler, "/", filename), dir_conf, " ", max_runs) 
+      cmd <- paste0(rscript_path, " ", paste0(dir_scheduler, "/", filename), " ", dir_conf, " ", max_runs) 
       cron_args$command <- cmd
     }
     if (! "frequency" %in% names(cron_args)) {
@@ -206,9 +206,9 @@ scheduler_add <- function(dir_scheduler,
       cron_args$id <- taskname
     }
     if (! "description" %in% names(cron_args)) {
-      cron_args$description <- "Calls launcher() function every specified minutes" 
+      cron_args$description <- "Calls launcher() function at specified frequency" 
     }
-    
+  
     do.call(cronR::cron_add, cron_args) 
   }
   
@@ -230,10 +230,10 @@ scheduler_remove <- function(taskname, ...) {
            call. = FALSE)
     }
     
-    # full exctract of taskscheduleR::taskscheduler_delete()
+    # full extract of taskscheduleR::taskscheduler_delete()
     cmd <- sprintf("schtasks /Delete /TN %s /F", shQuote(taskname, 
                                                          type = "cmd"))
-    system(cmd, intern = TRUE, invisible = T)
+    system(cmd, intern = TRUE, invisible = TRUE)
     
   } else {
     if (!requireNamespace("cronR", quietly = TRUE)) {

@@ -159,10 +159,12 @@ conf_to_dt <- function(confs,
   
   # sort by decreasing priority and increasing date
   if ("date_init" %in% names(tbl_global)) {
-    tbl_global <- tbl_global[order(get("date_init"), decreasing = F)] 
+    tbls_idv <- tbls_idv[order(tbl_global[["date_init"]], decreasing = F)]
+    tbl_global <- tbl_global[order(get("date_init"), decreasing = F)]
   }
   if ("priority" %in% names(tbl_global)) {
-    tbl_global <- tbl_global[order(get("priority"), decreasing = T)] 
+    tbls_idv <- tbls_idv[order(tbl_global[["priority"]], decreasing = T)] 
+    tbl_global <- tbl_global[order(get("priority"), decreasing = T)]
   }
   
   return(list("tbl_global" = tbl_global, "tbls_idv" = tbls_idv)) 
