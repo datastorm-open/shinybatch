@@ -2,7 +2,8 @@
 #'
 #' @param dir_scheduler \code{character}. Where to create the new directory.
 #' @param dir_conf \code{character}. launcher arg : where to find the tasks directories.
-#' @param max_runs \code{integer}. launcher arg : maximum number of simultaneous running tasks.
+#' @param max_runs \code{integer} (1). launcher arg : maximum number of simultaneous running tasks.
+#' @param ignore_status \code{character} (c("running", "finished", "error")). launcher arg : status to be ignored when launching tasks.
 #' @param create_file \code{boolean} (TRUE). Whether or not to create the cron_script before launching it.
 #' @param head_rows \code{character} (NULL). Custom head rows to replace the default ones.
 #' @param taskname \code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)
@@ -105,13 +106,15 @@ scheduler_init <- function(dir_scheduler,
                       "args = commandArgs(trailingOnly = TRUE)",
                       "",
                       "shinybatch::launcher(dir_path = args[1],", 
-                      "                     max_runs = as.integer(args[2]))")
+                      "                     max_runs = as.integer(args[2]),",
+                      "                     ignore_status = args[3])")
   } else {
     script_lines <- c(head_rows,
                       "args = commandArgs(trailingOnly = TRUE)",
                       "",
                       "shinybatch::launcher(dir_path = args[1],", 
-                      "                     max_runs = as.integer(args[2]))")
+                      "                     max_runs = as.integer(args[2]),",
+                      "                     ignore_status = args[3])")
   }
   
   # write file
@@ -133,7 +136,8 @@ scheduler_init <- function(dir_scheduler,
 #' @rdname scheduler_shinybatch
 scheduler_add <- function(dir_scheduler,
                           dir_conf,
-                          max_runs,
+                          max_runs = 1,
+                          ignore_status = c("running", "finished", "error"),
                           taskname = paste0(
                             "sb_", 
                             format(Sys.time(), format = "%Y%m%d")
@@ -155,6 +159,9 @@ scheduler_add <- function(dir_scheduler,
   }
   if (! dir.exists(dir_conf)) {
     stop("'dir_conf' directory doesn't exist. (", dir_conf, ")")
+  }
+  if (! all(tolower(ignore_status) %in% c("waiting", "running", "finished", "error"))) {
+    stop(paste0("Unknown status ['", paste0(setdiff(ignore_status, c("waiting", "running", "finished", "error")), collapse = "', '"), "']."))
   }
   
   os <- Sys.info()[['sysname']]
@@ -184,7 +191,7 @@ scheduler_add <- function(dir_scheduler,
     
     cron_args$taskname <- taskname
     
-    cron_args$rscript_args <- c(dir_conf, max_runs)
+    cron_args$rscript_args <- c(dir_conf, max_runs, tolower(ignore_status))
     
     do.call(taskscheduleR::taskscheduler_create, cron_args)
     

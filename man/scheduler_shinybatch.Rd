@@ -7,12 +7,23 @@
 \alias{scheduler_ls}
 \title{Scheduler management of the launcher function}
 \usage{
-scheduler_init(dir_scheduler, filename = paste0("sb_", format(Sys.time(),
-  format = "\%Y\%m\%d"), ".R"), head_rows = NULL)
+scheduler_init(
+  dir_scheduler,
+  filename = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d"), ".R"),
+  head_rows = NULL
+)
 
-scheduler_add(dir_scheduler, dir_conf, max_runs, taskname = paste0("sb_",
-  format(Sys.time(), format = "\%Y\%m\%d")), filename = paste0(taskname,
-  ".R"), create_file = TRUE, head_rows = NULL, ...)
+scheduler_add(
+  dir_scheduler,
+  dir_conf,
+  max_runs = 1,
+  ignore_status = c("running", "finished", "error"),
+  taskname = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d")),
+  filename = paste0(taskname, ".R"),
+  create_file = TRUE,
+  head_rows = NULL,
+  ...
+)
 
 scheduler_remove(taskname, ...)
 
@@ -27,7 +38,9 @@ scheduler_ls(...)
 
 \item{dir_conf}{\code{character}. launcher arg : where to find the tasks directories.}
 
-\item{max_runs}{\code{integer}. launcher arg : maximum number of simultaneous running tasks.}
+\item{max_runs}{\code{integer} (1). launcher arg : maximum number of simultaneous running tasks.}
+
+\item{ignore_status}{\code{character} (c("running", "finished", "error")). launcher arg : status to be ignored when launching tasks.}
 
 \item{taskname}{\code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)}
 

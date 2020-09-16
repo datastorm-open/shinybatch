@@ -4,10 +4,21 @@
 \alias{configure_task_server}
 \title{Module to configure a task.}
 \usage{
-configure_task_server(input, output, session, btn, dir_path, fun_path,
-  fun_name, conf_descr = NULL, fun_args = NULL, priority = 0L,
-  compress = TRUE, labels = list(success = "Task configured !", error =
-  "Error when configuring the task"))
+configure_task_server(
+  input,
+  output,
+  session,
+  btn,
+  dir_path,
+  fun_path,
+  fun_name,
+  conf_descr = NULL,
+  fun_args = NULL,
+  priority = 0L,
+  compress = TRUE,
+  labels = list(success = "Task configured !", error =
+    "Error when configuring the task")
+)
 }
 \arguments{
 \item{input}{shiny input}

@@ -4,8 +4,13 @@
 \alias{launcher}
 \title{Evaluates and triggers the number of tasks to launch to reach the maximum allowed}
 \usage{
-launcher(dir_path, max_runs = 1, ignore_status = c("running",
-  "finished", "error"), compress = TRUE, verbose = FALSE)
+launcher(
+  dir_path,
+  max_runs = 1,
+  ignore_status = c("running", "finished", "error"),
+  compress = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{dir_path}{\code{character}. Where to find the tasks directory.}
