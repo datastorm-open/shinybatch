@@ -4,12 +4,19 @@
 \alias{run_order}
 \title{Compute the order of priority to run a list of configurations}
 \usage{
-run_order(confs, ignore_status = c("running", "finished", "error"))
+run_order(
+  confs,
+  ignore_status = c("running", "finished", "error"),
+  delay_reruns = T
+)
 }
 \arguments{
 \item{confs}{\code{list}. List of conf tables.}
 
 \item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
+
+\item{delay_reruns}{\code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.}
 }
 \value{
 the order of priority of the given confs according to their priority argument and
@@ -17,4 +24,7 @@ date of creation.
 }
 \description{
 Compute the order of priority to run a list of configurations
+}
+\details{
+The order is determined first by the priority and then by the date of creation of the task.
 }

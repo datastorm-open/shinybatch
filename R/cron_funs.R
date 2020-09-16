@@ -3,6 +3,9 @@
 #' @param dir_scheduler \code{character}. Where to create the new directory.
 #' @param dir_conf \code{character}. launcher arg : where to find the tasks directories.
 #' @param max_runs \code{integer} (1). launcher arg : maximum number of simultaneous running tasks.
+#' @param ignore_status \code{character} (c("running", "finished", "error")). launcher arg : status to be ignored when launching tasks.
+#' @param delay_reruns \code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+#' the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.
 #' @param create_file \code{boolean} (TRUE). Whether or not to create the cron_script before launching it.
 #' @param head_rows \code{character} (NULL). Custom head rows to replace the default ones.
 #' @param taskname \code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)
@@ -18,26 +21,29 @@
 #' @examples
 #' \dontrun{\donttest{
 #' 
+#' # create temporary directory for conf
+#' dir_conf <- paste0(tempdir(), "/conf/")
+#' dir.create(dir_conf, recursive = T)
+#' 
 #' # create example of files to be called by the scheduler 
 #' # (this fun is called in scheduler_add)
 #' scheduler_init(
 #'     dir_scheduler = tempdir(),
+#'     dir_conf = dir_conf,
 #'     filename = "cron_script.R",
 #'     head_rows = NULL
 #'  )
 #' read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
 #' 
-#' scheduler_init(dir_scheduler = tempdir(), filename = "cron_script.R",
-#'           head_rows = c("My_head_row_1", "My_head_row_2"))
+#' scheduler_init(dir_scheduler = tempdir(),
+#'                dir_conf = dir_conf,
+#'                filename = "cron_script.R",
+#'                head_rows = c("My_head_row_1", "My_head_row_2"))
 #' read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
 #' 
 #' 
 #' # start a cron
 #' # create confs to check that it works on it
-#' 
-#' # create temporary directory for conf
-#' dir_conf <- paste0(tempdir(), "/conf/")
-#' dir.create(dir_conf, recursive = T)
 #' 
 #' # ex fun
 #' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -67,8 +73,10 @@
 #' # on Windows -> Needs taskscheduleR package
 #' 
 #' scheduler_add(dir_scheduler = tempdir(),
-#'               dir_conf = dir_conf,
+#'               dir_conf,
 #'               max_runs = 1,
+#'               ignore_status = c("running", "finished", "error"),
+#'               delay_reruns = T,
 #'               create_file = T,
 #'               head_rows = NULL, 
 #'               taskname = "cron_script_ex")
@@ -79,12 +87,16 @@
 #' yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 #' yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 #' 
-#' scheduler_remove(taskname = "cron_script_ex") # kill all running crons
+#' scheduler_remove(taskname = "cron_script_ex") # kill the running cron
 #' 
 #' }}
 #' 
 #' @rdname scheduler_shinybatch
 scheduler_init <- function(dir_scheduler,
+                           dir_conf,
+                           max_runs = 1,
+                           ignore_status = c("running", "finished", "error"),
+                           delay_reruns = T,
                            filename = paste0(
                              "sb_", 
                              format(Sys.time(), format = "%Y%m%d"), 
@@ -99,19 +111,32 @@ scheduler_init <- function(dir_scheduler,
   if (! dir.exists(dir_scheduler)) {
     stop("'dir_scheduler' directory doesn't exist. (", dir_scheduler, ")")
   }
+  if (is.null(dir_conf)) {
+    stop("'dir_conf' must be of class <character>.")
+  }
+  if (! dir.exists(dir_conf)) {
+    stop("'dir_conf' directory doesn't exist. (", dir_conf, ")")
+  }
+  if (! all(tolower(ignore_status) %in% c("waiting", "running", "finished", "error"))) {
+    stop(paste0("Unknown status ['", paste0(setdiff(ignore_status, c("waiting", "running", "finished", "error")), collapse = "', '"), "']."))
+  }
   
   if (is.null(head_rows)) {
     script_lines <- c("#!/usr/bin/env Rscript", 
                       "args = commandArgs(trailingOnly = TRUE)",
                       "",
-                      "shinybatch::launcher(dir_path = args[1],", 
-                      "                     max_runs = as.integer(args[2]))")
+                      paste0("shinybatch::launcher(dir_path = '", dir_conf, "',"), 
+                      paste0("                     max_runs = ", as.integer(max_runs), ","),
+                      paste0("                     ignore_status = c('", paste0(ignore_status, collapse = "','"), "'),"),
+                      paste0("                     delay_reruns = ", delay_reruns, ")"))
   } else {
     script_lines <- c(head_rows,
                       "args = commandArgs(trailingOnly = TRUE)",
                       "",
-                      "shinybatch::launcher(dir_path = args[1],", 
-                      "                     max_runs = as.integer(args[2]))")
+                      paste0("shinybatch::launcher(dir_path = '", dir_conf, "',"), 
+                      paste0("                     max_runs = ", as.integer(max_runs), ","),
+                      paste0("                     ignore_status = c('", paste0(ignore_status, collapse = "','"), "'),"),
+                      paste0("                     delay_reruns = ", delay_reruns, ")"))
   }
   
   # write file
@@ -134,6 +159,8 @@ scheduler_init <- function(dir_scheduler,
 scheduler_add <- function(dir_scheduler,
                           dir_conf,
                           max_runs = 1,
+                          ignore_status = c("running", "finished", "error"),
+                          delay_reruns = T,
                           taskname = paste0(
                             "sb_", 
                             format(Sys.time(), format = "%Y%m%d")
@@ -150,18 +177,18 @@ scheduler_add <- function(dir_scheduler,
   if (! dir.exists(dir_scheduler)) {
     stop("'dir_scheduler' directory doesn't exist. (", dir_scheduler, ")")
   }
-  if (is.null(dir_conf)) {
-    stop("'dir_conf' must be of class <character>.")
-  }
-  if (! dir.exists(dir_conf)) {
-    stop("'dir_conf' directory doesn't exist. (", dir_conf, ")")
-  }
   
   os <- Sys.info()[['sysname']]
   
   # calls scheduler_init() if required
   if (create_file) {
-    scheduler_init(dir_scheduler = dir_scheduler, filename = filename, head_rows = head_rows)
+    scheduler_init(dir_scheduler = dir_scheduler, 
+                   dir_conf = dir_conf,
+                   max_runs = max_runs,
+                   ignore_status = ignore_status,
+                   delay_reruns = delay_reruns,
+                   filename = filename, 
+                   head_rows = head_rows)
   }
   
   # launches cron
@@ -184,8 +211,6 @@ scheduler_add <- function(dir_scheduler,
     
     cron_args$taskname <- taskname
     
-    cron_args$rscript_args <- c(dir_conf, max_runs)
-    
     do.call(taskscheduleR::taskscheduler_create, cron_args)
     
   } else {
@@ -196,7 +221,7 @@ scheduler_add <- function(dir_scheduler,
     
     if (! "command" %in% names(cron_args)) {
       rscript_path <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
-      cmd <- paste0(rscript_path, " ", paste0(dir_scheduler, "/", filename), " ", dir_conf, " ", max_runs) 
+      cmd <- paste0(rscript_path, " ", paste0(dir_scheduler, "/", filename)) 
       cron_args$command <- cmd
     }
     if (! "frequency" %in% names(cron_args)) {

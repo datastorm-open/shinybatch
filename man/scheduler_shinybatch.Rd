@@ -9,6 +9,10 @@
 \usage{
 scheduler_init(
   dir_scheduler,
+  dir_conf,
+  max_runs = 1,
+  ignore_status = c("running", "finished", "error"),
+  delay_reruns = T,
   filename = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d"), ".R"),
   head_rows = NULL
 )
@@ -17,6 +21,8 @@ scheduler_add(
   dir_scheduler,
   dir_conf,
   max_runs = 1,
+  ignore_status = c("running", "finished", "error"),
+  delay_reruns = T,
   taskname = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d")),
   filename = paste0(taskname, ".R"),
   create_file = TRUE,
@@ -31,13 +37,18 @@ scheduler_ls(...)
 \arguments{
 \item{dir_scheduler}{\code{character}. Where to create the new directory.}
 
-\item{filename}{\code{character} a character string with the name of the rscript file.}
-
-\item{head_rows}{\code{character} (NULL). Custom head rows to replace the default ones.}
-
 \item{dir_conf}{\code{character}. launcher arg : where to find the tasks directories.}
 
 \item{max_runs}{\code{integer} (1). launcher arg : maximum number of simultaneous running tasks.}
+
+\item{ignore_status}{\code{character} (c("running", "finished", "error")). launcher arg : status to be ignored when launching tasks.}
+
+\item{delay_reruns}{\code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.}
+
+\item{filename}{\code{character} a character string with the name of the rscript file.}
+
+\item{head_rows}{\code{character} (NULL). Custom head rows to replace the default ones.}
 
 \item{taskname}{\code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)}
 
@@ -57,26 +68,29 @@ Without any frequancy argument, defaut is set to every minute
 \examples{
 \dontrun{\donttest{
 
+# create temporary directory for conf
+dir_conf <- paste0(tempdir(), "/conf/")
+dir.create(dir_conf, recursive = T)
+
 # create example of files to be called by the scheduler 
 # (this fun is called in scheduler_add)
 scheduler_init(
     dir_scheduler = tempdir(),
+    dir_conf = dir_conf,
     filename = "cron_script.R",
     head_rows = NULL
  )
 read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
 
-scheduler_init(dir_scheduler = tempdir(), filename = "cron_script.R",
-          head_rows = c("My_head_row_1", "My_head_row_2"))
+scheduler_init(dir_scheduler = tempdir(),
+               dir_conf = dir_conf,
+               filename = "cron_script.R",
+               head_rows = c("My_head_row_1", "My_head_row_2"))
 read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
 
 
 # start a cron
 # create confs to check that it works on it
-
-# create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf/")
-dir.create(dir_conf, recursive = T)
 
 # ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -106,8 +120,10 @@ conf_2 <- configure_task(dir_path = dir_conf,
 # on Windows -> Needs taskscheduleR package
 
 scheduler_add(dir_scheduler = tempdir(),
-              dir_conf = dir_conf,
+              dir_conf,
               max_runs = 1,
+              ignore_status = c("running", "finished", "error"),
+              delay_reruns = T,
               create_file = T,
               head_rows = NULL, 
               taskname = "cron_script_ex")
@@ -118,7 +134,7 @@ scheduler_ls() # display running crons
 yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 
-scheduler_remove(taskname = "cron_script_ex") # kill all running crons
+scheduler_remove(taskname = "cron_script_ex") # kill the running cron
 
 }}
 

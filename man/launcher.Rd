@@ -8,6 +8,7 @@ launcher(
   dir_path,
   max_runs = 1,
   ignore_status = c("running", "finished", "error"),
+  delay_reruns = T,
   compress = TRUE,
   verbose = FALSE
 )
@@ -18,6 +19,9 @@ launcher(
 \item{max_runs}{\code{integer}. Maximum number of simultaneous running tasks.}
 
 \item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
+
+\item{delay_reruns}{\code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.}
 
 \item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
 

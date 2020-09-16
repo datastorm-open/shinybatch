@@ -3,6 +3,8 @@
 #' @param dir_path \code{character}. Where to find the tasks directory.
 #' @param max_runs \code{integer}. Maximum number of simultaneous running tasks.
 #' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
+#' @param delay_reruns \code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+#' the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
 #' @param verbose \code{logical} See running task message ? Default to FALSE
 #' 
@@ -63,6 +65,7 @@
 launcher <- function(dir_path,
                      max_runs = 1,
                      ignore_status = c("running", "finished", "error"),
+                     delay_reruns = T,
                      compress = TRUE, verbose = FALSE) {
   
   # checks
@@ -148,7 +151,8 @@ launcher <- function(dir_path,
         
         if (nb_to_run > 0) {
           run_order_ <- run_order(confs = confs,
-                                  ignore_status = ignore_status)
+                                  ignore_status = ignore_status,
+                                  delay_reruns = delay_reruns)
           
           for (i in 1:nb_to_run) {
             os <- Sys.info()[['sysname']]
