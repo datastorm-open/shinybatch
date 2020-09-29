@@ -122,7 +122,7 @@ tasks_overview_server <- function(input, output, session,
   
   # check dir
   output$is_dir <- reactive({
-    dir.exists(dir_path)
+    dir.exists(get_dir_path())
   })
   outputOptions(output, "is_dir", suspendWhenHidden = FALSE)
   
