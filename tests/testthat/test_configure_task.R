@@ -19,10 +19,10 @@ conf <- configure_task(dir_path = dir,
 test_that("test outputs", {
   # output files
   conf_run_info <- conf$run_info
-  conf_run_info$date_init <- NULL
+  conf_run_info$date_creation <- NULL
   expect_equal(conf_run_info, list(
-    "date_start_run" = "N/A",
-    "date_end_run" = "N/A",
+    "date_start" = "N/A",
+    "date_end" = "N/A",
     "priority" = 1,
     "status" = "waiting")
   )

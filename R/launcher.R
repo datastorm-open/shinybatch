@@ -130,7 +130,7 @@ launcher <- function(dir_path,
     
     if (length(confs) > 0) {
       tbl_global <- conf_to_dt(confs = confs,
-                               allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
+                               allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority", "status"),
                                allow_descr = F,
                                allowed_function_cols = "",
                                allow_args = F)$tbl_global

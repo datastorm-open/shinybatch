@@ -94,9 +94,9 @@ configure_task <- function(dir_path,
   
   conf <- list(
     "run_info" = list(
-      "date_init" = as.character(time),
-      "date_start_run" = "N/A",
-      "date_end_run" = "N/A",
+      "date_creation" = as.character(time),
+      "date_start" = "N/A",
+      "date_end" = "N/A",
       "priority" = priority,
       "status" = "waiting"),
     "descriptive" = conf_descr,

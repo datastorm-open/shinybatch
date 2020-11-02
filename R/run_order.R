@@ -20,19 +20,19 @@ run_order <- function(confs,
   
   if (delay_reruns) {
     conf_delayed <- sapply(confs, function(x) x$run_info$status != "waiting")
-    confs[conf_delayed] <- lapply(confs[conf_delayed], function(x) {x$run_info$date_init <- x$run_info$date_start_run ; x}) 
+    confs[conf_delayed] <- lapply(confs[conf_delayed], function(x) {x$run_info$date_creation <- x$run_info$date_start ; x}) 
   }
   
   valid_status <- sapply(confs, function(x) (! x$run_info$status %in% ignore_status))
   priority <- sapply(confs, function(x) x$run_info$priority)
-  date_init <- sapply(confs, function(x) x$run_info$date_init)
+  date_creation <- sapply(confs, function(x) x$run_info$date_creation)
   
   data_order <- data.table::data.table("order" = 1:length(confs),
                                        "valid_status" = valid_status,
-                                       "date_init" = date_init,
+                                       "date_creation" = date_creation,
                                        "priority" = priority)
   
-  run_order <- data_order[order(date_init)
+  run_order <- data_order[order(date_creation)
                           ][order(priority, decreasing = T)
                             ][order(valid_status, decreasing = T)
                               ][["order"]]

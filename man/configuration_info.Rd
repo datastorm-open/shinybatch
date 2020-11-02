@@ -7,7 +7,7 @@
 \usage{
 conf_to_dt(
   confs,
-  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority",
+  allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority",
     "status"),
   allow_descr = TRUE,
   allowed_function_cols = c("path", "name"),
@@ -16,7 +16,7 @@ conf_to_dt(
 
 dir_conf_to_dt(
   dir_path,
-  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority",
+  allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority",
     "status"),
   allow_descr = TRUE,
   allowed_function_cols = c("path", "name"),
@@ -26,7 +26,7 @@ dir_conf_to_dt(
 \arguments{
 \item{confs}{\code{list of list}. List of conf list(s) from yaml file(s).}
 
-\item{allowed_run_info_cols}{\code{characteror or boolean} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.}
+\item{allowed_run_info_cols}{\code{characteror or boolean} (c("date_creation", "date_start", "date_end", "priority", "status")). Run info elements to be kept.}
 
 \item{allow_descr}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.}
 
@@ -51,9 +51,9 @@ Convert a list of conf into two data.tables of global and individual features.
 
 conf_1 <- list(
   "run_info" = list(
-    "date_init" = as.character(Sys.time()),
-    "date_start_run" = "N/A",
-    "date_end_run" = "N/A",
+    "date_creation" = as.character(Sys.time()),
+    "date_start" = "N/A",
+    "date_end" = "N/A",
     "priority" = 1,
     "status" = "waiting"),
   "descriptive" = list("descr_1" = "d1.1",
@@ -71,9 +71,9 @@ conf_1 <- list(
 
 conf_2 <- list(
   "run_info" = list(
-    "date_init" = as.character(Sys.time() + 1),
-    "date_start_run" = "N/A",
-    "date_end_run" = "N/A",
+    "date_creation" = as.character(Sys.time() + 1),
+    "date_start" = "N/A",
+    "date_end" = "N/A",
     "priority" = 2,
     "status" = "waiting"),
   "descriptive" = list("descr_1" = "d2.1",
@@ -98,7 +98,7 @@ conf_to_dt(confs,
            allow_args = F)
            
 conf_to_dt(confs,
-           allowed_run_info_cols = c("status", "date_init"),
+           allowed_run_info_cols = c("status", "date_creation"),
            allowed_function_cols = c("path"))
            
 conf_to_dt(confs,

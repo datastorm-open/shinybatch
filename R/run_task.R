@@ -88,7 +88,7 @@ run_task <- function(conf_path,
     
     # init log
     time <- Sys.time()
-    format_time <- gsub(".", "", format(time, format = "%Y%m%d_%H%M%OS2"), fixed = TRUE)
+    format_time <- gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE)
     futile.logger::flog.appender(futile.logger::appender.file(paste0(dirname(conf_path), "/output/log_run_", format_time, ".txt")), 
                                  name = "run_task.io")
     # set layout
@@ -106,7 +106,7 @@ run_task <- function(conf_path,
         futile.logger::flog.info("Starting task execution...", name = "run_task.io") 
       }
       
-      conf$run_info$date_start_run <- as.character(time)
+      conf$run_info$date_start <- as.character(time)
       conf$run_info$status <- "running"
       yaml::write_yaml(conf,file = conf_path)
       

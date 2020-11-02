@@ -99,7 +99,7 @@ test_that("test outputs", {
                            fun_path = tempdir(), fun_name = "fun_name", fun_args = list(arg_1 = NA),
                            priority = 1)
   Sys.sleep(1)
-  conf_1$run_info$date_start_run <- as.character(Sys.time())
+  conf_1$run_info$date_start <- as.character(Sys.time())
   expect_equal(run_order(list(conf_1, conf_2),
                          ignore_status = c("running", "finished"),
                          delay_reruns = T), 
@@ -113,7 +113,7 @@ test_that("test outputs", {
                            fun_path = tempdir(), fun_name = "fun_name", fun_args = list(arg_1 = NA),
                            priority = 1)
   Sys.sleep(1)
-  conf_2$run_info$date_start_run <- as.character(Sys.time())
+  conf_2$run_info$date_start <- as.character(Sys.time())
   expect_equal(run_order(list(conf_1, conf_2),
                          ignore_status = c("running", "finished"),
                          delay_reruns = T), 
@@ -129,7 +129,7 @@ test_that("test outputs", {
                            fun_path = tempdir(), fun_name = "fun_name", fun_args = list(arg_1 = NA),
                            priority = 1)
   Sys.sleep(1)
-  conf_1$run_info$date_start_run <- as.character(Sys.time())
+  conf_1$run_info$date_start <- as.character(Sys.time())
   expect_equal(run_order(list(conf_1, conf_2),
                          ignore_status = c("running", "finished"),
                          delay_reruns = F), 
@@ -143,7 +143,7 @@ test_that("test outputs", {
                            fun_path = tempdir(), fun_name = "fun_name", fun_args = list(arg_1 = NA),
                            priority = 1)
   Sys.sleep(1)
-  conf_2$run_info$date_start_run <- as.character(Sys.time())
+  conf_2$run_info$date_start <- as.character(Sys.time())
   expect_equal(run_order(list(conf_1, conf_2),
                          ignore_status = c("running", "finished"),
                          delay_reruns = F), 

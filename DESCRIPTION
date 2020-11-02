@@ -24,5 +24,6 @@ Suggests:
     cronR,
     taskscheduleR,
     knitr,
-    rmarkdown
+    rmarkdown,
+    htmltools
 VignetteBuilder: knitr

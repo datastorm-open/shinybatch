@@ -6,7 +6,7 @@
 #' @param session shiny input
 #' @param dir_path \code{character}. Where to find the tasks directorys.
 #' @param allowed_status \code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.
-#' @param allowed_run_info_cols \code{character} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.
+#' @param allowed_run_info_cols \code{character} (c("date_init", "date_start", "date_end", "priority", "status")). Run info elements to be kept.
 #' @param allow_descr \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.
 #' @param allowed_function_cols \code{character} (c("names", "path")). Function elements to be kept.
 #' @param allow_args \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.
@@ -21,7 +21,7 @@
 #' 
 #' @export
 #' 
-#' @import shiny data.table yaml  
+#' @import shiny data.table yaml
 #' @importFrom DT datatable renderDT DTOutput formatStyle %>%
 #'
 #' @examples
@@ -76,7 +76,7 @@
 #' @rdname module_tasks_overview
 tasks_overview_server <- function(input, output, session,
                                   dir_path,
-                                  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
+                                  allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority", "status"),
                                   allow_descr = TRUE,
                                   allowed_function_cols = c("path", "name"),
                                   allow_args = TRUE,
@@ -86,6 +86,7 @@ tasks_overview_server <- function(input, output, session,
                                   table_fun = function(x) x,
                                   ...) {
   
+  ns <- session$ns
   update_mode <- match.arg(update_mode)
   
   # reactive controls
@@ -180,8 +181,10 @@ tasks_overview_server <- function(input, output, session,
   
   # get DT table of global feature 
   tbl_global_DT <- reactive({
-    tbl_global <- tbl_features()$tbl_global
-    tbl_global <- tbl_global[, setdiff(names(tbl_global), "dir"), with = F]
+    tbl_global <- copy(tbl_features()$tbl_global)
+    
+    # add trash button
+    tbl_global$remove_task <- input_btns(ns("remove_task"), tbl_global$dir, "Remove this task ?", icon("trash-o"), status = "danger")
     
     if (! (is.null(tbl_global) || length(tbl_global) == 0)) {
       # apply table_fun
@@ -194,12 +197,18 @@ tasks_overview_server <- function(input, output, session,
         tbl_global <- tbl_global[get("status") %in% get_allowed_status()] 
       }
       
-      DT <- DT::datatable(tbl_global, rownames = F, filter = 'bottom', 
+      DT <- DT::datatable(tbl_global, 
+                          rownames = FALSE, 
+                          colnames = as.vector(gsub("_", " ", sapply(names(tbl_global), function(x) paste0(toupper(substr(x, 1, 1)), tolower(substr(x, 2, nchar(x))))))),
+                          filter = 'bottom', 
+                          escape = FALSE,
                           selection = list(mode = 'single', target = 'row'),
                           options = list(
                             pageLength = 10, lengthMenu = c(5, 10, 20, 50),
                             dom = 'Blfrtip', autoWidth = FALSE, 
-                            columnDefs = list(list(width = '200px')), scrollX = TRUE))
+                            columnDefs = list(list(width = '200px'),
+                                              list(visible = FALSE, targets = c(which(names(tbl_global) == "dir") - 1))), 
+                            scrollX = TRUE))
       
       if ("status" %in% names(tbl_global)) {
         DT <- DT %>%
@@ -222,6 +231,35 @@ tasks_overview_server <- function(input, output, session,
     ! (is.null(tbl_features()$tbl_global) || length(tbl_features()$tbl_global) == 0) || nrow(tbl_features()$tbl_global) > 0
   })
   outputOptions(output, "is_global_dt", suspendWhenHidden = FALSE)
+  
+  # remove selected task
+  observeEvent(input$remove_task, {
+    
+    if (! is.null(input$remove_task)) {
+      showModal(modalDialog(
+        div(h3(paste0("Please confirm the suppression of the task.")), align = "center"),
+        easyClose = FALSE,
+        
+        footer = tagList(
+          fluidRow(
+            column(2,
+                   div(modalButton("Cancel"), align = "left"),
+            ),
+            column(2, offset = 8,
+                   div(actionButton(ns("confirm_remove_task"), "Confirm"), align = "right")
+            )
+          )  
+        )
+      ))
+    }
+  })
+  observeEvent(input$confirm_remove_task, {
+    
+    if (! is.null(input$confirm_remove_task) && input$confirm_remove_task > 0) {
+      removeModal()
+      unlink(gsub("/$", "", input$remove_task), recursive = T)
+    }
+  })
   
   # get DT table of idv feature of selected row
   tbl_idv_DT <- reactive({
@@ -258,7 +296,7 @@ tasks_overview_server <- function(input, output, session,
   output$is_idv_dt <- reactive({
     sel_row <- input[["tbl_global_DT_out_rows_selected"]]
     
-    if (! is.null(sel_row)) {
+    if (! is.null(sel_row) && is.null(input$remove_task)) {
       ! is.null(tbl_features()$tbls_idv[[sel_row]]) || nrow(tbl_features()$tbls_idv[[sel_row]]) > 0 
     } else {
       FALSE
@@ -273,7 +311,7 @@ tasks_overview_server <- function(input, output, session,
     isolate({
       res <- list()
       
-      if (! is.null(sel_row)) {
+      if (! is.null(sel_row) && is.null(input$remove_task)) {
         tbl_global <- tbl_features()$tbl_global
         
         res$path <- paste0(tbl_global[sel_row, ][["dir"]] , "output")

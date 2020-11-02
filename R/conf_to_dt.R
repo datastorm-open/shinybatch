@@ -2,7 +2,7 @@
 #' 
 #' @param dir_path \code{character}. Path to the directory with tasks.
 #' @param confs \code{list of list}. List of conf list(s) from yaml file(s).
-#' @param allowed_run_info_cols \code{characteror or boolean} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.
+#' @param allowed_run_info_cols \code{characteror or boolean} (c("date_creation", "date_start", "date_end", "priority", "status")). Run info elements to be kept.
 #' @param allow_descr \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.
 #' @param allowed_function_cols \code{character or boolean} (c("names", "path")). Function elements to be kept.
 #' @param allow_args \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.
@@ -21,9 +21,9 @@
 #' 
 #' conf_1 <- list(
 #'   "run_info" = list(
-#'     "date_init" = as.character(Sys.time()),
-#'     "date_start_run" = "N/A",
-#'     "date_end_run" = "N/A",
+#'     "date_creation" = as.character(Sys.time()),
+#'     "date_start" = "N/A",
+#'     "date_end" = "N/A",
 #'     "priority" = 1,
 #'     "status" = "waiting"),
 #'   "descriptive" = list("descr_1" = "d1.1",
@@ -41,9 +41,9 @@
 #' 
 #' conf_2 <- list(
 #'   "run_info" = list(
-#'     "date_init" = as.character(Sys.time() + 1),
-#'     "date_start_run" = "N/A",
-#'     "date_end_run" = "N/A",
+#'     "date_creation" = as.character(Sys.time() + 1),
+#'     "date_start" = "N/A",
+#'     "date_end" = "N/A",
 #'     "priority" = 2,
 #'     "status" = "waiting"),
 #'   "descriptive" = list("descr_1" = "d2.1",
@@ -68,7 +68,7 @@
 #'            allow_args = F)
 #'            
 #' conf_to_dt(confs,
-#'            allowed_run_info_cols = c("status", "date_init"),
+#'            allowed_run_info_cols = c("status", "date_creation"),
 #'            allowed_function_cols = c("path"))
 #'            
 #' conf_to_dt(confs,
@@ -85,17 +85,17 @@
 #' 
 #' @rdname configuration_info
 conf_to_dt <- function(confs,
-                       allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
+                       allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority", "status"),
                        allow_descr = TRUE,
                        allowed_function_cols = c("path", "name"),
                        allow_args = TRUE) {
   
   # checks
   if (is.null(allowed_run_info_cols)) {
-    allowed_run_info_cols <- c("date_init", "date_start_run", "date_end_run", "priority", "status")
+    allowed_run_info_cols <- c("date_creation", "date_start", "date_end", "priority", "status")
   } else if(is.logical(allowed_run_info_cols)) {
     if(allowed_run_info_cols){
-      allowed_run_info_cols <- c("date_init", "date_start_run", "date_end_run", "priority", "status")
+      allowed_run_info_cols <- c("date_creation", "date_start", "date_end", "priority", "status")
     } else {
       allowed_run_info_cols <- ""
     }
@@ -158,9 +158,9 @@ conf_to_dt <- function(confs,
   tbl_global <- data.table::rbindlist(tbl_global, fill = T)
   
   # sort by decreasing priority and increasing date
-  if ("date_init" %in% names(tbl_global)) {
-    tbls_idv <- tbls_idv[order(tbl_global[["date_init"]], decreasing = F)]
-    tbl_global <- tbl_global[order(get("date_init"), decreasing = F)]
+  if ("date_creation" %in% names(tbl_global)) {
+    tbls_idv <- tbls_idv[order(tbl_global[["date_creation"]], decreasing = F)]
+    tbl_global <- tbl_global[order(get("date_creation"), decreasing = F)]
   }
   if ("priority" %in% names(tbl_global)) {
     tbls_idv <- tbls_idv[order(tbl_global[["priority"]], decreasing = T)] 
@@ -173,7 +173,7 @@ conf_to_dt <- function(confs,
 #' @rdname configuration_info
 #' @export
 dir_conf_to_dt <- function(dir_path,
-                           allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority", "status"),
+                           allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority", "status"),
                            allow_descr = TRUE,
                            allowed_function_cols = c("path", "name"),
                            allow_args = TRUE){

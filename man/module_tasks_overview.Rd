@@ -10,7 +10,7 @@ tasks_overview_server(
   output,
   session,
   dir_path,
-  allowed_run_info_cols = c("date_init", "date_start_run", "date_end_run", "priority",
+  allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority",
     "status"),
   allow_descr = TRUE,
   allowed_function_cols = c("path", "name"),
@@ -39,7 +39,7 @@ tasks_overview_UI(
 
 \item{dir_path}{\code{character}. Where to find the tasks directorys.}
 
-\item{allowed_run_info_cols}{\code{character} (c("date_init", "date_start_run", "date_end_run", "priority", "status")). Run info elements to be kept.}
+\item{allowed_run_info_cols}{\code{character} (c("date_init", "date_start", "date_end", "priority", "status")). Run info elements to be kept.}
 
 \item{allow_descr}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.}
 
