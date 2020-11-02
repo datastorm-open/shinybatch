@@ -1,7 +1,7 @@
 #' create button for DT table
 #'
 #' @param inputId \code{character}.\code{\link{actionButton}}.
-#' @param value \code{vector}. \code{\link{actionButton}}.
+#' @param col_value \code{vector}. \code{\link{actionButton}}.
 #' @param tooltip \code{character}. \code{\link{actionButton}}.
 #' @param label \code{character. \code{\link{actionButton}}.
 #' @param icon \code{character}. \code{\link{actionButton}}.
@@ -12,7 +12,7 @@
 #' @import shiny htmltools
 #'
 input_btns <- function(inputId, 
-                       value, 
+                       col_value, 
                        tooltip,
                        label = "",
                        icon = NULL, 

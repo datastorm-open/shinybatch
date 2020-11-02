@@ -264,6 +264,7 @@ tasks_overview_server <- function(input, output, session,
   # get DT table of idv feature of selected row
   tbl_idv_DT <- reactive({
     sel_row <- input[["tbl_global_DT_out_rows_selected"]]
+    input$remove_task
     
     isolate({
       if (! is.null(sel_row)) {
@@ -295,8 +296,9 @@ tasks_overview_server <- function(input, output, session,
   
   output$is_idv_dt <- reactive({
     sel_row <- input[["tbl_global_DT_out_rows_selected"]]
+    input$remove_task
     
-    if (! is.null(sel_row) && is.null(input$remove_task)) {
+    if (! is.null(sel_row)) {
       ! is.null(tbl_features()$tbls_idv[[sel_row]]) || nrow(tbl_features()$tbls_idv[[sel_row]]) > 0 
     } else {
       FALSE
@@ -307,11 +309,12 @@ tasks_overview_server <- function(input, output, session,
   # retrieve path and status of selected row
   res_module <- reactive({
     sel_row <- input[["tbl_global_DT_out_rows_selected"]]
+    input$remove_task
     
     isolate({
       res <- list()
       
-      if (! is.null(sel_row) && is.null(input$remove_task)) {
+      if (! is.null(sel_row)) {
         tbl_global <- tbl_features()$tbl_global
         
         res$path <- paste0(tbl_global[sel_row, ][["dir"]] , "output")

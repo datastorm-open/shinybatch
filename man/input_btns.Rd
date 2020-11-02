@@ -6,7 +6,7 @@
 \usage{
 input_btns(
   inputId,
-  value,
+  col_value,
   tooltip,
   label = "",
   icon = NULL,
@@ -16,13 +16,13 @@ input_btns(
 \arguments{
 \item{inputId}{\code{character}.\code{\link{actionButton}}.}
 
-\item{value}{\code{vector}. \code{\link{actionButton}}.}
-
 \item{tooltip}{\code{character}. \code{\link{actionButton}}.}
 
 \item{icon}{\code{character}. \code{\link{actionButton}}.}
 
 \item{status}{\code{character}. \code{\link{actionButton}}.}
+
+\item{value}{\code{vector}. \code{\link{actionButton}}.}
 }
 \value{
 a shiny btn.
