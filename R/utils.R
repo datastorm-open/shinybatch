@@ -3,7 +3,7 @@
 #' @param inputId \code{character}.\code{\link{actionButton}}.
 #' @param col_value \code{vector}. \code{\link{actionButton}}.
 #' @param tooltip \code{character}. \code{\link{actionButton}}.
-#' @param label \code{character. \code{\link{actionButton}}.
+#' @param label \code{character}. \code{\link{actionButton}}.
 #' @param icon \code{character}. \code{\link{actionButton}}.
 #' @param status \code{character}. \code{\link{actionButton}}.
 #'

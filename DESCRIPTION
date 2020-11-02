@@ -18,12 +18,12 @@ Imports:
     DT,
     shiny,
     yaml,
-    futile.logger
+    futile.logger,
+    htmltools
 Suggests: 
     testthat,
     cronR,
     taskscheduleR,
     knitr,
-    rmarkdown,
-    htmltools
+    rmarkdown
 VignetteBuilder: knitr
