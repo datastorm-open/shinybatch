@@ -243,7 +243,7 @@ tasks_overview_server <- function(input, output, session,
         footer = tagList(
           fluidRow(
             column(2,
-                   div(modalButton("Cancel"), align = "left"),
+                   div(modalButton("Cancel"), align = "left")
             ),
             column(2, offset = 8,
                    div(actionButton(ns("confirm_remove_task"), "Confirm"), align = "right")
