@@ -30,9 +30,9 @@ A task is defined by its *.yml* file that contains the following informations :
 
 ````{yml}
 run_info:
-  date_init: 2020-04-24 15:21:00
-  date_start_run: N/A
-  date_end_run: N/A
+  date_creation: 2020-04-24 15:21:00
+  date_start: N/A
+  date_end: N/A
   priority: 1.0
   status: waiting
 descriptive:

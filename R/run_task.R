@@ -155,7 +155,7 @@ run_task <- function(conf_path,
       futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e$message), name="run_task.io")
 
       # update conf file if error
-      conf$run_info$date_end_run <- as.character(Sys.time())
+      conf$run_info$date_end <- as.character(Sys.time())
       conf$run_info$status <- "error"
 
       setwd(current_wd)
@@ -175,7 +175,7 @@ run_task <- function(conf_path,
     }
 
     # update conf file
-    conf$run_info$date_end_run <- as.character(Sys.time())
+    conf$run_info$date_end <- as.character(Sys.time())
     conf$run_info$status <- "finished"
 
     yaml::write_yaml(conf, file = conf_path)
