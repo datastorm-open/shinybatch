@@ -9,15 +9,15 @@ The tasks are automatically launched using a scheduler, e.g. a timer that period
 
 ### Installation
 
-```` 
+```{r} 
 devtools::install_github("datastorm-open/shinybatch")
-````
+```
 
 ### Package main functions
 
-- **configure_task** : create a *.yml* file filed with operation parms (fun path, fun args, priority, ...),
+- **configure_task** : create a *.yml* file filed with operation params (fun path, fun args, priority, ...),
 - **run_task** : run a task from a *.yml* file,
-- **launcher** : select and run the tasks with highest priority,
+- **launcher** : select and run the task(s) with highest priority,
 - **scheduler_init** : create the file to be launched by the *scheduler*,
 - **scheduler_add** : (opt: create the cron file) and start the *scheduler* which will read the file at the given frequency to launch batch operations,
 - **configure_task_server** : calls *configure_task()* in the Shiny app,
@@ -39,7 +39,7 @@ descriptive:
   title: my_title
   description: my_descr
 function:
-  path: /ath/to/my_fun
+  path: /path/to/my_fun
   name: my_fun_name
 args:
   x: 1.0
@@ -64,20 +64,36 @@ Valid status are:
 
 The ``descriptive`` part contains free informations given by the user. The title and description fields are only example.
 
-The ``function`` part contains the location of the fun script (for sourcing) and its name (for calling).
+The ``function`` part contains the location of the fun script (for sourcing) and its name (for calling). The script must have all necessary ressources (packages, variables, functions) for execute the main function : 
 
-The ``args`` part contains either the location of the argument (in *dir_conf/inputs/arg_name.RDS*) or the argument itself if it is of length 1. For more complex arguments, we store the data as *.RDS*
+```{r}
+# Load package(s)
+require(data.table)
+
+# source script(s)
+source("/path/to/script")
+
+# Load data
+data <- readRDS("/path/to/script")
+
+# Define main function
+my_fun_name <- function(x, y, z){
+  ...
+}
+```
+
+The ``args`` part contains either the argument itself if it is of length 1 or the location of the argument (in *dir_conf/inputs/arg_name.RDS*),  complex arguments are storing as *.RDS*
 
 The ``dir`` argument contains the location of the directory in which is stored the *conf.yml* file.
 
 When a task has been succesfully run, some fields are updated:
 
-- date_start_run and date_end_run are filled,
-- status is set to 'running', then to 'finished'.
+- ``date_start`` and ``date_end`` are filled,
+- ``status`` is set to 'running', then to 'finished'.
 
 Some outputs are created:
 
-- if wanted, the result of the task (in *dir_conf/output/res.RDS*)
+- if wanted, the result of the task, in other words the output of the main function (in *dir_conf/output/res.RDS*)
 - the log of the run (in *dir_conf/output/log_run.txt*)
 
 ### Description of the launcher
@@ -92,26 +108,40 @@ The task with higher priority is defined as the one:
 
 ### Description of the scheduler
 
-Before calling the scheduler, we first create the file that it will launch with **scheduler_init**. By default, it looks like this:
+Before calling the scheduler, we first create the file that it will launch with **scheduler_init**. By default, it looks like this (*scheduler_script.R*) :
 
 ````
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly = TRUE)
 
-shinybatch::launcher(dir_path = args[1], 
-                     max_runs = as.integer(args[2])
+shinybatch::launcher(dir_path = '/path/to/main_directory/',
+                     max_runs = 1,
+                     ignore_status = c('running','finished','error'),
+                     delay_reruns = TRUE
 )
 ````
 
 ... but the head lines can be customized by filling the *head_rows* argument.
 
 
-Once the file has been created, the cron is launched using the **scheduler_add** function with the default command : 
+Once the file has been created, the cron is can be defined using the **scheduler_add** function with the default command : 
 
-``Rscript /path/to/scheduler_script.R /path/to/conf 1``, 
+``Rscript /path/to/scheduler_script.R``
 
+But you can use directly ``cron`` on linux or the ``Task Scheduler`` on windows
 
 ### Example
+
+**sb_fun_ex.R**
+
+```{r}
+sb_fun_ex <- function(x, y, z) {
+  res <- x + y
+  message('Running !')
+  warning("Complex (or not) variable z is not used...!", call. = FALSE)
+  res
+}
+```
 
 **Configure a task**
 ```{r}
@@ -129,16 +159,42 @@ conf <- configure_task(
   description = "my_descr"),
   fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch"), # as an example,
   fun_name = "sb_fun_ex",
-  fun_args = list(x = 1,
-  y = 0:4,
-  z = iris),
+  fun_args = list(
+    x = 1,
+    y = 0:4,
+    z = iris
+  ),
   priority = 1)
 
 # check results
 list.files(conf$dir, recursive = T)
-(read_conf <- yaml::read_yaml(paste0(conf$dir, "conf.yml")))
-(y <- readRDS(paste0(conf$dir, "inputs/y.RDS")))
-(z <- readRDS(paste0(conf$dir, "inputs/z.RDS")))
+# [1] "conf.yml"     "inputs/y.RDS" "inputs/z.RDS"
+
+read_conf <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
+
+read_conf$run_info
+# $date_creation
+# [1] "2021-03-02 16:54:24"
+# 
+# $date_start
+# [1] "N/A"
+# 
+# $date_end
+# [1] "N/A"
+# 
+# $priority
+# [1] 1
+# 
+# $status
+# [1] "waiting"
+
+read_conf$args$x
+# [1] 1
+
+y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
+# [1] 0 1 2 3 4
+
+z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 ```
 
 **Run one given task**
@@ -149,12 +205,38 @@ run_task(paste0(conf$dir, "conf.yml"))
 
 # catch results
 list.files(conf$dir, recursive = T)
-(conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml")))
-(output <- readRDS(paste0(conf$dir, "output/res.RDS")))
-(log <- read.delim(list.files(paste0(conf$dir, "output/"), pattern = "log_run", full.names = T), header = F))
+# output directory with log & result
+# [1] "conf.yml"                              "inputs/y.RDS"                         
+# [3] "inputs/z.RDS"                          "output/log_run_20210302_1656_1080.txt"
+# [5] "output/res.RDS" 
 
+conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
+conf_update$run_info
+# $date_creation
+# [1] "2021-03-02 16:54:24"
+# 
+# $date_start
+# [1] "2021-03-02 16:56:10"
+# 
+# $date_end
+# [1] "2021-03-02 16:56:10"
+# 
+# $priority
+# [1] 1
+# 
+# $status
+# [1] "finished"
+
+
+output <- readRDS(paste0(conf$dir, "output/res.RDS"))
+#[1] 1 2 3 4 5
+
+log <- read.delim(list.files(paste0(conf$dir, "output/"), pattern = "log_run", full.names = T), header = F)
+# [2021-03-02 16:56:10] [INFO] Starting task execution...
+# [2021-03-02 16:56:10] [INFO] Running !
+# [2021-03-02 16:56:10] [WARN] Complex (or not) variable z is not used...!
+# [2021-03-02 16:56:10] [INFO] ... task terminated.
 ```
-
 
 **Use scheduler to launch the  tasks**
 ```{r}
