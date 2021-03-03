@@ -19,6 +19,7 @@ tasks_overview_server(
   update_mode = c("reactive", "button"),
   intervalMillis = 1000,
   table_fun = function(x) x,
+  return_value = c("selected_task", "tasks_table"),
   ...
 )
 
@@ -56,6 +57,9 @@ tasks_overview_UI(
 
 \item{table_fun}{\code{function} (function(x) x). Function to be applied on the summary table, making it easy to customize it. First arg must be the summmary table.}
 
+\item{return_value}{\code{character} : "selected_task" (default) return the selected task using \code{tasks_overview_UI},
+else "tasks_table"can be used to get all tasks information and define a custom UI.}
+
 \item{...}{\code{}. Additional args to be given to the table_fun function.}
 
 \item{id}{\code{character}. shiny id to allow multiple instanciation.}
@@ -63,7 +67,9 @@ tasks_overview_UI(
 \item{labels}{\code{list} UI labels}
 }
 \value{
-the status of the selected line (one run) of the summmary table and the path to the directory in which its output is stored.
+if \code{return_value = "selected_task"}, the status of the selected line (one run) of the summary
+table and the path to the directory in which its output is stored. if \code{return_value = "tasks_table"},
+all tasks information table
 }
 \description{
 Module to visualize all the created tasks.
@@ -101,9 +107,15 @@ conf_2 <- configure_task(dir_path = dir_conf,
 
 run_task(paste0(conf_2$dir, "conf.yml"))
 
-ui <- shiny::fluidPage(tasks_overview_UI("my_id_1"))
+# with package ui
+ui <- shiny::fluidPage(
+  tasks_overview_UI("my_id_1"),
+  hr(),
+  verbatimTextOutput("info")
+)
+
 server <- function(input, output, session) {
-  callModule(tasks_overview_server, "my_id_1",
+  selected_task <- callModule(tasks_overview_server, "my_id_1",
              dir_path = dir_conf,
              allowed_status = c("waiting", "running", "finished", "error"),
              allowed_run_info_cols = NULL,
@@ -112,9 +124,30 @@ server <- function(input, output, session) {
              allow_args = T,
              table_fun = function(x, y) x[, new_col := y],
              y = "created using arg. 'table_fun'")
+
+  output$info <- renderPrint({
+    selected_task()
+  })
 }
 shiny::shinyApp(ui = ui, server = server)
 
+# using custom ui
+ui <- shiny::fluidPage(
+  verbatimTextOutput("info")
+  # and so define what you want !
+)
+
+server <- function(input, output, session) {
+  all_tasks_info <- callModule(tasks_overview_server, "my_id_1",
+             dir_path = dir_conf,
+             return_value = "tasks_table"
+  )
+
+  output$info <- renderPrint({
+    all_tasks_info()
+  })
+}
+shiny::shinyApp(ui = ui, server = server)
 }}
 
 }

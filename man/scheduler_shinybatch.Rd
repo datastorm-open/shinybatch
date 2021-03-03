@@ -145,7 +145,12 @@ scheduler_ls() # display existing crons
 yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 
-scheduler_remove(taskname = "cron_script_ex") # kill selected cron
+# check if cron existed
+scheduler_exist(taskname = "cron_script_ex")
+
+# kill selected cron
+scheduler_remove(taskname = "cron_script_ex")
+scheduler_exist(taskname = "cron_script_ex")
 
 }}
 
