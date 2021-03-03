@@ -1,4 +1,4 @@
-```{r}
+``` r
 require(shiny)
 require(shinydashboard)
 require(DT)

@@ -6,11 +6,11 @@ The tasks are automatically launched using a scheduler, e.g. a timer that period
 
 - with a CRON in Linux/Mac, using package **cronR** 
 - with Windows Task Scheduler in Windows, using package **taskscheduleR**
-- or defined directlydirectly with OS tools
+- or defined directly with OS tools
 
 ### Installation
 
-```{r} 
+``` r
 devtools::install_github("datastorm-open/shinybatch")
 ```
 
@@ -31,7 +31,7 @@ devtools::install_github("datastorm-open/shinybatch")
 
 A task is defined by its *.yml* file that contains the following informations :
 
-````{yml}
+``` yml
 run_info:
   date_creation: 2020-04-24 15:21:00
   date_start: N/A
@@ -51,7 +51,7 @@ args:
   z:
     _path: /path/to/task/dir/inputs/z.RDS
 dir: /path/to/task/dir/
-````
+```
 
 
 The ``run_info`` part contains general informations about the task.
@@ -69,7 +69,7 @@ The ``descriptive`` part contains free informations given by the user. The title
 
 The ``function`` part contains the location of the fun **R** script (for sourcing) and its name (for calling). The script must have all necessary ressources (packages, variables, functions) for execute the main function : 
 
-```{r}
+``` r
 # Load package(s) (if needed)
 require(data.table)
 
@@ -140,7 +140,7 @@ Once the file has been created, the cron has to be defined. You can use directly
 
 **sb_fun_ex.R**
 
-```{r}
+``` r
 sb_fun_ex <- function(x, y, z) {
   res <- x + y
   message('Running !')
@@ -150,7 +150,7 @@ sb_fun_ex <- function(x, y, z) {
 ```
 
 **Configure a task**
-```{r}
+``` r
 require(shinybatch)
 
 ?configure_task
@@ -207,7 +207,7 @@ z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 
 **Run one given task (for demo/test)**
 
-```{r}
+``` r
 ?run_task
 
 run_task(paste0(conf$dir, "conf.yml"))
@@ -249,7 +249,7 @@ log <- read.delim(list.files(paste0(conf$dir, "output/"), pattern = "log_run", f
 
 **Use scheduler to launch the  tasks**
 
-```{r}
+``` r
 ?scheduler_add
 
 # create temporary directory for conf
@@ -321,7 +321,7 @@ Both are used in the demo app which presents a simple usecase.
 
 call:
 
-```{r}
+``` r
 ?configure_task_server
 
 # ui : just create an actionButton
@@ -363,7 +363,7 @@ callModule(configure_task_server, "my_id_1",
 
 call:
 
-```{r}
+``` r
 ?tasks_overview_UI
 
 # ui

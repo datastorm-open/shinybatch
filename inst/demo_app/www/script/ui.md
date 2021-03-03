@@ -1,4 +1,4 @@
-```{r}
+``` r
 fluidRow(
   tabBox(width = 12,
          tabPanel("Configure tasks",

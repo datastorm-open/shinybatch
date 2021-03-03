@@ -1,4 +1,4 @@
-```{r}
+``` r
     # call module to configure a task
     # connect app inputs to the module
     callModule(configure_task_server, "my_id_1",
