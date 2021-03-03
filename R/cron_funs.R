@@ -95,7 +95,12 @@
 #' yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 #' yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 #'
-#' scheduler_remove(taskname = "cron_script_ex") # kill selected cron
+#' # check if cron existed
+#' scheduler_exist(taskname = "cron_script_ex")
+#'
+#' # kill selected cron
+#' scheduler_remove(taskname = "cron_script_ex")
+#' scheduler_exist(taskname = "cron_script_ex")
 #'
 #' }}
 #'
@@ -278,6 +283,27 @@ scheduler_remove <- function(taskname, ...) {
   }
 }
 
+#' @export
+#'
+#' @rdname scheduler_shinybatch
+scheduler_exist <- function(taskname) {
+
+  os <- Sys.info()[['sysname']]
+
+  check <- FALSE
+
+  if (os == "Windows") {
+    info_crons <- suppressWarnings(scheduler_ls())
+
+    if("data.frame" %in% class(info_crons)){
+      check <- any(grepl(taskname, info_crons$`Nom de la tâche`))
+    }
+  } else {
+    info_crons <- scheduler_ls(id = taskname)
+    check <- !is.null(info_crons)
+  }
+  check
+}
 
 #' @export
 #'

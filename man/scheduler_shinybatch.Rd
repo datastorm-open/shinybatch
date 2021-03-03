@@ -4,6 +4,7 @@
 \alias{scheduler_init}
 \alias{scheduler_add}
 \alias{scheduler_remove}
+\alias{scheduler_exist}
 \alias{scheduler_ls}
 \title{Scheduler management of the launcher function}
 \usage{
@@ -31,6 +32,8 @@ scheduler_add(
 )
 
 scheduler_remove(taskname, ...)
+
+scheduler_exist(taskname)
 
 scheduler_ls(...)
 }
