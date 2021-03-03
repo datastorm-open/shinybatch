@@ -8,16 +8,16 @@
 #' @param status \code{character}. \code{\link{actionButton}}.
 #'
 #' @return a shiny btn.
-#' 
+#'
 #' @import shiny htmltools
 #'
-input_btns <- function(inputId, 
-                       col_value, 
+input_btns <- function(inputId,
+                       col_value,
                        tooltip,
                        label = "",
-                       icon = NULL, 
+                       icon = NULL,
                        status = "primary") {
-  
+
   tag <- lapply(
     X = col_value,
     FUN = function(x) {
@@ -34,11 +34,11 @@ input_btns <- function(inputId,
         `data-title` = tooltip,
         `data-container` = "body"
       )
-      
+
       res <- tagList(res, tags$script(HTML("$('[data-toggle=\"tooltip\"]').tooltip();")))
       htmltools::doRenderTags(res)
     }
   )
-  
+
   unlist(tag, use.names = FALSE)
 }

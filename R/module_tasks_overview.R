@@ -396,6 +396,12 @@ tasks_overview_UI <- function(id,
   if(is.null(labels$error_dir_access)) labels$error_dir_access = "Cannot access given directory."
 
   fluidRow(
+
+    # fix fontAwesome init loading...
+    fluidRow(
+      actionButton("fix FA", "fix FA", icon = icon("refresh"), style = "display:none")
+    ),
+
     conditionalPanel(condition = paste0("output['", ns("is_dir"), "']"),
                      conditionalPanel(condition = paste0("output['", ns("is_btn_mode"), "']"),
                                       column(12,
