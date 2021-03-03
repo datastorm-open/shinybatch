@@ -13,11 +13,6 @@ The tasks are automatically launched using a scheduler, e.g. a timer that period
 ```{r} 
 devtools::install_github("datastorm-open/shinybatch")
 ```
-### Demo application
-
-``` r
-runApp(system.file("demo_app", package = "shinybatch"))
-```
 
 ### Main functions
 
@@ -319,10 +314,10 @@ These modules contain the basic framework to use all the previous functions in a
 Both are used in the demo app which presents a simple usecase.
 
 - **Configure a new task**
- 
-<img src="inst/demo_app/www/figures/launch_task_shiny.PNG" width="2000">
 
-<img src="inst/demo_app/www/figures/launch_task_shiny_2.PNG" width="2000">
+![img](figures/launch_task_shiny.PNG)
+
+![img](figures/launch_task_shiny_2.PNG)
 
 call:
 
@@ -361,9 +356,10 @@ callModule(configure_task_server, "my_id_1",
 
 - **Display configured tasks**
 
-<img src="inst/demo_app/www/figures/see_tasks_shiny.PNG" width="2000">
+![img](figures/see_tasks_shiny.PNG)
 
-<img src="inst/demo_app/www/figures/see_tasks_shiny_2.PNG" width="2000">
+![img](figures/see_tasks_shiny_2.PNG)
+
 
 call:
 
@@ -407,10 +403,10 @@ As a credible usecase, the results of the runs are retrieved and can be displaye
 runApp(system.file("demo_app", package = "shinybatch"))
 ```
 
-<img src="inst/demo_app/www/figures/demo_app_conf_task.PNG" width="2000">
+![img](figures/demo_app_conf_task.PNG)
 
-<img src="inst/demo_app/www/figures/demo_app_view_task_1.PNG" width="2000">
+![img](figures/demo_app_view_task_1.PNG)
 
-<img src="inst/demo_app/www/figures/demo_app_view_task_2.PNG" width="2000">
+![img](figures/demo_app_view_task_2.PNG)
 
 <br>

@@ -152,5 +152,5 @@ shiny::shinyApp(ui = ui, server = server)
 
 }
 \seealso{
-\code{\link[shinybatch]{configure_task_server}}, \code{\link[shinybatch]{run_demo_app}}
+\code{\link[shinybatch]{configure_task_server}}
 }

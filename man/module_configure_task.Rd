@@ -95,5 +95,5 @@ z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"));z
 
 }
 \seealso{
-\code{\link[shinybatch]{tasks_overview_server}}, \code{\link[shinybatch]{run_demo_app}}
+\code{\link[shinybatch]{tasks_overview_server}}
 }

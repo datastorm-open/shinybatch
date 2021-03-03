@@ -28,7 +28,7 @@
 #' @import shiny data.table yaml
 #' @importFrom DT datatable renderDT DTOutput formatStyle %>%
 #'
-#' @seealso \code{\link[shinybatch]{configure_task_server}}, \code{\link[shinybatch]{run_demo_app}}
+#' @seealso \code{\link[shinybatch]{configure_task_server}}
 #'
 #' @examples
 #' \dontrun{\donttest{

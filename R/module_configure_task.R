@@ -19,7 +19,7 @@
 #'
 #' @import shiny
 #'
-#' @seealso \code{\link[shinybatch]{tasks_overview_server}}, \code{\link[shinybatch]{run_demo_app}}
+#' @seealso \code{\link[shinybatch]{tasks_overview_server}}
 #'
 #' @examples
 #' \dontrun{\donttest{
