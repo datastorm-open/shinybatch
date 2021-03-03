@@ -5,7 +5,8 @@ This package provides a simple framework to create, launch *automatically* and r
 The tasks are automatically launched using a scheduler, e.g. a timer that periodically launches a (batch) operation.  
 
 - with a CRON in Linux/Mac, using package **cronR** 
-- with Windows Task Scheduler in Windows, using package **taskscheduleR** 
+- with Windows Task Scheduler in Windows, using package **taskscheduleR**
+- or defined directlydirectly with OS tools
 
 ### Installation
 
@@ -13,18 +14,20 @@ The tasks are automatically launched using a scheduler, e.g. a timer that period
 devtools::install_github("datastorm-open/shinybatch")
 ```
 
-### Package main functions
+### Main functions
 
 - **configure_task** : create a *.yml* file filed with operation params (fun path, fun args, priority, ...),
-- **run_task** : run a task from a *.yml* file,
-- **launcher** : select and run the task(s) with highest priority,
-- **scheduler_init** : create the file to be launched by the *scheduler*,
-- **scheduler_add** : (opt: create the cron file) and start the *scheduler* which will read the file at the given frequency to launch batch operations,
-- **configure_task_server** : calls *configure_task()* in the Shiny app,
-- **tasks_overview_server** : display tasks within the Shiny app.
+- **run_task** : run a selected task from a *.yml* file. Used by **launcher**,
+- **launcher** : select and run the task(s) with highest priority, calling **run_task** in batch mode with *RScript* command,
+- **scheduler_init** : (opt: create the cron R script) create the file to be launched by the *scheduler*,
+- **scheduler_add** : (opt: create the cron file, and by default the cron R script) and start the *scheduler* which will read the file at the given frequency to launch batch operations,
+- **configure_task_server** : define a task and call *configure_task()* in the Shiny app,
+- **tasks_overview_server** : display tasks & retrieve results within the Shiny app.
 
 
 ### Definition of a task
+
+*configure_task()*
 
 A task is defined by its *.yml* file that contains the following informations :
 
@@ -64,19 +67,19 @@ Valid status are:
 
 The ``descriptive`` part contains free informations given by the user. The title and description fields are only example.
 
-The ``function`` part contains the location of the fun script (for sourcing) and its name (for calling). The script must have all necessary ressources (packages, variables, functions) for execute the main function : 
+The ``function`` part contains the location of the fun **R** script (for sourcing) and its name (for calling). The script must have all necessary ressources (packages, variables, functions) for execute the main function : 
 
 ```{r}
-# Load package(s)
+# Load package(s) (if needed)
 require(data.table)
 
-# source script(s)
+# source script(s) (if needed)
 source("/path/to/script")
 
-# Load data
+# Load data (if needed)
 data <- readRDS("/path/to/script")
 
-# Define main function
+# Define main function (needed !)
 my_fun_name <- function(x, y, z){
   ...
 }
@@ -98,7 +101,10 @@ Some outputs are created:
 
 ### Description of the launcher
 
-The launcher retrieves all the tasks in a main directory and build a the table of their *run_info*. Based on this, it verifies that there are tasks with *status* that allow a run, e.g. all but those in *ignore_status*. Then, if the maximum number of simultaneously running tasks is not reached, it launches new tasks according to their priority.
+*launcher()*
+
+The launcher retrieves all the tasks in a main directory and build a the table of their *run_info*. Based on this, it verifies that there are tasks with *status* that allow a run, e.g. all but those in *ignore_status*. Then, if the maximum number of simultaneously running tasks is not reached, it launches new tasks according to their priority, in batch mode with *RScript* command (and calling *run_task()*)
+
 
 The task with higher priority is defined as the one:
 
@@ -108,7 +114,7 @@ The task with higher priority is defined as the one:
 
 ### Description of the scheduler
 
-Before calling the scheduler, we first create the file that it will launch with **scheduler_init**. By default, it looks like this (*scheduler_script.R*) :
+Before calling the scheduler, we first need to create the file that it will launch. We can use **scheduler_init()**. By default, it looks like this (*scheduler_script.R*) :
 
 ````
 #!/usr/bin/env Rscript
@@ -124,11 +130,11 @@ shinybatch::launcher(dir_path = '/path/to/main_directory/',
 ... but the head lines can be customized by filling the *head_rows* argument.
 
 
-Once the file has been created, the cron is can be defined using the **scheduler_add** function with the default command : 
+Once the file has been created, the cron has to be defined. You can use directly ``cron`` on linux or the ``Task Scheduler`` on windows, or the **scheduler_add** function. The default command is : 
 
 ``Rscript /path/to/scheduler_script.R``
 
-But you can use directly ``cron`` on linux or the ``Task Scheduler`` on windows
+*N.B :* **scheduler_add** creates by default the **R** scheduler script using **scheduler_init**
 
 ### Example
 
@@ -155,8 +161,10 @@ dir <- tempdir()
 # create and save conf
 conf <- configure_task(
   dir_path = dir,
-  conf_descr = list(title = "my_title",
-  description = "my_descr"),
+  conf_descr = list(
+    title = "my_title",
+    description = "my_descr"
+  ),
   fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch"), # as an example,
   fun_name = "sb_fun_ex",
   fun_args = list(
@@ -197,7 +205,8 @@ y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
 z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 ```
 
-**Run one given task**
+**Run one given task (for demo/test)**
+
 ```{r}
 ?run_task
 
@@ -239,6 +248,7 @@ log <- read.delim(list.files(paste0(conf$dir, "output/"), pattern = "log_run", f
 ```
 
 **Use scheduler to launch the  tasks**
+
 ```{r}
 ?scheduler_add
 
@@ -249,40 +259,53 @@ dir.create(dir_conf, recursive = T)
 # create 2 confs
 conf_1 <- configure_task(
   dir_path = dir_conf,
-  conf_descr = list(title_1 = "my_title_1",
-                    description_1 = "my_descr_1"),
+  conf_descr = list(
+    title_1 = "my_title_1",
+    description_1 = "my_descr_1"
+  ),
   fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch"), # as an example,
   fun_name = "sb_fun_ex",
-  fun_args = list(x = 0, y = 0:4,  z = iris),
+  fun_args = list(
+    x = 0, 
+    y = 0:4,  
+    z = iris
+  ),
   priority = 1)
   
 conf_2 <- configure_task(
   dir_path = dir_conf,
-  conf_descr = list(title_1 = "my_title_2",
-                    description_1 = "my_descr_2"),
+  conf_descr = list(
+    title_1 = "my_title_2",
+    description_1 = "my_descr_2"
+  ),
   fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch"), # as an example,
   fun_name = "sb_fun_ex",
-  fun_args = list(x = 0, y = 0:4,  z = iris),
+  fun_args = list(
+    x = 0, 
+    y = 0:4,  
+    z = iris
+  ),
   priority = 2)
 
 # on LINUX -> Needs cronR package
 # on Windows -> Needs taskscheduleR package
 
 scheduler_add(
-           dir_scheduler = tempdir(),
-           dir_conf = dir_conf,
-           max_runs = 1,
-           create_file = T,
-           head_rows = NULL, 
-           taskname = "cron_script_ex")
+  dir_scheduler = tempdir(),
+  dir_conf = dir_conf,
+  max_runs = 1,
+  create_file = T,
+  head_rows = NULL, 
+  taskname = "cron_script_ex"
+)
            
-scheduler_ls() # display running crons
+scheduler_ls() # display existing crons
 
 # wait up to 1 min for conf_2 and up to 2 mins for conf_1
 yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 
-scheduler_rm(id = "cron_script_ex") # kill all running crons
+scheduler_rm(id = "cron_script_ex") # kill selected cron
 ```
 
 **Shiny modules**
@@ -310,15 +333,24 @@ actionButton("go_task", "Configure the task !")
 callModule(configure_task_server, "my_id_1",
            btn = reactive(input$go_task),
            dir_path = dir_conf,
-           conf_descr = reactive(list("title" = input$title,
-                                      "description" = input$description)),
+           conf_descr = reactive(
+            list(
+              "title" = input$title,
+              "description" = input$description
+            )
+           ),
            fun_path = paste0(dir_fun, "/fun_script.R"),
            fun_name = "my_fun",
-           fun_args = reactive(list(n = input$fun_nb_points,
-                                    mean = input$fun_mean,
-                                    sd = input$fun_sd,
-                                    sleep = input$sleep_time)),
-           priority = reactive(input$priority))
+           fun_args = reactive(
+            list(
+              n = input$fun_nb_points,
+              mean = input$fun_mean,
+              sd = input$fun_sd,
+              sleep = input$sleep_time
+            )
+           ),
+           priority = reactive(input$priority)
+)
 ```
 
 
@@ -338,13 +370,15 @@ tasks_overview_UI("my_id_2")
 
 # server
 # call module to view tasks
-sel_task <- callModule(tasks_overview_server, "my_id_2",
-                       dir_path = dir_conf,
-                       allowed_status = c("waiting", "running", "finished", "error"),
-                       allowed_run_info_cols = NULL,
-                       allowed_function_cols = NULL,
-                       allow_descr = T,
-                       allow_args = T)
+sel_task <- callModule(
+    tasks_overview_server, "my_id_2",
+    dir_path = dir_conf,
+    allowed_status = c("waiting", "running", "finished", "error"),
+    allowed_run_info_cols = NULL,
+    allowed_function_cols = NULL,
+    allow_descr = T,
+    allow_args = T
+)
 ```
 
 This module returns : 
