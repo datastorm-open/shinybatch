@@ -35,7 +35,7 @@ scheduler_remove(taskname, ...)
 scheduler_ls(...)
 }
 \arguments{
-\item{dir_scheduler}{\code{character}. Where to create the new directory.}
+\item{dir_scheduler}{\code{character}. Where to create R scheduler script.}
 
 \item{dir_conf}{\code{character}. launcher arg : where to find the tasks directories.}
 
@@ -52,7 +52,7 @@ the date of creation of the task to compute the order of (re)run for these tasks
 
 \item{taskname}{\code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)}
 
-\item{create_file}{\code{boolean} (TRUE). Whether or not to create the cron_script before launching it.}
+\item{create_file}{\code{boolean} (TRUE). Whether or not to also create the R scheduler script with scheduler_init ?}
 
 \item{...}{\code{}. Additional arguments passed to \code{\link[cronR]{cron_add}}, \code{\link[cronR]{cron_rm}}, \code{\link[cronR]{cron_ls}} (Linux) or \code{\link[taskscheduleR]{taskscheduler_create}} (Windows).}
 }
@@ -63,7 +63,7 @@ NULL.
 Scheduler management of the launcher function
 }
 \details{
-Without any frequancy argument, defaut is set to every minute
+Without any frequency argument, defaut is set to every minute
 }
 \examples{
 \dontrun{\donttest{
@@ -72,7 +72,7 @@ Without any frequancy argument, defaut is set to every minute
 dir_conf <- paste0(tempdir(), "/conf/")
 dir.create(dir_conf, recursive = T)
 
-# create example of files to be called by the scheduler 
+# create example of files to be called by the scheduler
 # (this fun is called in scheduler_add)
 scheduler_init(
     dir_scheduler = tempdir(),
@@ -98,22 +98,30 @@ fun_name = "sb_fun_ex"
 
 # create 2 confs
 conf_1 <- configure_task(dir_path = dir_conf,
-                         conf_descr = list(title_1 = "my_title_1",
-                                           description_1 = "my_descr_1"),
+                         conf_descr = list(
+                           title_1 = "my_title_1",
+                           description_1 = "my_descr_1"
+                         ),
                          fun_path = fun_path,
                          fun_name = fun_name,
-                         fun_args = list(x = 0,
-                                         y = 0:4,
-                                         z = iris),
+                         fun_args = list(
+                           x = 0,
+                           y = 0:4,
+                           z = iris
+                         ),
                          priority = 1)
 conf_2 <- configure_task(dir_path = dir_conf,
-                         conf_descr = list(title_2 = "my_title_2",
-                                           description_2 = "my_descr_2"),
+                         conf_descr = list(
+                           title_2 = "my_title_2",
+                           description_2 = "my_descr_2"
+                         ),
                          fun_path = fun_path,
                          fun_name = fun_name,
-                         fun_args = list(x = 1,
-                                         y = 0:4,
-                                         z = iris),
+                         fun_args = list(
+                           x = 1,
+                           y = 0:4,
+                           z = iris
+                         ),
                          priority = 2)
 
 # on LINUX -> Needs cronR package
@@ -125,16 +133,16 @@ scheduler_add(dir_scheduler = tempdir(),
               ignore_status = c("running", "finished", "error"),
               delay_reruns = T,
               create_file = T,
-              head_rows = NULL, 
+              head_rows = NULL,
               taskname = "cron_script_ex")
-           
-scheduler_ls() # display running crons
+
+scheduler_ls() # display existing crons
 
 # wait up to 1 min for conf_2 and up to 2 mins for conf_1
 yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status
 yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status
 
-scheduler_remove(taskname = "cron_script_ex") # kill the running cron
+scheduler_remove(taskname = "cron_script_ex") # kill selected cron
 
 }}
 

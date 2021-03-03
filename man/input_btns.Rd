@@ -16,13 +16,15 @@ input_btns(
 \arguments{
 \item{inputId}{\code{character}.\code{\link{actionButton}}.}
 
+\item{col_value}{\code{vector}. \code{\link{actionButton}}.}
+
 \item{tooltip}{\code{character}. \code{\link{actionButton}}.}
+
+\item{label}{\code{character}. \code{\link{actionButton}}.}
 
 \item{icon}{\code{character}. \code{\link{actionButton}}.}
 
 \item{status}{\code{character}. \code{\link{actionButton}}.}
-
-\item{value}{\code{vector}. \code{\link{actionButton}}.}
 }
 \value{
 a shiny btn.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/module_configure_task.R
 \name{configure_task_server}
 \alias{configure_task_server}
-\title{Module to configure a task.}
+\title{Module shiny to configure a task.}
 \usage{
 configure_task_server(
   input,
@@ -29,13 +29,13 @@ configure_task_server(
 
 \item{btn}{\code{reactive}. Link to a actionButton for call \code{configure_task} function}
 
-\item{dir_path}{\code{character}. Where to create the new directory.}
+\item{dir_path}{\code{character}. Tasks location (parent directory).}
 
 \item{fun_path}{\code{character}. Path to the script of the function.}
 
 \item{fun_name}{\code{character}. Name of the function in fun_path script.}
 
-\item{conf_descr}{\code{named list} (NULL). Description fields chosen by the user.}
+\item{conf_descr}{\code{named list} (NULL). Optional description fields.}
 
 \item{fun_args}{\code{named list} (NULL). Args of the function, must all be named.}
 
@@ -46,10 +46,10 @@ configure_task_server(
 \item{labels}{\code{list}. Modal dialog title.}
 }
 \value{
-shiny module.
+Nothing.
 }
 \description{
-Module to configure a task.
+Module shiny to configure a task.
 }
 \examples{
 \dontrun{\donttest{
@@ -57,7 +57,7 @@ Module to configure a task.
 # create temporary directory for conf
 dir_conf <- tempdir()
 
-# ex fun 
+# ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
 fun_name = "sb_fun_ex"
 
@@ -65,7 +65,7 @@ fun_name = "sb_fun_ex"
 ui <- shiny::fluidPage(
   fluidRow(
     column(offset = 3, 6,
-           shiny::actionButton("conf_task", "Configure the task", width = "100\%")        
+           shiny::actionButton("conf_task", "Configure the task", width = "100\%")
     )
   )
 )
@@ -93,4 +93,7 @@ z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"));z
 
 }}
 
+}
+\seealso{
+\code{\link[shinybatch]{tasks_overview_server}}, \code{\link[shinybatch]{run_demo_app}}
 }

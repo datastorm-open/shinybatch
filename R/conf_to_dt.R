@@ -1,5 +1,5 @@
-#' Convert a list of conf into two data.tables of global and individual features.
-#' 
+#' Convert a list of task configurations into two data.tables of global and individual features.
+#'
 #' @param dir_path \code{character}. Path to the directory with tasks.
 #' @param confs \code{list of list}. List of conf list(s) from yaml file(s).
 #' @param allowed_run_info_cols \code{characteror or boolean} (c("date_creation", "date_start", "date_end", "priority", "status")). Run info elements to be kept.
@@ -18,78 +18,69 @@
 #'
 #' @examples
 #' \dontrun{\donttest{
-#' 
-#' conf_1 <- list(
-#'   "run_info" = list(
-#'     "date_creation" = as.character(Sys.time()),
-#'     "date_start" = "N/A",
-#'     "date_end" = "N/A",
-#'     "priority" = 1,
-#'     "status" = "waiting"),
-#'   "descriptive" = list("descr_1" = "d1.1",
-#'                        "descr_2" = "d1.2"),
-#'   "function" = list(
-#'     "path" = "fun_path_1",
-#'     "name" = "fun_name_1"
-#'   ),
-#'   "args" = list(
-#'     x = "1",
-#'     y = "TRUE"
-#'   ),
-#'   "dir" = "path/to/dir"
-#' )
-#' 
-#' conf_2 <- list(
-#'   "run_info" = list(
-#'     "date_creation" = as.character(Sys.time() + 1),
-#'     "date_start" = "N/A",
-#'     "date_end" = "N/A",
-#'     "priority" = 2,
-#'     "status" = "waiting"),
-#'   "descriptive" = list("descr_1" = "d2.1",
-#'                        "descr_3" = "d2.3"),
-#'   "function" = list(
-#'     "path" = "fun_path_2",
-#'     "name" = "fun_name_2"
-#'   ),
-#'   "args" = list(
-#'     x = 2,
-#'     y = "/path/conf_2/inputs/y.RDS"
-#'   ),
-#'   "dir" = "path/to/dir"
-#' )
-#' 
-#' confs <- list(conf_1, conf_2)
-#' 
-#' conf_to_dt(confs, allowed_run_info_cols = FALSE)
-#' 
-#' conf_to_dt(confs, 
+#'
+#' dir_conf <- paste0(tempdir(), "/conf")
+#' dir.create(dir_conf, recursive = T)
+#'
+#' # ex fun
+#' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
+#' fun_name = "sb_fun_ex"
+#'
+#' # create 2 confs
+#' conf_1 <- configure_task(dir_path = dir_conf,
+#'                          conf_descr = list(title_1 = "my_title_1",
+#'                                            description_1 = "my_descr_1"),
+#'                          fun_path = fun_path,
+#'                          fun_name = fun_name,
+#'                          fun_args = list(x = 0,
+#'                                          y = 0:4,
+#'                                          z = iris),
+#'                          priority = 1)
+#' conf_2 <- configure_task(dir_path = dir_conf,
+#'                          conf_descr = list(title_2 = "my_title_2",
+#'                                            description_2 = "my_descr_2"),
+#'                          fun_path = fun_path,
+#'                          fun_name = fun_name,
+#'                          fun_args = list(x = 1,
+#'                                          y = 0:4,
+#'                                          z = iris),
+#'                          priority = 2)
+#'
+#' # retrieve information about all tasks in main directory
+#' dir_conf_to_dt(dir_conf, allowed_run_info_cols = FALSE)
+#'
+#' dir_conf_to_dt(dir_conf,
 #'            allow_descr = F,
 #'            allow_args = F)
-#'            
-#' conf_to_dt(confs,
+#'
+#' dir_conf_to_dt(dir_conf,
 #'            allowed_run_info_cols = c("status", "date_creation"),
 #'            allowed_function_cols = c("path"))
-#'            
-#' conf_to_dt(confs,
+#'
+#' dir_conf_to_dt(dir_conf,
 #'            allowed_run_info_cols = NULL,
 #'            allowed_function_cols = NULL)
-#'            
-#' conf_to_dt(confs,
+#'
+#' dir_conf_to_dt(dir_conf,
 #'            allowed_run_info_cols = "",
 #'            allowed_function_cols = "",
 #'            allow_descr = F,
 #'            allow_args = F)
-#' 
-#' }} 
-#' 
+#'
+#' # or just on some tasks ?
+#' info_conf_1 <- conf_1
+#' info_conf_2 <- yaml::read_yaml(file.path(conf_2$dir, "conf.yml"))
+#'
+#' conf_to_dt(list(info_conf_1, info_conf_2))
+#' }}
+#'
 #' @rdname configuration_info
 conf_to_dt <- function(confs,
                        allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority", "status"),
                        allow_descr = TRUE,
                        allowed_function_cols = c("path", "name"),
                        allow_args = TRUE) {
-  
+
   # checks
   if (is.null(allowed_run_info_cols)) {
     allowed_run_info_cols <- c("date_creation", "date_start", "date_end", "priority", "status")
@@ -115,15 +106,15 @@ conf_to_dt <- function(confs,
   if (! is.character(allowed_function_cols)) {
     stop("'allowed_function_cols' must be of class <character>.")
   }
-  
+
   # create tables from lists
   tbl_global <- list()
-  tbls_idv <- list() 
-  
+  tbls_idv <- list()
+
   if (length(confs) > 0) {
     for (n_conf in 1:length(confs)) {
       cur_conf <- confs[[n_conf]]
-      
+
       # get selected columns
       global_cols <- c(
         if (is.logical(allow_descr)) {
@@ -132,42 +123,42 @@ conf_to_dt <- function(confs,
           } else {""}
         } else {
           allow_descr
-        }, 
+        },
         allowed_run_info_cols
       )
-      
+
       idv_cols <- c(
-        allowed_function_cols, 
+        allowed_function_cols,
         if (is.logical(allow_args)) {
           if (allow_args) {
             names(cur_conf$args)
           } else {""}
         } else {allow_args}
       )
-      
+
       tbl_global[[n_conf]] <- data.table::as.data.table(c(cur_conf["dir"], cur_conf$run_info, cur_conf$descriptive)
       )[, c("dir", intersect(global_cols, c(names(cur_conf$run_info), names(cur_conf$descriptive)))), with = F]
-      
+
       tbls_idv[[n_conf]] <- data.table::as.data.table(c(cur_conf[["function"]], cur_conf$args)
       )[, intersect(idv_cols, c(names(cur_conf[["function"]]), names(cur_conf$args))), with = F]
-      
-    } 
+
+    }
   }
-  
+
   # rbind global table
   tbl_global <- data.table::rbindlist(tbl_global, fill = T)
-  
+
   # sort by decreasing priority and increasing date
   if ("date_creation" %in% names(tbl_global)) {
     tbls_idv <- tbls_idv[order(tbl_global[["date_creation"]], decreasing = F)]
     tbl_global <- tbl_global[order(get("date_creation"), decreasing = F)]
   }
   if ("priority" %in% names(tbl_global)) {
-    tbls_idv <- tbls_idv[order(tbl_global[["priority"]], decreasing = T)] 
+    tbls_idv <- tbls_idv[order(tbl_global[["priority"]], decreasing = T)]
     tbl_global <- tbl_global[order(get("priority"), decreasing = T)]
   }
-  
-  return(list("tbl_global" = tbl_global, "tbls_idv" = tbls_idv)) 
+
+  return(list("tbl_global" = tbl_global, "tbls_idv" = tbls_idv))
 }
 
 #' @rdname configuration_info
@@ -177,19 +168,19 @@ dir_conf_to_dt <- function(dir_path,
                            allow_descr = TRUE,
                            allowed_function_cols = c("path", "name"),
                            allow_args = TRUE){
-  
-  # checks 
+
+  # checks
   if (! is.character(dir_path)) {
     stop("'dir_path' must be of class <character>.")
   }
   if (! dir.exists(dir_path)) {
     stop("'dir_path' directory doesn't exist (", dir_path, ").")
   }
-  
+
   confs <- lapply(list.dirs(dir_path, full.names = T, recursive = F), function(x) {
       yaml::read_yaml(paste0(x, "/conf.yml"))
     })
-  
+
   if(length(confs) == 0){
     return(invisible(NULL))
   } else {

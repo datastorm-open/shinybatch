@@ -1,38 +1,41 @@
-#' Module to configure a task.
+#' Module shiny to configure a task.
 #'
 #' @param input shiny input
 #' @param output shiny input
 #' @param session shiny input
 #' @param btn \code{reactive}. Link to a actionButton for call \code{configure_task} function
-#' @param dir_path \code{character}. Where to create the new directory.
-#' @param conf_descr \code{named list} (NULL). Description fields chosen by the user. 
+#' @param dir_path \code{character}. Tasks location (parent directory).
+#' @param conf_descr \code{named list} (NULL). Optional description fields.
 #' @param fun_path \code{character}. Path to the script of the function.
 #' @param fun_name \code{character}. Name of the function in fun_path script.
 #' @param fun_args \code{named list} (NULL). Args of the function, must all be named.
 #' @param priority \code{numeric} (0L). Number used to define which task should be launched first.
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
 #' @param labels \code{list}. Modal dialog title.
-#' 
-#' @return shiny module.
+#'
+#' @return Nothing.
+#'
 #' @export
-#' 
+#'
 #' @import shiny
+#'
+#' @seealso \code{\link[shinybatch]{tasks_overview_server}}, \code{\link[shinybatch]{run_demo_app}}
 #'
 #' @examples
 #' \dontrun{\donttest{
-#' 
+#'
 #' # create temporary directory for conf
 #' dir_conf <- tempdir()
-#' 
-#'# ex fun 
+#'
+#'# ex fun
 #' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
 #' fun_name = "sb_fun_ex"
-#' 
+#'
 #' # create and save conf
 #' ui <- shiny::fluidPage(
 #'   fluidRow(
 #'     column(offset = 3, 6,
-#'            shiny::actionButton("conf_task", "Configure the task", width = "100%")        
+#'            shiny::actionButton("conf_task", "Configure the task", width = "100%")
 #'     )
 #'   )
 #' )
@@ -50,16 +53,16 @@
 #'              priority = 1)
 #' }
 #' shiny::shinyApp(ui = ui, server = server)
-#' 
+#'
 #' # catch results
 #' list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
 #' path
 #' read_conf <- yaml::read_yaml(paste0(path[1], "/", "conf.yml"))
 #' y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"));y
 #' z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"));z
-#' 
+#'
 #' }}
-#' 
+#'
 #' @rdname module_configure_task
 configure_task_server <- function(input, output, session,
                                   btn,
@@ -69,12 +72,12 @@ configure_task_server <- function(input, output, session,
                                   conf_descr = NULL,
                                   fun_args = NULL,
                                   priority = 0L,
-                                  compress = TRUE, 
+                                  compress = TRUE,
                                   labels = list(
                                     success = "Task configured !",
                                     error = "Error when configuring the task"
                                   )) {
-  
+
   # reactive controls
   if (! shiny::is.reactive(dir_path)) {
     get_dir_path <- shiny::reactive(dir_path)
@@ -120,13 +123,13 @@ configure_task_server <- function(input, output, session,
   output$is_args <- reactive({
     ! (is.null(get_dir_path()) ||
          is.null(get_fun_path()) ||
-         is.null(get_fun_name())) 
+         is.null(get_fun_name()))
   })
   outputOptions(output, "is_args", suspendWhenHidden = FALSE)
-  
+
   observe({
     btn <- btn()
-    
+
     isolate({
       if (btn > 0) {
         try <- try(configure_task(dir_path = get_dir_path(),
@@ -136,13 +139,13 @@ configure_task_server <- function(input, output, session,
                                   fun_args = get_fun_args(),
                                   priority = get_priority(),
                                   compress = get_compress(), call. = FALSE), silent = T)
-        
+
         if (class(try) == "try-error") {
           showModal(
             modalDialog(
               easyClose = TRUE,
               footer = NULL,
-              title = tags$p(ifelse(is.null(get_labels()$error), 
+              title = tags$p(ifelse(is.null(get_labels()$error),
                                             "Error when configuring the task",
                                             get_labels()$error), style = "color:red;"),
               try[[1]]

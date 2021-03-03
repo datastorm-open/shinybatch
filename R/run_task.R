@@ -25,13 +25,17 @@
 #'
 #' # create and save conf
 #' conf <- configure_task(dir_path = dir_conf,
-#'                        conf_descr = list(title = "my_title",
-#'                                          description = "my_descr"),
+#'                        conf_descr = list(
+#'                          title = "my_title",
+#'                          description = "my_descr"
+#'                        ),
 #'                        fun_path = fun_path,
 #'                        fun_name = fun_name,
-#'                        fun_args = list(x = 1,
-#'                                        y = 0:4,
-#'                                        z = iris),
+#'                        fun_args = list(
+#'                          x = 1,
+#'                          y = 0:4,
+#'                          z = iris
+#'                        ),
 #'                        priority = 1)
 #'
 #' conf_init <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))

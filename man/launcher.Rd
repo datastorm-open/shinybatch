@@ -2,7 +2,7 @@
 % Please edit documentation in R/launcher.R
 \name{launcher}
 \alias{launcher}
-\title{Evaluates and triggers the number of tasks to launch to reach the maximum allowed}
+\title{Evaluate and trigger the number of tasks to launch to reach the maximum allowed}
 \usage{
 launcher(
   dir_path,
@@ -31,7 +31,7 @@ the date of creation of the task to compute the order of (re)run for these tasks
 the number of launched tasks.
 }
 \description{
-Evaluates and triggers the number of tasks to launch to reach the maximum allowed
+Evaluate and trigger the number of tasks to launch to reach the maximum allowed
 }
 \examples{
 \donttest{\dontrun{
@@ -46,22 +46,31 @@ fun_name = "sb_fun_ex"
 
 # create 2 confs
 conf_1 <- configure_task(dir_path = dir_conf,
-                         conf_descr = list(title_1 = "my_title_1",
-                                           description_1 = "my_descr_1"),
+                         conf_descr = list(
+                           title_1 = "my_title_1",
+                           description_1 = "my_descr_1"
+                         ),
                          fun_path = fun_path,
                          fun_name = fun_name,
-                         fun_args = list(x = 0,
-                                         y = 0:4,
-                                         z = iris),
+                         fun_args = list(
+                           x = 0,
+                           y = 0:4,
+                           z = iris
+                         ),
                          priority = 1)
+
 conf_2 <- configure_task(dir_path = dir_conf,
-                         conf_descr = list(title_2 = "my_title_2",
-                                           description_2 = "my_descr_2"),
+                         conf_descr = list(
+                           title_2 = "my_title_2",
+                           description_2 = "my_descr_2"
+                         ),
                          fun_path = fun_path,
                          fun_name = fun_name,
-                         fun_args = list(x = 1,
-                                         y = 0:4,
-                                         z = iris),
+                         fun_args = list(
+                           x = 1,
+                           y = 0:4,
+                           z = iris
+                         ),
                          priority = 2)
 
 launcher(dir_conf, verbose = T)
@@ -74,10 +83,10 @@ launcher(dir_conf, verbose = T)
 Sys.sleep(2) # waiting scheduler computation
 readRDS(paste0(conf_1$dir, "output/res.RDS"))
 
-launcher(dir_conf, verbose = T) 
+launcher(dir_conf, verbose = T)
 
 # launch again a finished task
-launcher(dir_conf, ignore_status = c("running", "error"), verbose = T) 
+launcher(dir_conf, ignore_status = c("running", "error"), verbose = T)
 
 log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
 

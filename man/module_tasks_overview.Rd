@@ -49,7 +49,7 @@ tasks_overview_UI(
 
 \item{allowed_status}{\code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.}
 
-\item{update_mode}{\code{character} : "reactive" (default) use \code{shiny::reactivePoll} to see if tasks info have changed. 
+\item{update_mode}{\code{character} : "reactive" (default) use \code{shiny::reactivePoll} to see if tasks info have changed.
 "button" add and use a \code{shiny::actionButton} to update task info table.}
 
 \item{intervalMillis}{\code{integer}. In case of "reactive" update_mode, time betweens calls}
@@ -75,7 +75,7 @@ Module to visualize all the created tasks.
 dir_conf <- paste0(tempdir(), "/conf")
 dir.create(dir_conf, recursive = T)
 
-# ex fun 
+# ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
 fun_name = "sb_fun_ex"
 
@@ -98,7 +98,7 @@ conf_2 <- configure_task(dir_path = dir_conf,
                                          y = 0:4,
                                          z = iris),
                          priority = 2)
-                         
+
 run_task(paste0(conf_2$dir, "conf.yml"))
 
 ui <- shiny::fluidPage(tasks_overview_UI("my_id_1"))
@@ -117,4 +117,7 @@ shiny::shinyApp(ui = ui, server = server)
 
 }}
 
+}
+\seealso{
+\code{\link[shinybatch]{configure_task_server}}, \code{\link[shinybatch]{run_demo_app}}
 }

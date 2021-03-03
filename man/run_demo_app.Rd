@@ -12,3 +12,8 @@ Launch shinybatch demo app
 \details{
 The created scheduler is automatically destroyed when quitting Shiny.
 }
+\examples{
+
+run_demo_app()
+
+}

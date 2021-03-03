@@ -2,7 +2,7 @@
 % Please edit documentation in R/configure_task.R
 \name{configure_task}
 \alias{configure_task}
-\title{Initialise conf file for batch tasks}
+\title{Initialize a configuration file for a future task}
 \usage{
 configure_task(
   dir_path,
@@ -16,28 +16,30 @@ configure_task(
 )
 }
 \arguments{
-\item{dir_path}{\code{character}. Where to create the new directory.}
+\item{dir_path}{\code{character}. Tasks location (parent directory).}
 
 \item{fun_path}{\code{character}. Path to the script of the function.}
 
 \item{fun_name}{\code{character}. Name of the function in fun_path script.}
 
-\item{conf_descr}{\code{named list} (NULL). Description fields chosen by the user.}
+\item{conf_descr}{\code{named list} (NULL). Optional description fields.}
 
 \item{fun_args}{\code{named list} (NULL). Args of the function, must all be named.}
 
-\item{priority}{\code{numeric} (0L). Number used to define which task should be launched first.}
+\item{priority}{\code{numeric} (0L). Number used to define which task should be launched first using \code{\link[shinybatch]{launcher}}}
 
-\item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
+\item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz"
+to indicate the type of compression to be used for function result}
 
-\item{call.}{\code{logical} (TRUE) logical, indicating if the call should become part of the error message}
+\item{call.}{\code{logical} (TRUE) logical, indicating if the call should become part of the error message (in log file)}
 }
 \value{
 a list containing the conf fields. Attribute 'path' of the result contains the path to the conf directory.
-The arg field contains either the location of the argument (in "dir_path/inputs/arg_name.RDS") or the argument itself if it is of length 1.
+The arg field contains either the location of the argument (in "dir_path/inputs/arg_name.RDS") or
+the argument itself if it is of length 1.
 }
 \description{
-Initialise conf file for batch tasks
+Initialize a configuration file for a future task
 }
 \examples{
 \donttest{\dontrun{
