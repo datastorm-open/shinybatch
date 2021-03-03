@@ -2,7 +2,9 @@ require(shiny)
 require(shinydashboard)
 require(DT)
 require(shinybatch)
-
+# require(cronR) # decomment for shinyapps.io deployement
+# require(markdown) # decomment for shinyapps.io deployement
+# CRON not launched on shinyapps...
 # create directory for conf
 dir_conf <- paste0(tempdir(), "/conf")
 if (dir.exists(dir_conf)) unlink(dir_conf, recursive = TRUE)
