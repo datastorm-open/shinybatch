@@ -12,7 +12,7 @@
 #' @param filename \code{character} a character string with the name of the rscript file.
 #' @param ... \code{}. Additional arguments passed to \code{\link[cronR]{cron_add}}, \code{\link[cronR]{cron_rm}}, \code{\link[cronR]{cron_ls}} (Linux) or \code{\link[taskscheduleR]{taskscheduler_create}} (Windows).
 #'
-#' @details Without any frequency argument, defaut is set to every minute
+#' @details Without any frequency argument, default is set to every minute
 #'
 #' @return NULL.
 #'
@@ -296,7 +296,7 @@ scheduler_exist <- function(taskname) {
     info_crons <- suppressWarnings(scheduler_ls())
 
     if("data.frame" %in% class(info_crons)){
-      check <- any(grepl(taskname, info_crons$`Nom de la tâche`))
+      check <- any(grepl(taskname, info_crons[[2]]))
     }
   } else {
     info_crons <- scheduler_ls(id = taskname)

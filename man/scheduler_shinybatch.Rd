@@ -66,7 +66,7 @@ NULL.
 Scheduler management of the launcher function
 }
 \details{
-Without any frequency argument, defaut is set to every minute
+Without any frequency argument, default is set to every minute
 }
 \examples{
 \dontrun{\donttest{
