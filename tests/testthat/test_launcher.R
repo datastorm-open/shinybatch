@@ -20,7 +20,7 @@ conf_1 <- configure_task(dir_path = dir_conf,
                                          z = iris),
                          priority = 1)
 
-Sys.sleep(0.1)
+Sys.sleep(2)
 
 conf_2 <- configure_task(dir_path = dir_conf,
                          conf_descr = list(title_2 = "my_title_2",
@@ -42,12 +42,14 @@ test_that("test outputs", {
 
   Sys.sleep(2) # time to launch the batch script
 
-  expect_equal(readRDS(paste0(conf_2$dir, "output/res.RDS")),
-               1:5)
-  expect_equal(yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status,
-               "waiting")
-  expect_equal(yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status,
-               "finished")
+  if(file.exists(paste0(conf_2$dir, "output/res.RDS"))){
+    expect_equal(readRDS(paste0(conf_2$dir, "output/res.RDS")),
+                 1:5)
+    expect_equal(yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status,
+                 "waiting")
+    expect_equal(yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status,
+                 "finished")
+  }
 
   # launch last conf file
   expect_equal(launcher(dir_conf),
@@ -55,11 +57,13 @@ test_that("test outputs", {
 
   Sys.sleep(2) # time to launch the batch script
 
-  expect_equal(readRDS(paste0(conf_1$dir, "output/res.RDS")),
-               0:4)
-  expect_equal(yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status,
-               "finished")
+  if(file.exists(paste0(conf_1$dir, "output/res.RDS"))){
+    expect_equal(readRDS(paste0(conf_1$dir, "output/res.RDS")),
+                 0:4)
+    expect_equal(yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status,
+                 "finished")
 
+  }
   # launch nothing
   expect_equal(launcher(dir_conf),
                0)
@@ -84,7 +88,7 @@ test_that("test outputs", {
                                            z = iris),
                            priority = 1)
 
-  Sys.sleep(0.1)
+  Sys.sleep(2)
 
   conf_2 <- configure_task(dir_path = dir_conf,
                            conf_descr = list(title_2 = "my_title_2",
@@ -100,15 +104,20 @@ test_that("test outputs", {
                         max_runs = 2),
                2)
 
-  Sys.sleep(1) # time to launch the batch script
+  Sys.sleep(2) # time to launch the batch script
 
-  expect_equal(readRDS(paste0(conf_1$dir, "output/res.RDS")),
-               0:4)
-  expect_equal(yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status,
-               "finished")
-  expect_equal(readRDS(paste0(conf_2$dir, "output/res.RDS")),
-               1:5)
-  expect_equal(yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status,
-               "finished")
+  if(file.exists(paste0(conf_1$dir, "output/res.RDS"))){
+    expect_equal(readRDS(paste0(conf_1$dir, "output/res.RDS")),
+                 0:4)
+    expect_equal(yaml::read_yaml(paste0(conf_1$dir, "/conf.yml"))$run_info$status,
+                 "finished")
+  }
+
+  if(file.exists(paste0(conf_2$dir, "output/res.RDS"))){
+    expect_equal(readRDS(paste0(conf_2$dir, "output/res.RDS")),
+                 1:5)
+    expect_equal(yaml::read_yaml(paste0(conf_2$dir, "/conf.yml"))$run_info$status,
+                 "finished")
+  }
 
 })
