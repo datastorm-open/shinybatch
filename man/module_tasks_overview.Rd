@@ -16,6 +16,7 @@ tasks_overview_server(
   allowed_function_cols = c("path", "name"),
   allow_args = TRUE,
   allowed_status = c("waiting", "running", "finished", "error"),
+  allow_log_btn = FALSE,
   update_mode = c("reactive", "button"),
   intervalMillis = 1000,
   table_fun = function(x) x,
@@ -49,6 +50,8 @@ tasks_overview_UI(
 \item{allow_args}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.}
 
 \item{allowed_status}{\code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.}
+
+\item{allow_log_btn}{\code{boolean} (FALSE). Whether or not to display a button to show log in modal.}
 
 \item{update_mode}{\code{character} : "reactive" (default) use \code{shiny::reactivePoll} to see if tasks info have changed.
 "button" add and use a \code{shiny::actionButton} to update task info table.}
