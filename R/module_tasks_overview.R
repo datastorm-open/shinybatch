@@ -6,7 +6,7 @@
 #' @param session shiny input
 #' @param dir_path \code{character}. Where to find the tasks directorys.
 #' @param allowed_status \code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.
-#' @param allowed_run_info_cols \code{character} (c("date_init", "date_start", "date_end", "priority", "status")). Run info elements to be kept.
+#' @param allowed_run_info_cols \code{character} (c("date_creation", "date_start", "date_end", "priority", "status")). Run info elements to be kept.
 #' @param allow_descr \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.
 #' @param allowed_function_cols \code{character} (c("names", "path")). Function elements to be kept.
 #' @param allow_args \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.
