@@ -17,6 +17,7 @@ tasks_overview_server(
   allow_args = TRUE,
   allowed_status = c("waiting", "running", "finished", "error"),
   allow_log_btn = FALSE,
+  allow_rm_task = TRUE,
   update_mode = c("reactive", "button"),
   intervalMillis = 1000,
   table_fun = function(x) x,
@@ -29,7 +30,8 @@ tasks_overview_UI(
   labels = list(btn = "Display/update the tasks", empty_global =
     "Empty table of global features.", empty_individual =
     "Empty table of individual features.", error_dir_access =
-    "Cannot access given directory.")
+    "Cannot access given directory.", logs = "Show logs", remove_task =
+    "Remove this task ?")
 )
 }
 \arguments{
@@ -52,6 +54,8 @@ tasks_overview_UI(
 \item{allowed_status}{\code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.}
 
 \item{allow_log_btn}{\code{boolean} (FALSE). Whether or not to display a button to show log in modal.}
+
+\item{allow_rm_task}{\code{boolean} (TRUE). Whether or not to display a button to show log in modal.}
 
 \item{update_mode}{\code{character} : "reactive" (default) use \code{shiny::reactivePoll} to see if tasks info have changed.
 "button" add and use a \code{shiny::actionButton} to update task info table.}
