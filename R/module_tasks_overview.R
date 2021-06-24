@@ -226,7 +226,7 @@ tasks_overview_server <- function(input, output, session,
     tbl_global <- copy(tbl_features()$tbl_global)
 
     # add log button
-    if(get_allow_log_btn){
+    if(get_allow_log_btn()){
       tbl_global$display_log<- input_btns(ns("display_log"), tbl_global$dir, "Show logs", icon("search"), status = "primary")      
     }
     # add trash button
@@ -379,7 +379,6 @@ tasks_overview_server <- function(input, output, session,
   res_module <- reactive({
     sel_row <- input[["tbl_global_DT_out_rows_selected"]]
     input$remove_task
-    input$display_log
 
     isolate({
       res <- list()
