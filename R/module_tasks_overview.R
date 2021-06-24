@@ -10,7 +10,7 @@
 #' @param allow_descr \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.
 #' @param allowed_function_cols \code{character} (c("names", "path")). Function elements to be kept.
 #' @param allow_args \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.
-#' @param allow_log_btn \code{boolean} (FALSE). Whether or not to display a button to show log in modal.
+#' @param allow_log_btn \code{boolean} (TRUE). Whether or not to display a button to show log in modal.
 #' @param allow_rm_task \code{boolean} (TRUE). Whether or not to display a button to show log in modal.
 #' @param table_fun \code{function} (function(x) x). Function to be applied on the summary table, making it easy to customize it. First arg must be the summmary table.
 #' @param labels \code{list} UI labels
@@ -116,7 +116,7 @@ tasks_overview_server <- function(input, output, session,
                                   allowed_function_cols = c("path", "name"),
                                   allow_args = TRUE,
                                   allowed_status = c("waiting", "running", "finished", "error"),
-                                  allow_log_btn = FALSE,
+                                  allow_log_btn = TRUE,
                                   allow_rm_task = TRUE,
                                   update_mode = c("reactive", "button"),
                                   intervalMillis = 1000,
