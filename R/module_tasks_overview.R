@@ -157,6 +157,11 @@ tasks_overview_server <- function(input, output, session,
   } else {
     get_allowed_status <- allowed_status
   }
+  if (! shiny::is.reactive(allow_log_btn)) {
+    get_allow_log_btn <- shiny::reactive(allow_log_btn)
+  } else {
+    get_allow_log_btn <- allow_log_btn
+  }
 
   # check dir
   output$is_dir <- reactive({
@@ -221,7 +226,7 @@ tasks_overview_server <- function(input, output, session,
     tbl_global <- copy(tbl_features()$tbl_global)
 
     # add log button
-    if(allow_log_btn){
+    if(get_allow_log_btn){
       tbl_global$display_log<- input_btns(ns("display_log"), tbl_global$dir, "Show logs", icon("search"), status = "primary")      
     }
     # add trash button
