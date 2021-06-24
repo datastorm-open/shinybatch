@@ -1,4 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+<<<<<<< HEAD
 ^doc$
 ^Meta$
+=======
+>>>>>>> origin/log_btn

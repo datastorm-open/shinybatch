@@ -7,7 +7,7 @@ server <- function(input, output, session) {
     callModule(configure_task_server, "my_id_1",
                btn = reactive(input$go_task),
                dir_path = dir_conf,
-               conf_descr = reactive(list("title" = input$title,
+               conf_descr = reactive(list("title" = c(input$title,input$title),
                                           "description" = input$description)),
                fun_path = fun_path,
                fun_name = "my_fun",
@@ -24,6 +24,8 @@ server <- function(input, output, session) {
                            allowed_status = c("waiting", "running", "finished", "error"),
                            allowed_run_info_cols = NULL,
                            allowed_function_cols = NULL,
+                           allow_log_btn = T,
+                           allow_rm_task = T,
                            allow_descr = T,
                            allow_args = T)
 
