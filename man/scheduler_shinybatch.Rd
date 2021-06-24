@@ -57,7 +57,7 @@ the date of creation of the task to compute the order of (re)run for these tasks
 
 \item{create_file}{\code{boolean} (TRUE). Whether or not to also create the R scheduler script with scheduler_init ?}
 
-\item{...}{\code{}. Additional arguments passed to \code{\link[cronR]{cron_add}}, \code{\link[cronR]{cron_rm}}, \code{\link[cronR]{cron_ls}} (Linux) or \code{\link[taskscheduleR]{taskscheduler_create}} (Windows).}
+\item{...}{\code{}. Additional arguments passed to \code{cronR::cron_add}, \code{cronR::cron_rm}, \code{cronR::cron_ls} (Linux) or \code{taskscheduleR::taskscheduler_create} (Windows).}
 }
 \value{
 NULL.

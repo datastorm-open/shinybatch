@@ -16,7 +16,7 @@ tasks_overview_server(
   allowed_function_cols = c("path", "name"),
   allow_args = TRUE,
   allowed_status = c("waiting", "running", "finished", "error"),
-  allow_log_btn = FALSE,
+  allow_log_btn = TRUE,
   allow_rm_task = TRUE,
   update_mode = c("reactive", "button"),
   intervalMillis = 1000,
@@ -53,7 +53,7 @@ tasks_overview_UI(
 
 \item{allowed_status}{\code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.}
 
-\item{allow_log_btn}{\code{boolean} (FALSE). Whether or not to display a button to show log in modal.}
+\item{allow_log_btn}{\code{boolean} (TRUE). Whether or not to display a button to show log in modal.}
 
 \item{allow_rm_task}{\code{boolean} (TRUE). Whether or not to display a button to show log in modal.}
 

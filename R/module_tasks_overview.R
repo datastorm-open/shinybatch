@@ -29,6 +29,7 @@
 #'
 #' @import shiny data.table yaml
 #' @importFrom DT datatable renderDT DTOutput formatStyle %>%
+#' @importFrom utils read.delim2
 #'
 #' @seealso \code{\link[shinybatch]{configure_task_server}}
 #'
@@ -294,7 +295,7 @@ tasks_overview_server <- function(input, output, session,
     if (!is.null(input$display_log) && !is.null(res_module())) {
       # get log file in output directory
       output_files = list.files(res_module()$path, full.names = T)
-      log_file = output_files[stringr::str_detect(output_files, "log_run")]
+      log_file = output_files[grepl("log_run", output_files)]
       # read log file
       if(length(log_file)>0){
         log_file = paste(read.delim2(sort(log_file, decreasing = T)[1], header=F)$V1, collapse = "<br/>")
