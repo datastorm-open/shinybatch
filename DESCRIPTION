@@ -7,7 +7,7 @@ Authors@R: c(
     person(given = "Thibaut", family = "Dubois", 
     email = "thibaut.dubois@datastorm.fr", role = c("aut", "ctb"))
     )
-Description: The package provides two modules to configure some R task, launch in batch, and retrieve result from shiny. Can be used both in windows system using Windows task scheduler, and on unix-alike system using 'crontab'.
+Description: Provides two modules to configure some R task, launch in batch, and retrieve result from shiny. Can be used both in windows system using Windows task scheduler, and on unix-alike system using 'crontab'.
 Depends: R (>= 3.5.0)
 License: GPL-3
 Encoding: UTF-8
