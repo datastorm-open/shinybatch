@@ -22,10 +22,16 @@
 #' @seealso \code{\link[shinybatch]{tasks_overview_server}}
 #'
 #' @examples
-#' \dontrun{\donttest{
+#'
+#' \donttest{
+#'
+#' if(interactive()){
+#'
+#' require(shiny)
 #'
 #' # create temporary directory for conf
-#' dir_conf <- tempdir()
+#' dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+#' dir.create(dir_conf, recursive = TRUE)
 #'
 #'# ex fun
 #' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -55,15 +61,17 @@
 #' shiny::shinyApp(ui = ui, server = server)
 #'
 #' # catch results
-#' list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
+#' list.files(path <- list.dirs(dir_conf, full.names = TRUE, recursive = FALSE))
 #' path
 #' read_conf <- yaml::read_yaml(paste0(path[1], "/", "conf.yml"))
 #' y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"));y
 #' z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"));z
 #'
-#' }}
+#' }
+#' }
 #'
 #' @rdname module_configure_task
+#'
 configure_task_server <- function(input, output, session,
                                   btn,
                                   dir_path,
@@ -138,7 +146,7 @@ configure_task_server <- function(input, output, session,
                                   fun_name = get_fun_name(),
                                   fun_args = get_fun_args(),
                                   priority = get_priority(),
-                                  compress = get_compress(), call. = FALSE), silent = T)
+                                  compress = get_compress(), call. = FALSE), silent = TRUE)
 
         if (class(try) == "try-error") {
           showModal(

@@ -8,7 +8,7 @@ launcher(
   dir_path,
   max_runs = 1,
   ignore_status = c("running", "finished", "error"),
-  delay_reruns = T,
+  delay_reruns = TRUE,
   compress = TRUE,
   verbose = FALSE
 )
@@ -20,7 +20,7 @@ launcher(
 
 \item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
 
-\item{delay_reruns}{\code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+\item{delay_reruns}{\code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
 the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.}
 
 \item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
@@ -34,11 +34,12 @@ the number of launched tasks.
 Evaluate and trigger the number of tasks to launch to reach the maximum allowed
 }
 \examples{
-\donttest{\dontrun{
+
+\donttest{
 
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf")
-dir.create(dir_conf, recursive = T)
+dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+dir.create(dir_conf, recursive = TRUE)
 
 # ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -73,22 +74,23 @@ conf_2 <- configure_task(dir_path = dir_conf,
                          ),
                          priority = 2)
 
-launcher(dir_conf, verbose = T)
+launcher(dir_conf, verbose = TRUE)
 # display res of conf_2 in /output dir
 Sys.sleep(2) # waiting scheduler computation
 readRDS(paste0(conf_2$dir, "output/res.RDS"))
 
-launcher(dir_conf, verbose = T)
+launcher(dir_conf, verbose = TRUE)
 # display res of conf_1 in /output dir
 Sys.sleep(2) # waiting scheduler computation
 readRDS(paste0(conf_1$dir, "output/res.RDS"))
 
-launcher(dir_conf, verbose = T)
+launcher(dir_conf, verbose = TRUE)
 
 # launch again a finished task
-launcher(dir_conf, ignore_status = c("running", "error"), verbose = T)
+launcher(dir_conf, ignore_status = c("running", "error"), verbose = TRUE)
 
-log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
+log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = FALSE)
 
-}}
+}
+
 }

@@ -19,10 +19,13 @@
 #' @import yaml
 #'
 #' @examples
-#' \donttest{\dontrun{
+#'
+#' \donttest{
+#'
 #'
 #' # create temporary directory
-#' dir <- tempdir()
+#' dir <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+#' dir.create(dir, recursive = TRUE)
 #'
 #' # create and save conf
 #' conf <- configure_task(dir_path = dir,
@@ -41,7 +44,8 @@
 #' y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
 #' z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 #'
-#' }}
+#' }
+#'
 configure_task <- function(dir_path,
                            fun_path,
                            fun_name,
@@ -93,15 +97,15 @@ configure_task <- function(dir_path,
 
   # write conf
   sep_path <- "/"
-  fun_path <- gsub("\\", sep_path, fun_path, fixed = T)
+  fun_path <- gsub("\\", sep_path, fun_path, fixed = TRUE)
 
   time <- Sys.time()
-  dir_path <- gsub("/$", "", gsub("\\", sep_path, dir_path, fixed = T))
+  dir_path <- gsub("/$", "", gsub("\\", sep_path, dir_path, fixed = TRUE))
   dir_path <- paste0(dir_path, sep_path,
                      gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE),
                      sep_path)
 
-  suppressWarnings(dir.create(dir_path, recursive = T))
+  suppressWarnings(dir.create(dir_path, recursive = TRUE))
   if (! dir.exists(dir_path)) {
     stop("Can't create output directory ", dir_path, call. = call.)
   }

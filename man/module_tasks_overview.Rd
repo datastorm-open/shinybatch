@@ -82,11 +82,17 @@ all tasks information table
 Module to visualize all the created tasks.
 }
 \examples{
-\dontrun{\donttest{
+
+\donttest{
+
+
+if(interactive()){
+
+require(shiny)
 
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf")
-dir.create(dir_conf, recursive = T)
+dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+dir.create(dir_conf, recursive = TRUE)
 
 # ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -127,8 +133,8 @@ server <- function(input, output, session) {
              allowed_status = c("waiting", "running", "finished", "error"),
              allowed_run_info_cols = NULL,
              allowed_function_cols = "",
-             allow_descr = T,
-             allow_args = T,
+             allow_descr = TRUE,
+             allow_args = TRUE,
              table_fun = function(x, y) x[, new_col := y],
              y = "created using arg. 'table_fun'")
 
@@ -155,7 +161,9 @@ server <- function(input, output, session) {
   })
 }
 shiny::shinyApp(ui = ui, server = server)
-}}
+
+}
+}
 
 }
 \seealso{

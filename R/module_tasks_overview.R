@@ -34,11 +34,17 @@
 #' @seealso \code{\link[shinybatch]{configure_task_server}}
 #'
 #' @examples
-#' \dontrun{\donttest{
+#'
+#' \donttest{
+#'
+#'
+#' if(interactive()){
+#'
+#' require(shiny)
 #'
 #' # create temporary directory for conf
-#' dir_conf <- paste0(tempdir(), "/conf")
-#' dir.create(dir_conf, recursive = T)
+#' dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+#' dir.create(dir_conf, recursive = TRUE)
 #'
 #'# ex fun
 #' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -79,8 +85,8 @@
 #'              allowed_status = c("waiting", "running", "finished", "error"),
 #'              allowed_run_info_cols = NULL,
 #'              allowed_function_cols = "",
-#'              allow_descr = T,
-#'              allow_args = T,
+#'              allow_descr = TRUE,
+#'              allow_args = TRUE,
 #'              table_fun = function(x, y) x[, new_col := y],
 #'              y = "created using arg. 'table_fun'")
 #'
@@ -107,7 +113,9 @@
 #'   })
 #' }
 #' shiny::shinyApp(ui = ui, server = server)
-#' }}
+#'
+#' }
+#' }
 #'
 #' @rdname module_tasks_overview
 tasks_overview_server <- function(input, output, session,
@@ -209,7 +217,7 @@ tasks_overview_server <- function(input, output, session,
 
     tbl_features <- reactivePoll(intervalMillis, session,
                                  checkFunc = function() {
-                                   confs <- lapply(list.dirs(isolate(get_dir_path()), full.names = T, recursive = F), function(x) {
+                                   confs <- lapply(list.dirs(isolate(get_dir_path()), full.names = TRUE, recursive = FALSE), function(x) {
                                      conf_path <- paste0(x, "/conf.yml")
                                      if(file.exists(conf_path)){
                                        file.info(conf_path)$mtime[1]
@@ -294,11 +302,11 @@ tasks_overview_server <- function(input, output, session,
 
     if (!is.null(input$display_log) && !is.null(res_module())) {
       # get log file in output directory
-      output_files = list.files(res_module()$path, full.names = T)
+      output_files = list.files(res_module()$path, full.names = TRUE)
       log_file = output_files[grepl("log_run", output_files)]
       # read log file
       if(length(log_file)>0){
-        log_file = paste(read.delim2(sort(log_file, decreasing = T)[1], header=F)$V1, collapse = "<br/>")
+        log_file = paste(read.delim2(sort(log_file, decreasing = TRUE)[1], header = FALSE)$V1, collapse = "<br/>")
       } else {
         log_file = "No log available"
       }
@@ -338,7 +346,7 @@ tasks_overview_server <- function(input, output, session,
 
     if (! is.null(input$confirm_remove_task) && input$confirm_remove_task > 0  && !is.null(res_module())) {
       removeModal()
-      unlink(gsub("/output$", "", res_module()$path), recursive = T)
+      unlink(gsub("/output$", "", res_module()$path), recursive = TRUE)
     }
   })
 
@@ -362,7 +370,7 @@ tasks_overview_server <- function(input, output, session,
         tbl_idv <- tbl_features()$tbls_idv[[sel_row]]
 
         if (! is.null(tbl_idv)) {
-          DT <- DT::datatable(tbl_idv, rownames = F,
+          DT <- DT::datatable(tbl_idv, rownames = FALSE,
                               filter = 'none', selection = "none",
                               options = list(scrollX = TRUE, dom = 't'))
 

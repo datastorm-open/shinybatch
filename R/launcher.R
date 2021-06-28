@@ -3,7 +3,7 @@
 #' @param dir_path \code{character}. Where to find the tasks directory.
 #' @param max_runs \code{integer}. Maximum number of simultaneous running tasks.
 #' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
-#' @param delay_reruns \code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+#' @param delay_reruns \code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
 #' the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
 #' @param verbose \code{logical} See running task message ? Default to FALSE
@@ -15,11 +15,12 @@
 #' @import yaml futile.logger
 #'
 #' @examples
-#' \donttest{\dontrun{
+#'
+#' \donttest{
 #'
 #' # create temporary directory for conf
-#' dir_conf <- paste0(tempdir(), "/conf")
-#' dir.create(dir_conf, recursive = T)
+#' dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+#' dir.create(dir_conf, recursive = TRUE)
 #'
 #' # ex fun
 #' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -54,28 +55,29 @@
 #'                          ),
 #'                          priority = 2)
 #'
-#' launcher(dir_conf, verbose = T)
+#' launcher(dir_conf, verbose = TRUE)
 #' # display res of conf_2 in /output dir
 #' Sys.sleep(2) # waiting scheduler computation
 #' readRDS(paste0(conf_2$dir, "output/res.RDS"))
 #'
-#' launcher(dir_conf, verbose = T)
+#' launcher(dir_conf, verbose = TRUE)
 #' # display res of conf_1 in /output dir
 #' Sys.sleep(2) # waiting scheduler computation
 #' readRDS(paste0(conf_1$dir, "output/res.RDS"))
 #'
-#' launcher(dir_conf, verbose = T)
+#' launcher(dir_conf, verbose = TRUE)
 #'
 #' # launch again a finished task
-#' launcher(dir_conf, ignore_status = c("running", "error"), verbose = T)
+#' launcher(dir_conf, ignore_status = c("running", "error"), verbose = TRUE)
 #'
-#' log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = F)
+#' log <- read.delim(paste0(dir_conf, "/log_launcher.txt"), header = FALSE)
 #'
-#' }}
+#' }
+#'
 launcher <- function(dir_path,
                      max_runs = 1,
                      ignore_status = c("running", "finished", "error"),
-                     delay_reruns = T,
+                     delay_reruns = TRUE,
                      compress = TRUE, verbose = FALSE) {
 
   # checks
@@ -116,7 +118,7 @@ launcher <- function(dir_path,
     # retrieve conf files
     confs <- tryCatch({
       conf_paths <- if (! is.null(dir_path)) {
-        list.dirs(dir_path, full.names = T, recursive = F)
+        list.dirs(dir_path, full.names = TRUE, recursive = FALSE)
       } else {
         NULL
       }
@@ -141,9 +143,9 @@ launcher <- function(dir_path,
     if (length(confs) > 0) {
       tbl_global <- conf_to_dt(confs = confs,
                                allowed_run_info_cols = c("date_creation", "date_start", "date_end", "priority", "status"),
-                               allow_descr = F,
+                               allow_descr = FALSE,
                                allowed_function_cols = "",
-                               allow_args = F)$tbl_global
+                               allow_args = FALSE)$tbl_global
 
         nb_to_run <- min(max_runs - sum(tbl_global$status == "running"), sum(! tbl_global$status %in% ignore_status))
 

@@ -42,10 +42,13 @@ the argument itself if it is of length 1.
 Initialize a configuration file for a future task
 }
 \examples{
-\donttest{\dontrun{
+
+\donttest{
+
 
 # create temporary directory
-dir <- tempdir()
+dir <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+dir.create(dir, recursive = TRUE)
 
 # create and save conf
 conf <- configure_task(dir_path = dir,
@@ -64,5 +67,6 @@ read_conf <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
 y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
 z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 
-}}
+}
+
 }
