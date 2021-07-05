@@ -70,8 +70,9 @@ Without any frequency argument, default is set to every minute
 }
 \examples{
 
-\donttest{
+\dontrun{
 
+# Not run:
 # create temporary directory for conf
 dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
 dir.create(dir_conf, recursive = TRUE)
