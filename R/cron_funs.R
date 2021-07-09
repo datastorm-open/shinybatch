@@ -298,7 +298,7 @@ scheduler_exist <- function(taskname) {
     info_crons <- suppressWarnings(scheduler_ls())
 
     if("data.frame" %in% class(info_crons)){
-      check <- any(grepl(taskname, info_crons[[2]]))
+      check <- any(taskname %in% info_crons[[2]])
     }
   } else {
     info_crons <- scheduler_ls(id = taskname)
@@ -329,6 +329,6 @@ scheduler_ls <- function(...) {
            call. = FALSE)
     }
 
-    cronR::cron_ls(...)
+    tryCatch({cronR::cron_ls(...)}, error = function(e) NULL)
   }
 }
