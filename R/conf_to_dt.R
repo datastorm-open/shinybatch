@@ -164,10 +164,6 @@ conf_to_dt <- function(confs,
   colnames(tbl_global) <- gsub("^date_start$", "starting_date", colnames(tbl_global))
   colnames(tbl_global) <- gsub("^date_end$", "ending_date", colnames(tbl_global))
 
-  colnames(tbls_idv) <- gsub("^date_creation$", "initialization_date", colnames(tbls_idv))
-  colnames(tbls_idv) <- gsub("^date_start$", "starting_date", colnames(tbls_idv))
-  colnames(tbls_idv) <- gsub("^date_end$", "ending_date", colnames(tbls_idv))
-
   return(list("tbl_global" = tbl_global, "tbls_idv" = tbls_idv))
 }
 
