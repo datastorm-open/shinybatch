@@ -13,7 +13,7 @@ scheduler_init(
   dir_conf,
   max_runs = 1,
   ignore_status = c("running", "finished", "error"),
-  delay_reruns = T,
+  delay_reruns = TRUE,
   filename = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d"), ".R"),
   head_rows = NULL
 )
@@ -23,7 +23,7 @@ scheduler_add(
   dir_conf,
   max_runs = 1,
   ignore_status = c("running", "finished", "error"),
-  delay_reruns = T,
+  delay_reruns = TRUE,
   taskname = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d")),
   filename = paste0(taskname, ".R"),
   create_file = TRUE,
@@ -46,7 +46,7 @@ scheduler_ls(...)
 
 \item{ignore_status}{\code{character} (c("running", "finished", "error")). launcher arg : status to be ignored when launching tasks.}
 
-\item{delay_reruns}{\code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+\item{delay_reruns}{\code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
 the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.}
 
 \item{filename}{\code{character} a character string with the name of the rscript file.}
@@ -57,7 +57,7 @@ the date of creation of the task to compute the order of (re)run for these tasks
 
 \item{create_file}{\code{boolean} (TRUE). Whether or not to also create the R scheduler script with scheduler_init ?}
 
-\item{...}{\code{}. Additional arguments passed to \code{\link[cronR]{cron_add}}, \code{\link[cronR]{cron_rm}}, \code{\link[cronR]{cron_ls}} (Linux) or \code{\link[taskscheduleR]{taskscheduler_create}} (Windows).}
+\item{...}{\code{}. Additional arguments passed to \code{cronR::cron_add}, \code{cronR::cron_rm}, \code{cronR::cron_ls} (Linux) or \code{taskscheduleR::taskscheduler_create} (Windows).}
 }
 \value{
 NULL.
@@ -66,14 +66,16 @@ NULL.
 Scheduler management of the launcher function
 }
 \details{
-Without any frequency argument, defaut is set to every minute
+Without any frequency argument, default is set to every minute
 }
 \examples{
-\dontrun{\donttest{
 
+\dontrun{
+
+# Not run:
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf/")
-dir.create(dir_conf, recursive = T)
+dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+dir.create(dir_conf, recursive = TRUE)
 
 # create example of files to be called by the scheduler
 # (this fun is called in scheduler_add)
@@ -83,13 +85,13 @@ scheduler_init(
     filename = "cron_script.R",
     head_rows = NULL
  )
-read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
+read.delim(paste0(tempdir(), "/cron_script.R"), header = FALSE)
 
 scheduler_init(dir_scheduler = tempdir(),
                dir_conf = dir_conf,
                filename = "cron_script.R",
                head_rows = c("My_head_row_1", "My_head_row_2"))
-read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
+read.delim(paste0(tempdir(), "/cron_script.R"), header = FALSE)
 
 
 # start a cron
@@ -134,8 +136,8 @@ scheduler_add(dir_scheduler = tempdir(),
               dir_conf,
               max_runs = 1,
               ignore_status = c("running", "finished", "error"),
-              delay_reruns = T,
-              create_file = T,
+              delay_reruns = TRUE,
+              create_file = TRUE,
               head_rows = NULL,
               taskname = "cron_script_ex")
 
@@ -152,6 +154,6 @@ scheduler_exist(taskname = "cron_script_ex")
 scheduler_remove(taskname = "cron_script_ex")
 scheduler_exist(taskname = "cron_script_ex")
 
-}}
+}
 
 }

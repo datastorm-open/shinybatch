@@ -17,10 +17,11 @@
 #' @import data.table
 #'
 #' @examples
-#' \dontrun{\donttest{
+#'
+#' \donttest{
 #'
 #' dir_conf <- paste0(tempdir(), "/conf")
-#' dir.create(dir_conf, recursive = T)
+#' dir.create(dir_conf, recursive = TRUE)
 #'
 #' # ex fun
 #' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -50,8 +51,8 @@
 #' dir_conf_to_dt(dir_conf, allowed_run_info_cols = FALSE)
 #'
 #' dir_conf_to_dt(dir_conf,
-#'            allow_descr = F,
-#'            allow_args = F)
+#'            allow_descr = FALSE,
+#'            allow_args = FALSE)
 #'
 #' dir_conf_to_dt(dir_conf,
 #'            allowed_run_info_cols = c("status", "date_creation"),
@@ -64,15 +65,16 @@
 #' dir_conf_to_dt(dir_conf,
 #'            allowed_run_info_cols = "",
 #'            allowed_function_cols = "",
-#'            allow_descr = F,
-#'            allow_args = F)
+#'            allow_descr = FALSE,
+#'            allow_args = FALSE)
 #'
 #' # or just on some tasks ?
 #' info_conf_1 <- conf_1
 #' info_conf_2 <- yaml::read_yaml(file.path(conf_2$dir, "conf.yml"))
 #'
 #' conf_to_dt(list(info_conf_1, info_conf_2))
-#' }}
+#'
+#' }
 #'
 #' @rdname configuration_info
 conf_to_dt <- function(confs,
@@ -137,25 +139,25 @@ conf_to_dt <- function(confs,
       )
 
       tbl_global[[n_conf]] <- data.table::as.data.table(c(cur_conf["dir"], cur_conf$run_info, cur_conf$descriptive)
-      )[, c("dir", intersect(global_cols, c(names(cur_conf$run_info), names(cur_conf$descriptive)))), with = F]
+      )[, c("dir", intersect(global_cols, c(names(cur_conf$run_info), names(cur_conf$descriptive)))), with = FALSE]
 
       tbls_idv[[n_conf]] <- data.table::as.data.table(c(cur_conf[["function"]], cur_conf$args)
-      )[, intersect(idv_cols, c(names(cur_conf[["function"]]), names(cur_conf$args))), with = F]
+      )[, intersect(idv_cols, c(names(cur_conf[["function"]]), names(cur_conf$args))), with = FALSE]
 
     }
   }
 
   # rbind global table
-  tbl_global <- data.table::rbindlist(tbl_global, fill = T)
+  tbl_global <- data.table::rbindlist(tbl_global, fill = TRUE)
 
   # sort by decreasing priority and increasing date
   if ("date_creation" %in% names(tbl_global)) {
-    tbls_idv <- tbls_idv[order(tbl_global[["date_creation"]], decreasing = F)]
-    tbl_global <- tbl_global[order(get("date_creation"), decreasing = F)]
+    tbls_idv <- tbls_idv[order(tbl_global[["date_creation"]], decreasing = FALSE)]
+    tbl_global <- tbl_global[order(get("date_creation"), decreasing = FALSE)]
   }
   if ("priority" %in% names(tbl_global)) {
-    tbls_idv <- tbls_idv[order(tbl_global[["priority"]], decreasing = T)]
-    tbl_global <- tbl_global[order(get("priority"), decreasing = T)]
+    tbls_idv <- tbls_idv[order(tbl_global[["priority"]], decreasing = TRUE)]
+    tbl_global <- tbl_global[order(get("priority"), decreasing = TRUE)]
   }
 
   return(list("tbl_global" = tbl_global, "tbls_idv" = tbls_idv))
@@ -177,7 +179,7 @@ dir_conf_to_dt <- function(dir_path,
     stop("'dir_path' directory doesn't exist (", dir_path, ").")
   }
 
-  confs <- lapply(list.dirs(dir_path, full.names = T, recursive = F), function(x) {
+  confs <- lapply(list.dirs(dir_path, full.names = TRUE, recursive = FALSE), function(x) {
       yaml::read_yaml(paste0(x, "/conf.yml"))
     })
 

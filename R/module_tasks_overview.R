@@ -6,10 +6,12 @@
 #' @param session shiny input
 #' @param dir_path \code{character}. Where to find the tasks directorys.
 #' @param allowed_status \code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.
-#' @param allowed_run_info_cols \code{character} (c("date_init", "date_start", "date_end", "priority", "status")). Run info elements to be kept.
+#' @param allowed_run_info_cols \code{character} (c("date_creation", "date_start", "date_end", "priority", "status")). Run info elements to be kept.
 #' @param allow_descr \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.
 #' @param allowed_function_cols \code{character} (c("names", "path")). Function elements to be kept.
 #' @param allow_args \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.
+#' @param allow_log_btn \code{boolean} (TRUE). Whether or not to display a button to show log in modal.
+#' @param allow_rm_task \code{boolean} (TRUE). Whether or not to display a button to show log in modal.
 #' @param table_fun \code{function} (function(x) x). Function to be applied on the summary table, making it easy to customize it. First arg must be the summmary table.
 #' @param labels \code{list} UI labels
 #' @param update_mode \code{character} : "reactive" (default) use \code{shiny::reactivePoll} to see if tasks info have changed.
@@ -27,15 +29,22 @@
 #'
 #' @import shiny data.table yaml
 #' @importFrom DT datatable renderDT DTOutput formatStyle %>%
+#' @importFrom utils read.delim2
 #'
 #' @seealso \code{\link[shinybatch]{configure_task_server}}
 #'
 #' @examples
-#' \dontrun{\donttest{
+#'
+#' \donttest{
+#'
+#'
+#' if(interactive()){
+#'
+#' require(shiny)
 #'
 #' # create temporary directory for conf
-#' dir_conf <- paste0(tempdir(), "/conf")
-#' dir.create(dir_conf, recursive = T)
+#' dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+#' dir.create(dir_conf, recursive = TRUE)
 #'
 #'# ex fun
 #' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -76,8 +85,8 @@
 #'              allowed_status = c("waiting", "running", "finished", "error"),
 #'              allowed_run_info_cols = NULL,
 #'              allowed_function_cols = "",
-#'              allow_descr = T,
-#'              allow_args = T,
+#'              allow_descr = TRUE,
+#'              allow_args = TRUE,
 #'              table_fun = function(x, y) x[, new_col := y],
 #'              y = "created using arg. 'table_fun'")
 #'
@@ -104,7 +113,9 @@
 #'   })
 #' }
 #' shiny::shinyApp(ui = ui, server = server)
-#' }}
+#'
+#' }
+#' }
 #'
 #' @rdname module_tasks_overview
 tasks_overview_server <- function(input, output, session,
@@ -114,6 +125,8 @@ tasks_overview_server <- function(input, output, session,
                                   allowed_function_cols = c("path", "name"),
                                   allow_args = TRUE,
                                   allowed_status = c("waiting", "running", "finished", "error"),
+                                  allow_log_btn = TRUE,
+                                  allow_rm_task = TRUE,
                                   update_mode = c("reactive", "button"),
                                   intervalMillis = 1000,
                                   table_fun = function(x) x,
@@ -155,6 +168,16 @@ tasks_overview_server <- function(input, output, session,
   } else {
     get_allowed_status <- allowed_status
   }
+  if (! shiny::is.reactive(allow_log_btn)) {
+    get_allow_log_btn <- shiny::reactive(allow_log_btn)
+  } else {
+    get_allow_log_btn <- allow_log_btn
+  }
+  if (! shiny::is.reactive(allow_rm_task)) {
+    get_allow_rm_task <- shiny::reactive(allow_rm_task)
+  } else {
+    get_allow_rm_task <- allow_rm_task
+  }
 
   # check dir
   output$is_dir <- reactive({
@@ -194,7 +217,7 @@ tasks_overview_server <- function(input, output, session,
 
     tbl_features <- reactivePoll(intervalMillis, session,
                                  checkFunc = function() {
-                                   confs <- lapply(list.dirs(isolate(get_dir_path()), full.names = T, recursive = F), function(x) {
+                                   confs <- lapply(list.dirs(isolate(get_dir_path()), full.names = TRUE, recursive = FALSE), function(x) {
                                      conf_path <- paste0(x, "/conf.yml")
                                      if(file.exists(conf_path)){
                                        file.info(conf_path)$mtime[1]
@@ -214,12 +237,19 @@ tasks_overview_server <- function(input, output, session,
     )
   }
 
+  output$view_rm_task <- reactive({
+    get_allow_rm_task()
+  })
+  outputOptions(output, "view_rm_task", suspendWhenHidden = FALSE)
+
+  output$view_log_btn <- reactive({
+    get_allow_log_btn()
+  })
+  outputOptions(output, "view_log_btn", suspendWhenHidden = FALSE)
+
   # get DT table of global feature
   tbl_global_DT <- reactive({
     tbl_global <- copy(tbl_features()$tbl_global)
-
-    # add trash button
-    tbl_global$remove_task <- input_btns(ns("remove_task"), tbl_global$dir, "Remove this task ?", icon("trash-o"), status = "danger")
 
     if (! (is.null(tbl_global) || length(tbl_global) == 0)) {
       # apply table_fun
@@ -267,10 +297,34 @@ tasks_overview_server <- function(input, output, session,
   })
   outputOptions(output, "is_global_dt", suspendWhenHidden = FALSE)
 
+  # display log for selected task
+  observeEvent(input$display_log, {
+
+    if (!is.null(input$display_log) && !is.null(res_module())) {
+      # get log file in output directory
+      output_files = list.files(res_module()$path, full.names = TRUE)
+      log_file = output_files[grepl("log_run", output_files)]
+      # read log file
+      if(length(log_file)>0){
+        log_file = paste(read.delim2(sort(log_file, decreasing = TRUE)[1], header = FALSE)$V1, collapse = "<br/>")
+      } else {
+        log_file = "No log available"
+      }
+
+      showModal(modalDialog(
+        div(h3(paste0("Logs")), align = "center"),
+        wellPanel(div(style="max-height:300px;overflow-y:scroll;", HTML(log_file))),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      )
+      )
+    }
+  })
+
   # remove selected task
   observeEvent(input$remove_task, {
 
-    if (! is.null(input$remove_task)) {
+    if (! is.null(input$remove_task)  && !is.null(res_module())) {
       showModal(modalDialog(
         div(h3(paste0("Please confirm the suppression of the task.")), align = "center"),
         easyClose = FALSE,
@@ -290,9 +344,9 @@ tasks_overview_server <- function(input, output, session,
   })
   observeEvent(input$confirm_remove_task, {
 
-    if (! is.null(input$confirm_remove_task) && input$confirm_remove_task > 0) {
+    if (! is.null(input$confirm_remove_task) && input$confirm_remove_task > 0  && !is.null(res_module())) {
       removeModal()
-      unlink(gsub("/$", "", input$remove_task), recursive = T)
+      unlink(gsub("/output$", "", res_module()$path), recursive = TRUE)
     }
   })
 
@@ -302,10 +356,21 @@ tasks_overview_server <- function(input, output, session,
 
     isolate({
       if (! is.null(sel_row)) {
+
+        session$sendCustomMessage(
+          type = "togglewidget-shinybatch",
+          message = list(inputId = ns("display_log"), type = "enable")
+        )
+
+        session$sendCustomMessage(
+          type = "togglewidget-shinybatch",
+          message = list(inputId = ns("remove_task"), type = "enable")
+        )
+
         tbl_idv <- tbl_features()$tbls_idv[[sel_row]]
 
         if (! is.null(tbl_idv)) {
-          DT <- DT::datatable(tbl_idv, rownames = F,
+          DT <- DT::datatable(tbl_idv, rownames = FALSE,
                               filter = 'none', selection = "none",
                               options = list(scrollX = TRUE, dom = 't'))
 
@@ -320,6 +385,16 @@ tasks_overview_server <- function(input, output, session,
 
           DT
         }
+      } else {
+        session$sendCustomMessage(
+          type = "togglewidget-shinybatch",
+          message = list(inputId = ns("display_log"), type = "disable")
+        )
+
+        session$sendCustomMessage(
+          type = "togglewidget-shinybatch",
+          message = list(inputId = ns("remove_task"), type = "disable")
+        )
       }
     })
   })
@@ -345,7 +420,7 @@ tasks_overview_server <- function(input, output, session,
   res_module <- reactive({
     sel_row <- input[["tbl_global_DT_out_rows_selected"]]
     input$remove_task
-
+    input$display_log
     isolate({
       res <- list()
 
@@ -385,7 +460,9 @@ tasks_overview_UI <- function(id,
                                 btn = "Display/update the tasks",
                                 empty_global = "Empty table of global features.",
                                 empty_individual = "Empty table of individual features.",
-                                error_dir_access = "Cannot access given directory."
+                                error_dir_access = "Cannot access given directory.",
+                                logs =  "Show logs",
+                                remove_task = "Remove this task ?"
                               )) {
   ns <- NS(id)
 
@@ -394,56 +471,99 @@ tasks_overview_UI <- function(id,
   if(is.null(labels$empty_global)) labels$empty_global = "Empty table of global features."
   if(is.null(labels$empty_individual)) labels$empty_individual = "Empty table of individual features."
   if(is.null(labels$error_dir_access)) labels$error_dir_access = "Cannot access given directory."
+  if(is.null(labels$logs)) labels$logs = "Show logs"
+  if(is.null(labels$remove_task)) labels$remove_task = "Remove this task ?"
 
-  fluidRow(
-
-    # fix fontAwesome init loading...
+  tagList(
+    singleton(
+      tags$head(
+        tags$script(type="text/javascript",
+                    "// Disable / enable a button
+            Shiny.addCustomMessageHandler('togglewidget-shinybatch', function(data) {
+              if (data.type == 'disable') {
+                $('#' + data.inputId).attr('disabled', true);
+                $('#' + data.inputId).addClass('disabled');
+              }
+              if (data.type == 'enable') {
+                $('#' + data.inputId).attr('disabled', false);
+                $('#' + data.inputId).removeClass('disabled');
+              }
+            });"
+        ),
+      )
+    ),
     fluidRow(
-      actionButton("fix FA", "fix FA", icon = icon("refresh"), style = "display:none")
-    ),
 
-    conditionalPanel(condition = paste0("output['", ns("is_dir"), "']"),
-                     conditionalPanel(condition = paste0("output['", ns("is_btn_mode"), "']"),
-                                      column(12,
-                                             div(actionButton(ns("go_overview"), label = labels$btn, width = "40%"),
-                                                 align = "center")
-                                      )
-                     ),
-                     conditionalPanel(condition = paste0("(output['", ns("is_btn_mode"), "'] && input['", ns("go_overview"), "'] > 0) || output['", ns("is_btn_mode"), "'] === false"),
-                                      conditionalPanel(condition = paste0("output['", ns("is_global_dt"), "']"),
-                                                       column(12,
-                                                              DT::DTOutput(ns("tbl_global_DT_out"))
-                                                       )
-                                      ),
-                                      conditionalPanel(condition = paste0("! output['", ns("is_global_dt"), "']"),
-                                                       column(12,
-                                                              fluidRow(
-                                                                div(h4(labels$empty_global, style = "color: darkblue;"), align = "center")
-                                                              )
-                                                       )
-                                      ),
-                                      conditionalPanel(condition = paste0("input['", ns("tbl_global_DT_out_rows_selected"), "'] > 0"),
-                                                       conditionalPanel(condition = paste0("output['", ns("is_idv_dt"), "']"),
-                                                                        column(12,
-                                                                               tags$hr(),
-                                                                               DT::DTOutput(ns("tbl_idv_DT_out"))
+      # fix fontAwesome init loading...
+      fluidRow(
+        actionButton("fix FA", "fix FA", icon = icon("refresh"), style = "display:none")
+      ),
 
-                                                                        )
-                                                       ),
-                                                       conditionalPanel(condition = paste0("! output['", ns("is_idv_dt"), "']"),
-                                                                        column(12,
-                                                                               tags$hr(),
-                                                                               fluidRow(
-                                                                                 div(h4(labels$empty_individual, style = "color: darkblue;"), align = "center")
-                                                                               )
-                                                                        )
-                                                       )
-                                      )
-                     )
-    ),
+      conditionalPanel(condition = paste0("output['", ns("is_dir"), "']"),
+                       conditionalPanel(condition = paste0("output['", ns("is_btn_mode"), "']"),
+                                        column(12,
+                                               div(actionButton(ns("go_overview"), label = labels$btn, width = "40%"),
+                                                   align = "center")
+                                        )
+                       ),
+                       conditionalPanel(condition = paste0("(output['", ns("is_btn_mode"), "'] && input['", ns("go_overview"), "'] > 0) || output['", ns("is_btn_mode"), "'] === false"),
+                                        conditionalPanel(condition = paste0("output['", ns("is_global_dt"), "']"),
+                                                         column(12,
+                                                                DT::DTOutput(ns("tbl_global_DT_out")),
 
-    conditionalPanel(condition = paste0("output['", ns("is_dir"), "'] === false"),
-                     div(h4(labels$error_dir_access), align = "center")
+                                                                br(),
+
+                                                                conditionalPanel(condition = paste0("output['", ns("view_log_btn"), "']"),
+                                                                                 actionButton(
+                                                                                   inputId = ns("display_log"),
+                                                                                   label = labels$logs,
+                                                                                   class = "btn btn-primary pull-right disabled",
+                                                                                   style = "margin-left: 5px",
+                                                                                   icon = icon("search")
+                                                                                 )
+                                                                ),
+
+                                                                conditionalPanel(condition = paste0("output['", ns("view_rm_task"), "']"),
+                                                                                 actionButton(
+                                                                                   inputId = ns("remove_task"),
+                                                                                   label = labels$remove_task,
+                                                                                   class = "btn btn-danger pull-right disabled",
+                                                                                   style = "margin-left: 5px",
+                                                                                   icon = icon("trash-o")
+                                                                                 )
+                                                                )
+                                                         )
+                                        ),
+                                        conditionalPanel(condition = paste0("! output['", ns("is_global_dt"), "']"),
+                                                         column(12,
+                                                                fluidRow(
+                                                                  div(h4(labels$empty_global, style = "color: darkblue;"), align = "center")
+                                                                )
+                                                         )
+                                        ),
+                                        conditionalPanel(condition = paste0("input['", ns("tbl_global_DT_out_rows_selected"), "'] > 0"),
+                                                         conditionalPanel(condition = paste0("output['", ns("is_idv_dt"), "']"),
+                                                                          column(12,
+                                                                                 tags$hr(),
+                                                                                 DT::DTOutput(ns("tbl_idv_DT_out"))
+
+                                                                          )
+                                                         ),
+                                                         conditionalPanel(condition = paste0("! output['", ns("is_idv_dt"), "']"),
+                                                                          column(12,
+                                                                                 tags$hr(),
+                                                                                 fluidRow(
+                                                                                   div(h4(labels$empty_individual, style = "color: darkblue;"), align = "center")
+                                                                                 )
+                                                                          )
+                                                         )
+                                        )
+                       )
+      ),
+
+      conditionalPanel(condition = paste0("output['", ns("is_dir"), "'] === false"),
+                       div(h4(labels$error_dir_access), align = "center")
+      )
     )
   )
 }

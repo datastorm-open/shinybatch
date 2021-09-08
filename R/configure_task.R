@@ -19,10 +19,13 @@
 #' @import yaml
 #'
 #' @examples
-#' \donttest{\dontrun{
+#'
+#' \donttest{
+#'
 #'
 #' # create temporary directory
-#' dir <- tempdir()
+#' dir <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+#' dir.create(dir, recursive = TRUE)
 #'
 #' # create and save conf
 #' conf <- configure_task(dir_path = dir,
@@ -41,7 +44,8 @@
 #' y <- readRDS(paste0(conf$dir, "inputs/y.RDS"))
 #' z <- readRDS(paste0(conf$dir, "inputs/z.RDS"))
 #'
-#' }}
+#' }
+#'
 configure_task <- function(dir_path,
                            fun_path,
                            fun_name,
@@ -54,9 +58,13 @@ configure_task <- function(dir_path,
   if (! is.character(dir_path)) {
     stop("'dir_path' must be of class <character>.", call. = call.)
   }
+  if (length(dir_path) != 1) {
+    stop("Only one 'dir_path' accepts", call. = call.)
+  }
   if (! dir.exists(dir_path)) {
     stop("'dir_path' directory doesn't exist (", dir_path, ").", call. = call.)
   }
+
   if (! (is.null(conf_descr) ||
          (is.list(conf_descr) && length(conf_descr) > 0 &&
           ! is.null(names(conf_descr)) && ! any(names(conf_descr) == "")))) {
@@ -65,11 +73,18 @@ configure_task <- function(dir_path,
   if (! is.character(fun_path)) {
     stop("'fun_path' must be of class <character>.", call. = call.)
   }
+  if (length(fun_path) != 1) {
+    stop("Only one 'fun_path' accepts", call. = call.)
+  }
   if (! file.exists(fun_path)) {
     stop("'fun_path' file doesn't existed : ", fun_path, call. = call.)
   }
+
   if (! is.character(fun_name)) {
     stop("'fun_name' must be of class <character>.", call. = call.)
+  }
+  if (length(fun_name) != 1) {
+    stop("Only one 'fun_name' accepts", call. = call.)
   }
   if (! (is.null(fun_args) ||
          (is.list(fun_args) && length(fun_args) > 0 &&
@@ -82,18 +97,23 @@ configure_task <- function(dir_path,
 
   # write conf
   sep_path <- "/"
-  fun_path <- gsub("\\", sep_path, fun_path, fixed = T)
+  fun_path <- gsub("\\", sep_path, fun_path, fixed = TRUE)
 
   time <- Sys.time()
-  dir_path <- gsub("/$", "", gsub("\\", sep_path, dir_path, fixed = T))
+  dir_path <- gsub("/$", "", gsub("\\", sep_path, dir_path, fixed = TRUE))
   dir_path <- paste0(dir_path, sep_path,
                      gsub(".", "", format(time, format = "%Y%m%d_%H%M_%OS2"), fixed = TRUE),
                      sep_path)
 
-  suppressWarnings(dir.create(dir_path, recursive = T))
+  suppressWarnings(dir.create(dir_path, recursive = TRUE))
   if (! dir.exists(dir_path)) {
     stop("Can't create output directory ", dir_path, call. = call.)
   }
+
+  # paste conf_descr elements
+  conf_descr <- lapply(conf_descr, function(x){
+    paste(x, collapse = ", ")
+  })
 
   conf <- list(
     "run_info" = list(

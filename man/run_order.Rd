@@ -7,7 +7,7 @@
 run_order(
   confs,
   ignore_status = c("running", "finished", "error"),
-  delay_reruns = T
+  delay_reruns = TRUE
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ run_order(
 
 \item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
 
-\item{delay_reruns}{\code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+\item{delay_reruns}{\code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
 the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.}
 }
 \value{

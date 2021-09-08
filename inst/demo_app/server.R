@@ -24,6 +24,8 @@ server <- function(input, output, session) {
                            allowed_status = c("waiting", "running", "finished", "error"),
                            allowed_run_info_cols = NULL,
                            allowed_function_cols = NULL,
+                           allow_log_btn = T,
+                           allow_rm_task = T,
                            allow_descr = T,
                            allow_args = T)
 

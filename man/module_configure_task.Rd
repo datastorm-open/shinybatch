@@ -52,10 +52,16 @@ Nothing.
 Module shiny to configure a task.
 }
 \examples{
-\dontrun{\donttest{
+
+\donttest{
+
+if(interactive()){
+
+require(shiny)
 
 # create temporary directory for conf
-dir_conf <- tempdir()
+dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+dir.create(dir_conf, recursive = TRUE)
 
 # ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -85,13 +91,14 @@ server <- function(input, output, session) {
 shiny::shinyApp(ui = ui, server = server)
 
 # catch results
-list.files(path <- list.dirs(dir_conf, full.names = T, recursive = F))
+list.files(path <- list.dirs(dir_conf, full.names = TRUE, recursive = FALSE))
 path
 read_conf <- yaml::read_yaml(paste0(path[1], "/", "conf.yml"))
 y <- readRDS(paste0(path[1], "/", "inputs/y.RDS"));y
 z <- readRDS(paste0(path[1], "/", "inputs/z.RDS"));z
 
-}}
+}
+}
 
 }
 \seealso{

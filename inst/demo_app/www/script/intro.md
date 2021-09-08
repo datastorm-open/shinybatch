@@ -110,7 +110,7 @@ The task with higher priority is defined as the one:
 
 - with *status* not in *ignore_status* (default is all but **waiting**),
 - which has the highest *priority*,
-- and then the oldest *date_init*.
+- and then the oldest *date_creation*.
 
 ### Description of the scheduler
 

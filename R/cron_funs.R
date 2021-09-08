@@ -4,26 +4,28 @@
 #' @param dir_conf \code{character}. launcher arg : where to find the tasks directories.
 #' @param max_runs \code{integer} (1). launcher arg : maximum number of simultaneous running tasks.
 #' @param ignore_status \code{character} (c("running", "finished", "error")). launcher arg : status to be ignored when launching tasks.
-#' @param delay_reruns \code{boolean} (T). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+#' @param delay_reruns \code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
 #' the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.
 #' @param create_file \code{boolean} (TRUE). Whether or not to also create the R scheduler script with scheduler_init ?
 #' @param head_rows \code{character} (NULL). Custom head rows to replace the default ones.
 #' @param taskname \code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)
 #' @param filename \code{character} a character string with the name of the rscript file.
-#' @param ... \code{}. Additional arguments passed to \code{\link[cronR]{cron_add}}, \code{\link[cronR]{cron_rm}}, \code{\link[cronR]{cron_ls}} (Linux) or \code{\link[taskscheduleR]{taskscheduler_create}} (Windows).
+#' @param ... \code{}. Additional arguments passed to \code{cronR::cron_add}, \code{cronR::cron_rm}, \code{cronR::cron_ls} (Linux) or \code{taskscheduleR::taskscheduler_create} (Windows).
 #'
-#' @details Without any frequency argument, defaut is set to every minute
+#' @details Without any frequency argument, default is set to every minute
 #'
 #' @return NULL.
 #'
 #' @export
 #'
 #' @examples
-#' \dontrun{\donttest{
 #'
+#' \dontrun{
+#'
+#' # Not run:
 #' # create temporary directory for conf
-#' dir_conf <- paste0(tempdir(), "/conf/")
-#' dir.create(dir_conf, recursive = T)
+#' dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+#' dir.create(dir_conf, recursive = TRUE)
 #'
 #' # create example of files to be called by the scheduler
 #' # (this fun is called in scheduler_add)
@@ -33,13 +35,13 @@
 #'     filename = "cron_script.R",
 #'     head_rows = NULL
 #'  )
-#' read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
+#' read.delim(paste0(tempdir(), "/cron_script.R"), header = FALSE)
 #'
 #' scheduler_init(dir_scheduler = tempdir(),
 #'                dir_conf = dir_conf,
 #'                filename = "cron_script.R",
 #'                head_rows = c("My_head_row_1", "My_head_row_2"))
-#' read.delim(paste0(tempdir(), "/cron_script.R"), header = F)
+#' read.delim(paste0(tempdir(), "/cron_script.R"), header = FALSE)
 #'
 #'
 #' # start a cron
@@ -84,8 +86,8 @@
 #'               dir_conf,
 #'               max_runs = 1,
 #'               ignore_status = c("running", "finished", "error"),
-#'               delay_reruns = T,
-#'               create_file = T,
+#'               delay_reruns = TRUE,
+#'               create_file = TRUE,
 #'               head_rows = NULL,
 #'               taskname = "cron_script_ex")
 #'
@@ -102,14 +104,14 @@
 #' scheduler_remove(taskname = "cron_script_ex")
 #' scheduler_exist(taskname = "cron_script_ex")
 #'
-#' }}
+#' }
 #'
 #' @rdname scheduler_shinybatch
 scheduler_init <- function(dir_scheduler,
                            dir_conf,
                            max_runs = 1,
                            ignore_status = c("running", "finished", "error"),
-                           delay_reruns = T,
+                           delay_reruns = TRUE,
                            filename = paste0(
                              "sb_",
                              format(Sys.time(), format = "%Y%m%d"),
@@ -173,7 +175,7 @@ scheduler_add <- function(dir_scheduler,
                           dir_conf,
                           max_runs = 1,
                           ignore_status = c("running", "finished", "error"),
-                          delay_reruns = T,
+                          delay_reruns = TRUE,
                           taskname = paste0(
                             "sb_",
                             format(Sys.time(), format = "%Y%m%d")
@@ -296,7 +298,7 @@ scheduler_exist <- function(taskname) {
     info_crons <- suppressWarnings(scheduler_ls())
 
     if("data.frame" %in% class(info_crons)){
-      check <- any(grepl(taskname, info_crons$`Nom de la tâche`))
+      check <- any(taskname %in% info_crons[[2]])
     }
   } else {
     info_crons <- scheduler_ls(id = taskname)
@@ -327,6 +329,6 @@ scheduler_ls <- function(...) {
            call. = FALSE)
     }
 
-    cronR::cron_ls(...)
+    tryCatch({cronR::cron_ls(...)}, error = function(e) NULL)
   }
 }

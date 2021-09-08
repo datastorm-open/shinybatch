@@ -47,10 +47,11 @@ a list of two tables 'tbl_global' and 'tbl_idv':
 Convert a list of task configurations into two data.tables of global and individual features.
 }
 \examples{
-\dontrun{\donttest{
+
+\donttest{
 
 dir_conf <- paste0(tempdir(), "/conf")
-dir.create(dir_conf, recursive = T)
+dir.create(dir_conf, recursive = TRUE)
 
 # ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -80,8 +81,8 @@ conf_2 <- configure_task(dir_path = dir_conf,
 dir_conf_to_dt(dir_conf, allowed_run_info_cols = FALSE)
 
 dir_conf_to_dt(dir_conf,
-           allow_descr = F,
-           allow_args = F)
+           allow_descr = FALSE,
+           allow_args = FALSE)
 
 dir_conf_to_dt(dir_conf,
            allowed_run_info_cols = c("status", "date_creation"),
@@ -94,14 +95,15 @@ dir_conf_to_dt(dir_conf,
 dir_conf_to_dt(dir_conf,
            allowed_run_info_cols = "",
            allowed_function_cols = "",
-           allow_descr = F,
-           allow_args = F)
+           allow_descr = FALSE,
+           allow_args = FALSE)
 
 # or just on some tasks ?
 info_conf_1 <- conf_1
 info_conf_2 <- yaml::read_yaml(file.path(conf_2$dir, "conf.yml"))
 
 conf_to_dt(list(info_conf_1, info_conf_2))
-}}
+
+}
 
 }

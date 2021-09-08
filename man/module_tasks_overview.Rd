@@ -16,6 +16,8 @@ tasks_overview_server(
   allowed_function_cols = c("path", "name"),
   allow_args = TRUE,
   allowed_status = c("waiting", "running", "finished", "error"),
+  allow_log_btn = TRUE,
+  allow_rm_task = TRUE,
   update_mode = c("reactive", "button"),
   intervalMillis = 1000,
   table_fun = function(x) x,
@@ -28,7 +30,8 @@ tasks_overview_UI(
   labels = list(btn = "Display/update the tasks", empty_global =
     "Empty table of global features.", empty_individual =
     "Empty table of individual features.", error_dir_access =
-    "Cannot access given directory.")
+    "Cannot access given directory.", logs = "Show logs", remove_task =
+    "Remove this task ?")
 )
 }
 \arguments{
@@ -40,7 +43,7 @@ tasks_overview_UI(
 
 \item{dir_path}{\code{character}. Where to find the tasks directorys.}
 
-\item{allowed_run_info_cols}{\code{character} (c("date_init", "date_start", "date_end", "priority", "status")). Run info elements to be kept.}
+\item{allowed_run_info_cols}{\code{character} (c("date_creation", "date_start", "date_end", "priority", "status")). Run info elements to be kept.}
 
 \item{allow_descr}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.}
 
@@ -49,6 +52,10 @@ tasks_overview_UI(
 \item{allow_args}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.}
 
 \item{allowed_status}{\code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.}
+
+\item{allow_log_btn}{\code{boolean} (TRUE). Whether or not to display a button to show log in modal.}
+
+\item{allow_rm_task}{\code{boolean} (TRUE). Whether or not to display a button to show log in modal.}
 
 \item{update_mode}{\code{character} : "reactive" (default) use \code{shiny::reactivePoll} to see if tasks info have changed.
 "button" add and use a \code{shiny::actionButton} to update task info table.}
@@ -75,11 +82,17 @@ all tasks information table
 Module to visualize all the created tasks.
 }
 \examples{
-\dontrun{\donttest{
+
+\donttest{
+
+
+if(interactive()){
+
+require(shiny)
 
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf")
-dir.create(dir_conf, recursive = T)
+dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+dir.create(dir_conf, recursive = TRUE)
 
 # ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -120,8 +133,8 @@ server <- function(input, output, session) {
              allowed_status = c("waiting", "running", "finished", "error"),
              allowed_run_info_cols = NULL,
              allowed_function_cols = "",
-             allow_descr = T,
-             allow_args = T,
+             allow_descr = TRUE,
+             allow_args = TRUE,
              table_fun = function(x, y) x[, new_col := y],
              y = "created using arg. 'table_fun'")
 
@@ -148,7 +161,9 @@ server <- function(input, output, session) {
   })
 }
 shiny::shinyApp(ui = ui, server = server)
-}}
+
+}
+}
 
 }
 \seealso{

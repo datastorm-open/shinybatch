@@ -13,15 +13,16 @@
 #' @import yaml futile.logger
 #'
 #' @examples
-#' \donttest{\dontrun{
+#'
+#' \donttest{
 #'
 #' # create temporary directory for conf
-#' dir_conf <- paste0(tempdir(), "/conf")
-#' dir.create(dir_conf, recursive = T)
+#' dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+#' dir.create(dir_conf, recursive = TRUE)
 #'
-#'# ex fun
-#'fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
-#'fun_name = "sb_fun_ex"
+#' # ex fun
+#' fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
+#' fun_name = "sb_fun_ex"
 #'
 #' # create and save conf
 #' conf <- configure_task(dir_path = dir_conf,
@@ -49,14 +50,15 @@
 #' conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
 #' output <- readRDS(paste0(conf$dir, "output/res.RDS"))
 #' log <- read.delim(list.files(paste0(conf$dir, "output/"),
-#'                              pattern = "log_run", full.names = T), header = F)
+#'                              pattern = "log_run", full.names = TRUE), header = FALSE)
 #'
-#' }}
+#' }
 run_task <- function(conf_path,
                      ignore_status = c("running", "finished", "error"),
                      save_rds = TRUE, compress = TRUE, return = TRUE, verbose = FALSE) {
 
   current_wd <- getwd()
+  on.exit(setwd(current_wd))
 
   # checks
   if (! is.character(conf_path)) {
@@ -143,7 +145,7 @@ run_task <- function(conf_path,
       # run fun
 
       # add a try to catch exception (for instance when failing to run code in Python with reticulate)
-      res <- try(do.call(conf[["function"]]$name, fun_args), silent = T)
+      res <- try(do.call(conf[["function"]]$name, fun_args), silent = TRUE)
       if (class(res) == "try-error") {
         stop(attr(res, "condition")$message)
       }
@@ -161,8 +163,6 @@ run_task <- function(conf_path,
       # update conf file if error
       conf$run_info$date_end <- as.character(Sys.time())
       conf$run_info$status <- "error"
-
-      setwd(current_wd)
 
       yaml::write_yaml(conf,file = conf_path)
 
@@ -184,8 +184,6 @@ run_task <- function(conf_path,
 
     yaml::write_yaml(conf, file = conf_path)
   }
-
-  setwd(current_wd)
 
   if(return){
     return(fun_res)

@@ -33,11 +33,12 @@ the result of the task (function applied on prepared args).
 Run the task defined in a conf file
 }
 \examples{
-\donttest{\dontrun{
+
+\donttest{
 
 # create temporary directory for conf
-dir_conf <- paste0(tempdir(), "/conf")
-dir.create(dir_conf, recursive = T)
+dir_conf <- paste0(tempdir(), "/conf", round(runif(n = 1, max = 10000)))
+dir.create(dir_conf, recursive = TRUE)
 
 # ex fun
 fun_path = system.file("ex_fun/sb_fun_ex.R", package = "shinybatch")
@@ -69,7 +70,7 @@ list.files(conf$dir)
 conf_update <- yaml::read_yaml(paste0(conf$dir, "conf.yml"))
 output <- readRDS(paste0(conf$dir, "output/res.RDS"))
 log <- read.delim(list.files(paste0(conf$dir, "output/"),
-                             pattern = "log_run", full.names = T), header = F)
+                             pattern = "log_run", full.names = TRUE), header = FALSE)
 
-}}
+}
 }

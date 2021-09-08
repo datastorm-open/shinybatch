@@ -1,17 +1,16 @@
 Package: shinybatch
 Title: Launch Tasks in Batch
-Version: 0.2
+Version: 0.3
 Authors@R: c(
     person("Benoit", "Thieurmel", role = c("aut", "cre"),
       email = "benoit.thieurmel@datastorm.fr"),
     person(given = "Thibaut", family = "Dubois", 
     email = "thibaut.dubois@datastorm.fr", role = c("aut", "ctb"))
     )
-Description: Functions to launchs batch tasks in R and Shiny.
+Description: Provides two modules to configure some R task, launch in batch, and retrieve result from shiny. Can be used both in windows system using Windows task scheduler, and on unix-alike system using 'crontab'.
 Depends: R (>= 3.5.0)
 License: GPL-3
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.1.1
 Imports: 
     data.table,
