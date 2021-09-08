@@ -314,7 +314,7 @@ tasks_overview_server <- function(input, output, session,
       showModal(modalDialog(
         div(h3(paste0("Logs")), align = "center"),
         wellPanel(div(style="max-height:300px;overflow-y:scroll;", HTML(log_file))),
-        easyClose = FALSE,
+        easyClose = FALSE, size = "l",
         footer = modalButton("Close")
       )
       )
