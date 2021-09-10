@@ -275,6 +275,7 @@ tasks_overview_server <- function(input, output, session,
         dom = 'Blfrtip',
         autoWidth = FALSE,
         columnDefs = list(
+          list(className =  "dt-head-center", "targets" = "_all"),
           list(width = '200px'),
           list(visible = FALSE, targets = c(which(names(tbl_global) == "dir") - 1))
         ),
