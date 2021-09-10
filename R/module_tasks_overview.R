@@ -19,6 +19,7 @@
 #' @param intervalMillis \code{integer}. In case of "reactive" update_mode, time betweens calls
 #' @param return_value \code{character} : "selected_task" (default) return the selected task using \code{tasks_overview_UI},
 #' else "tasks_table"can be used to get all tasks information and define a custom UI.
+#' @param datatable_options \code{list}.  \code{DT::datatable} options argument.
 #' @param ... \code{}. Additional args to be given to the table_fun function.
 #'
 #' @return if \code{return_value = "selected_task"}, the status of the selected line (one run) of the summary
@@ -131,6 +132,7 @@ tasks_overview_server <- function(input, output, session,
                                   intervalMillis = 1000,
                                   table_fun = function(x) x,
                                   return_value = c("selected_task", "tasks_table"),
+                                  datatable_options = list(),
                                   ...) {
 
   ns <- session$ns
@@ -177,6 +179,11 @@ tasks_overview_server <- function(input, output, session,
     get_allow_rm_task <- shiny::reactive(allow_rm_task)
   } else {
     get_allow_rm_task <- allow_rm_task
+  }
+  if (! shiny::is.reactive(datatable_options)) {
+    get_datatable_options <- shiny::reactive(datatable_options)
+  } else {
+    get_datatable_options <- datatable_options
   }
 
   # check dir
@@ -262,24 +269,39 @@ tasks_overview_server <- function(input, output, session,
         tbl_global <- tbl_global[get("status") %in% get_allowed_status()]
       }
 
+      default_options = list(
+        pageLength = 10,
+        lengthMenu = c(5, 10, 20, 50),
+        dom = 'Blfrtip',
+        autoWidth = FALSE,
+        columnDefs = list(
+          list(width = '200px'),
+          list(visible = FALSE, targets = c(which(names(tbl_global) == "dir") - 1))
+        ),
+        scrollX = TRUE
+      )
+
+      custom_options <- get_datatable_options()
+      if(length(custom_options) > 0){
+        for(n in names(custom_options)){
+          default_options[[n]] <- custom_options[[n]]
+        }
+      }
+
       DT <- DT::datatable(tbl_global,
                           rownames = FALSE,
                           colnames = as.vector(gsub("_", " ", sapply(names(tbl_global), function(x) paste0(toupper(substr(x, 1, 1)), tolower(substr(x, 2, nchar(x))))))),
                           filter = 'bottom',
                           escape = FALSE,
                           selection = list(mode = 'single', target = 'row'),
-                          options = list(
-                            pageLength = 10, lengthMenu = c(5, 10, 20, 50),
-                            dom = 'Blfrtip', autoWidth = FALSE,
-                            columnDefs = list(list(width = '200px'),
-                                              list(visible = FALSE, targets = c(which(names(tbl_global) == "dir") - 1))),
-                            scrollX = TRUE))
+                          options = default_options
+      )
 
       if ("status" %in% names(tbl_global)) {
         DT <- DT %>%
           formatStyle(
             'status',
-            backgroundColor = DT::styleEqual(c("waiting", "running", "finished", "error"), c('#afd6ec', '#f1d36e', "#b4e163", "#e74c3c"))
+            backgroundColor = DT::styleEqual(c("waiting", "running", "finished", "error"), c('#afd6ec', '#fabc11', "#4a9905", "#e8311e"))
           )
       }
 

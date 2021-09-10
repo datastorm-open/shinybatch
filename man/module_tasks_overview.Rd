@@ -22,6 +22,7 @@ tasks_overview_server(
   intervalMillis = 1000,
   table_fun = function(x) x,
   return_value = c("selected_task", "tasks_table"),
+  datatable_options = list(),
   ...
 )
 
@@ -66,6 +67,8 @@ tasks_overview_UI(
 
 \item{return_value}{\code{character} : "selected_task" (default) return the selected task using \code{tasks_overview_UI},
 else "tasks_table"can be used to get all tasks information and define a custom UI.}
+
+\item{datatable_options}{\code{list}.  \code{DT::datatable} options argument.}
 
 \item{...}{\code{}. Additional args to be given to the table_fun function.}
 
