@@ -512,7 +512,7 @@ tasks_overview_UI <- function(id,
                 $('#' + data.inputId).removeClass('disabled');
               }
             });"
-        ),
+        )
       )
     ),
     fluidRow(
