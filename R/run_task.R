@@ -146,7 +146,7 @@ run_task <- function(conf_path,
 
       # add a try to catch exception (for instance when failing to run code in Python with reticulate)
       res <- try(do.call(conf[["function"]]$name, fun_args), silent = TRUE)
-      if (class(res) == "try-error") {
+      if ("try-error" %in% class(res)) {
         stop(attr(res, "condition")$message)
       }
 
