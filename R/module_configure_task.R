@@ -148,7 +148,7 @@ configure_task_server <- function(input, output, session,
                                   priority = get_priority(),
                                   compress = get_compress(), call. = FALSE), silent = TRUE)
 
-        if ("try-error" %in% class(res)) {
+        if ("try-error" %in% class(try)) {
           showModal(
             modalDialog(
               easyClose = TRUE,
