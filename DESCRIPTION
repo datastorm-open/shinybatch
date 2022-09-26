@@ -3,7 +3,7 @@ Title: Launch Tasks in Batch
 Version: 0.3
 Authors@R: c(
     person("Benoit", "Thieurmel", role = c("aut", "cre"),
-      email = "benoit.thieurmel@datastorm.fr"),
+      email = "bthieurmel@gmail.com"),
     person(given = "Thibaut", family = "Dubois", 
     email = "thibaut.dubois@datastorm.fr", role = c("aut", "ctb"))
     )
