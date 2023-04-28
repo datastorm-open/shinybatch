@@ -275,9 +275,9 @@ tasks_overview_server <- function(input, output, session,
         dom = 'Blfrtip',
         autoWidth = FALSE,
         columnDefs = list(
-          list(className =  "dt-head-center", "targets" = "_all"),
-          list(width = '200px'),
-          list(visible = FALSE, targets = c(which(names(tbl_global) == "dir") - 1))
+          list("className" =  "dt-head-center", "targets" = "_all"),
+          list("width" = "200px", "targets" = "_all"),
+          list("visible" = FALSE, "targets" = c(which(names(tbl_global) == "dir") - 1))
         ),
         scrollX = TRUE
       )
@@ -552,7 +552,7 @@ tasks_overview_UI <- function(id,
                                                                                    label = labels$remove_task,
                                                                                    class = "btn btn-danger pull-right disabled",
                                                                                    style = "margin-left: 5px",
-                                                                                   icon = icon("trash-o")
+                                                                                   icon = icon("trash")
                                                                                  )
                                                                 )
                                                          )
