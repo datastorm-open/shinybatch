@@ -1,7 +1,7 @@
 #' Run the task defined in a conf file
 #'
 #' @param conf_path \code{character}. Path to the conf file.
-#' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
+#' @param ignore_status \code{character} (c("running", "finished", "timeout", "error")). Status to be ignored when launching tasks.
 #' @param save_rds \code{logical} Save output in output/res.RDS ? Default to TRUE
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
 #' @param return \code{logical} Get back result in R ? Default to TRUE
@@ -54,7 +54,7 @@
 #'
 #' }
 run_task <- function(conf_path,
-                     ignore_status = c("running", "finished", "error"),
+                     ignore_status = c("running", "finished", "timeout", "error"),
                      save_rds = TRUE, compress = TRUE, return = TRUE, verbose = FALSE) {
 
   current_wd <- getwd()

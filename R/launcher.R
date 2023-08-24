@@ -2,12 +2,13 @@
 #'
 #' @param dir_path \code{character}. Where to find the tasks directory (one or more). If several, log file are present in first directory
 #' @param max_runs \code{integer}. Maximum number of simultaneous running tasks.
-#' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
-#' @param delay_reruns \code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+#' @param ignore_status \code{character} (c("running", "finished", "timeout", "error")). Status to be ignored when launching tasks.
+#' @param delay_reruns \code{boolean} (TRUE). When "running", "finished", "timeout" or "error" are not in ignore_status, use the date of the last run instead of
 #' the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.
 #' @param compress \code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.
 #' @param verbose \code{logical} See running task message ? Default to FALSE
-
+#' @param timeout \code{numeric} Minute. Long task running more than \code{timeout} (perhaps killed with server restart or full memory) are set to "timeout" to enable running other waiting tasks
+#' 
 #' @return the number of launched tasks.
 #'
 #' @export
@@ -76,10 +77,11 @@
 #'
 launcher <- function(dir_path,
                      max_runs = 1,
-                     ignore_status = c("running", "finished", "error"),
+                     ignore_status = c("running", "finished", "timeout", "error"),
                      delay_reruns = TRUE,
                      compress = TRUE, 
-                     verbose = FALSE) {
+                     verbose = FALSE, 
+                     timeout = Inf) {
   
   # checks
   if (any(! is.character(dir_path))) {
@@ -89,6 +91,7 @@ launcher <- function(dir_path,
     stop("'dir_path' directory doesn't exist. (", dir_path, ")")
   }
   
+  if(!is.numeric(timeout) | is.integer(timeout)) timeout <- Inf
   
   # init log
   futile.logger::flog.appender(futile.logger::appender.file(paste0(dir_path[1], "/log_launcher.txt")),
@@ -151,18 +154,48 @@ launcher <- function(dir_path,
                                allowed_function_cols = "",
                                allow_args = FALSE)$tbl_global
       
-      nb_to_run <- min(max_runs - sum(tbl_global$status == "running"), sum(! tbl_global$status %in% ignore_status))
+      nb_running <- sum(tbl_global$status == "running")
+      nb_to_run <- min(max_runs - nb_running, sum(! tbl_global$status %in% ignore_status))
+      
+      # timeout
+      n_timeout <- 0
+      if(nb_running > 0 & !is.infinite(timeout) & timeout > 0){
+        # saveRDS(tbl_global, "/home/bthieurmel/tbl_global.RDS")
+        
+        is_running <- which(tbl_global$status == "running")
+        for(i in is_running){
+          run_time <- as.numeric(difftime(Sys.time(), tbl_global$starting_date[i], units = "mins"))
+          message(run_time)
+          if(run_time > timeout){
+            conf_path <- file.path(tbl_global$dir[i], "conf.yml")
+            conf <- tryCatch(yaml::read_yaml(conf_path),
+                             error = function(e) {
+                               stop(paste0("Error reading '", conf_path, "'  : ", e$message), call. = FALSE)
+                             })
+            
+            conf$run_info$status <- "timeout"
+
+            yaml::write_yaml(conf,file = conf_path)
+            
+            n_timeout <- n_timeout + 1
+            nb_running <- nb_running - 1
+          }
+        }
+        nb_to_run <- min(max_runs - nb_running, sum(! tbl_global$status %in% ignore_status))
+      }
       
       if (verbose) {
         message(paste0("Number of tasks available for a run : ", sum(! tbl_global$status %in% ignore_status), "."))
         message(paste0("Maximum number of simultaneous runs : ", max_runs, "."))
         message(paste0("Number of currently running tasks : ", sum(tbl_global$status == "running"), "."))
         message(paste0("Number of tasks to be started : ", max(0, nb_to_run), "."))
+        message(paste0("Number of tasks passed as timeout : ", n_timeout, "."))
       } else {
         futile.logger::flog.info(message(paste0("Number of tasks available for a run : ", sum(! tbl_global$status %in% ignore_status), ".")))
         futile.logger::flog.info(message(paste0("Maximum number of simultaneous runs : ", max_runs, ".")))
         futile.logger::flog.info(message(paste0("Number of currently running tasks : ", sum(tbl_global$status == "running"), ".")))
         futile.logger::flog.info(message(paste0("Number of tasks to be started : ", max(0, nb_to_run), ".")))
+        futile.logger::flog.info(message(paste0("Number of tasks passed as timeout : ", n_timeout, ".")))
       }
       
       if (nb_to_run > 0) {

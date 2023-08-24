@@ -3,13 +3,14 @@
 #' @param dir_scheduler \code{character}. Where to create R scheduler script.
 #' @param dir_conf \code{character}. launcher arg : where to find the tasks directories.
 #' @param max_runs \code{integer} (1). launcher arg : maximum number of simultaneous running tasks.
-#' @param ignore_status \code{character} (c("running", "finished", "error")). launcher arg : status to be ignored when launching tasks.
-#' @param delay_reruns \code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+#' @param ignore_status \code{character} (c("running", "finished", "timeout", "error")). launcher arg : status to be ignored when launching tasks.
+#' @param delay_reruns \code{boolean} (TRUE). When "running", "finished", "timeout" or "error" are not in ignore_status, use the date of the last run instead of
 #' the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.
 #' @param create_file \code{boolean} (TRUE). Whether or not to also create the R scheduler script with scheduler_init ?
 #' @param head_rows \code{character} (NULL). Custom head rows to replace the default ones.
 #' @param taskname \code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)
 #' @param filename \code{character} a character string with the name of the rscript file.
+#' @param timeout \code{numeric} Minute. Long task running more than \code{timeout} (perhaps killed with server restart or full memory) are set to "timeout" to enable running other waiting tasks
 #' @param ... \code{}. Additional arguments passed to \code{cronR::cron_add}, \code{cronR::cron_rm}, \code{cronR::cron_ls} (Linux) or \code{taskscheduleR::taskscheduler_create} (Windows).
 #'
 #' @details Without any frequency argument, default is set to every minute
@@ -18,6 +19,8 @@
 #'
 #' @export
 #'
+#' @importFrom utils packageVersion
+#' 
 #' @examples
 #'
 #' \dontrun{
@@ -85,7 +88,7 @@
 #' scheduler_add(dir_scheduler = tempdir(),
 #'               dir_conf,
 #'               max_runs = 1,
-#'               ignore_status = c("running", "finished", "error"),
+#'               ignore_status = c("running", "finished", "timeout", "error"),
 #'               delay_reruns = TRUE,
 #'               create_file = TRUE,
 #'               head_rows = NULL,
@@ -110,14 +113,15 @@
 scheduler_init <- function(dir_scheduler,
                            dir_conf,
                            max_runs = 1,
-                           ignore_status = c("running", "finished", "error"),
+                           ignore_status = c("running", "finished", "timeout", "error"),
                            delay_reruns = TRUE,
                            filename = paste0(
                              "sb_",
                              format(Sys.time(), format = "%Y%m%d"),
                              ".R"
                            ),
-                           head_rows = NULL) {
+                           head_rows = NULL, 
+                           timeout = Inf) {
 
   # checks
   if (is.null(dir_scheduler)) {
@@ -132,10 +136,12 @@ scheduler_init <- function(dir_scheduler,
   if (! dir.exists(dir_conf)) {
     stop("'dir_conf' directory doesn't exist. (", dir_conf, ")")
   }
-  if (! all(tolower(ignore_status) %in% c("waiting", "running", "finished", "error"))) {
-    stop(paste0("Unknown status ['", paste0(setdiff(ignore_status, c("waiting", "running", "finished", "error")), collapse = "', '"), "']."))
+  if (! all(tolower(ignore_status) %in% c("waiting", "running", "finished", "timeout", "error"))) {
+    stop(paste0("Unknown status ['", paste0(setdiff(ignore_status, c("waiting", "running", "finished", "timeout", "error")), collapse = "', '"), "']."))
   }
 
+  if(!is.numeric(timeout) | is.integer(timeout)) timeout <- Inf
+  
   if (is.null(head_rows)) {
     script_lines <- c("#!/usr/bin/env Rscript",
                       "args = commandArgs(trailingOnly = TRUE)",
@@ -143,6 +149,7 @@ scheduler_init <- function(dir_scheduler,
                       paste0("shinybatch::launcher(dir_path = c('", paste0(gsub("[\\]+", "\\\\\\\\", dir_conf), collapse = "','"), "'),"),
                       paste0("                     max_runs = ", as.integer(max_runs), ","),
                       paste0("                     ignore_status = c('", paste0(ignore_status, collapse = "','"), "'),"),
+                      paste0("                     timeout = ", timeout, ","),
                       paste0("                     delay_reruns = ", delay_reruns, ")"))
   } else {
     script_lines <- c(head_rows,
@@ -151,6 +158,7 @@ scheduler_init <- function(dir_scheduler,
                       paste0("shinybatch::launcher(dir_path = c('", paste0(gsub("[\\]+", "\\\\\\\\", dir_conf), collapse = "','"), "'),"),
                       paste0("                     max_runs = ", as.integer(max_runs), ","),
                       paste0("                     ignore_status = c('", paste0(ignore_status, collapse = "','"), "'),"),
+                      paste0("                     timeout = ", timeout, ","),
                       paste0("                     delay_reruns = ", delay_reruns, ")"))
   }
 
@@ -174,7 +182,7 @@ scheduler_init <- function(dir_scheduler,
 scheduler_add <- function(dir_scheduler,
                           dir_conf,
                           max_runs = 1,
-                          ignore_status = c("running", "finished", "error"),
+                          ignore_status = c("running", "finished", "timeout", "error"),
                           delay_reruns = TRUE,
                           taskname = paste0(
                             "sb_",
@@ -182,7 +190,8 @@ scheduler_add <- function(dir_scheduler,
                           ),
                           filename = paste0(taskname, ".R"),
                           create_file = TRUE,
-                          head_rows = NULL,
+                          head_rows = NULL, 
+                          timeout = Inf,
                           ...) {
 
   # checks
@@ -203,7 +212,8 @@ scheduler_add <- function(dir_scheduler,
                    ignore_status = ignore_status,
                    delay_reruns = delay_reruns,
                    filename = filename,
-                   head_rows = head_rows)
+                   head_rows = head_rows, 
+                   timeout = timeout)
   }
 
   # launches cron

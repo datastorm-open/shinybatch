@@ -27,5 +27,6 @@ if(!exists_cron){
                 dir_conf = dir_conf,
                 max_runs = 1,
                 head_rows = NULL,
-                taskname = "cr_sc_demo")
+                taskname = "cr_sc_demo", 
+                timeout = 0.1)
 }

@@ -1,8 +1,8 @@
 #' Compute the order of priority to run a list of configurations
 #'
 #' @param confs \code{list}. List of conf tables.
-#' @param ignore_status \code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.
-#' @param delay_reruns \code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+#' @param ignore_status \code{character} (c("running", "finished", "timeout", "error")). Status to be ignored when launching tasks.
+#' @param delay_reruns \code{boolean} (TRUE). When "running", "finished", "timeout" or "error" are not in ignore_status, use the date of the last run instead of
 #' the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.
 #'
 #' @import data.table
@@ -15,7 +15,7 @@
 #'
 #' @export
 run_order <- function(confs,
-                      ignore_status = c("running", "finished", "error"),
+                      ignore_status = c("running", "finished", "timeout", "error"),
                       delay_reruns = TRUE) {
 
   if (delay_reruns) {

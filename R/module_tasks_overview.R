@@ -5,7 +5,7 @@
 #' @param output shiny input
 #' @param session shiny input
 #' @param dir_path \code{character}. Where to find the tasks directorys.
-#' @param allowed_status \code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.
+#' @param allowed_status \code{character} (c("waiting", "running", "finished", "timeout", "error")). Vector of allowed status.
 #' @param allowed_run_info_cols \code{character} (c("date_creation", "date_start", "date_end", "priority", "status")). Run info elements to be kept.
 #' @param allow_descr \code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep descr elements, or column names.
 #' @param allowed_function_cols \code{character} (c("names", "path")). Function elements to be kept.
@@ -83,7 +83,7 @@
 #' server <- function(input, output, session) {
 #'   selected_task <- callModule(tasks_overview_server, "my_id_1",
 #'              dir_path = dir_conf,
-#'              allowed_status = c("waiting", "running", "finished", "error"),
+#'              allowed_status = c("waiting", "running", "finished", "timeout", "error"),
 #'              allowed_run_info_cols = NULL,
 #'              allowed_function_cols = "",
 #'              allow_descr = TRUE,
@@ -125,7 +125,7 @@ tasks_overview_server <- function(input, output, session,
                                   allow_descr = TRUE,
                                   allowed_function_cols = c("path", "name"),
                                   allow_args = TRUE,
-                                  allowed_status = c("waiting", "running", "finished", "error"),
+                                  allowed_status = c("waiting", "running", "finished", "timeout", "error"),
                                   allow_log_btn = TRUE,
                                   allow_rm_task = TRUE,
                                   update_mode = c("reactive", "button"),
@@ -302,7 +302,7 @@ tasks_overview_server <- function(input, output, session,
         DT <- DT %>%
           formatStyle(
             'status',
-            backgroundColor = DT::styleEqual(c("waiting", "running", "finished", "error"), c('#afd6ec', '#fabc11', "#4a9905", "#e8311e"))
+            backgroundColor = DT::styleEqual(c("waiting", "running", "finished", "timeout", "error"), c('#afd6ec', '#fabc11', "#4a9905", "#BD69DD", "#e8311e"))
           )
       }
 
