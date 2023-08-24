@@ -14,7 +14,7 @@ launcher(
 )
 }
 \arguments{
-\item{dir_path}{\code{character}. Where to find the tasks directory.}
+\item{dir_path}{\code{character}. Where to find the tasks directory (one or more). If several, log file are present in first directory}
 
 \item{max_runs}{\code{integer}. Maximum number of simultaneous running tasks.}
 
