@@ -12,22 +12,24 @@ scheduler_init(
   dir_scheduler,
   dir_conf,
   max_runs = 1,
-  ignore_status = c("running", "finished", "error"),
+  ignore_status = c("running", "finished", "timeout", "error"),
   delay_reruns = TRUE,
   filename = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d"), ".R"),
-  head_rows = NULL
+  head_rows = NULL,
+  timeout = Inf
 )
 
 scheduler_add(
   dir_scheduler,
   dir_conf,
   max_runs = 1,
-  ignore_status = c("running", "finished", "error"),
+  ignore_status = c("running", "finished", "timeout", "error"),
   delay_reruns = TRUE,
   taskname = paste0("sb_", format(Sys.time(), format = "\%Y\%m\%d")),
   filename = paste0(taskname, ".R"),
   create_file = TRUE,
   head_rows = NULL,
+  timeout = Inf,
   ...
 )
 
@@ -44,14 +46,16 @@ scheduler_ls(...)
 
 \item{max_runs}{\code{integer} (1). launcher arg : maximum number of simultaneous running tasks.}
 
-\item{ignore_status}{\code{character} (c("running", "finished", "error")). launcher arg : status to be ignored when launching tasks.}
+\item{ignore_status}{\code{character} (c("running", "finished", "timeout", "error")). launcher arg : status to be ignored when launching tasks.}
 
-\item{delay_reruns}{\code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+\item{delay_reruns}{\code{boolean} (TRUE). When "running", "finished", "timeout" or "error" are not in ignore_status, use the date of the last run instead of
 the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.}
 
 \item{filename}{\code{character} a character string with the name of the rscript file.}
 
 \item{head_rows}{\code{character} (NULL). Custom head rows to replace the default ones.}
+
+\item{timeout}{\code{numeric} Minute. Long task running more than \code{timeout} (perhaps killed with server restart or full memory) are set to "timeout" to enable running other waiting tasks}
 
 \item{taskname}{\code{character} a character string with the name of the task. (id in Linux cronR, taskname in windows taskscheduleR)}
 
@@ -135,7 +139,7 @@ conf_2 <- configure_task(dir_path = dir_conf,
 scheduler_add(dir_scheduler = tempdir(),
               dir_conf,
               max_runs = 1,
-              ignore_status = c("running", "finished", "error"),
+              ignore_status = c("running", "finished", "timeout", "error"),
               delay_reruns = TRUE,
               create_file = TRUE,
               head_rows = NULL,

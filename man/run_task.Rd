@@ -6,7 +6,7 @@
 \usage{
 run_task(
   conf_path,
-  ignore_status = c("running", "finished", "error"),
+  ignore_status = c("running", "finished", "timeout", "error"),
   save_rds = TRUE,
   compress = TRUE,
   return = TRUE,
@@ -16,7 +16,7 @@ run_task(
 \arguments{
 \item{conf_path}{\code{character}. Path to the conf file.}
 
-\item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
+\item{ignore_status}{\code{character} (c("running", "finished", "timeout", "error")). Status to be ignored when launching tasks.}
 
 \item{save_rds}{\code{logical} Save output in output/res.RDS ? Default to TRUE}
 

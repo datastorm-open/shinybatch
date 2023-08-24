@@ -374,7 +374,7 @@ tasks_overview_UI("my_id_2")
 sel_task <- callModule(
     tasks_overview_server, "my_id_2",
     dir_path = dir_conf,
-    allowed_status = c("waiting", "running", "finished", "error"),
+    allowed_status = c("waiting", "running", "finished", "timeout", "error"),
     allowed_run_info_cols = NULL,
     allowed_function_cols = NULL,
     allow_descr = T,

@@ -7,10 +7,11 @@
 launcher(
   dir_path,
   max_runs = 1,
-  ignore_status = c("running", "finished", "error"),
+  ignore_status = c("running", "finished", "timeout", "error"),
   delay_reruns = TRUE,
   compress = TRUE,
-  verbose = FALSE
+  verbose = FALSE,
+  timeout = Inf
 )
 }
 \arguments{
@@ -18,14 +19,16 @@ launcher(
 
 \item{max_runs}{\code{integer}. Maximum number of simultaneous running tasks.}
 
-\item{ignore_status}{\code{character} (c("running", "finished", "error")). Status to be ignored when launching tasks.}
+\item{ignore_status}{\code{character} (c("running", "finished", "timeout", "error")). Status to be ignored when launching tasks.}
 
-\item{delay_reruns}{\code{boolean} (TRUE). When "running", "finished" or "error" are not in ignore_status, use the date of the last run instead of
+\item{delay_reruns}{\code{boolean} (TRUE). When "running", "finished", "timeout" or "error" are not in ignore_status, use the date of the last run instead of
 the date of creation of the task to compute the order of (re)run for these tasks. The priority still applies.}
 
 \item{compress}{\code{logical or character} (TRUE). Either a logical specifying whether or not to use "gzip" compression, or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used.}
 
 \item{verbose}{\code{logical} See running task message ? Default to FALSE}
+
+\item{timeout}{\code{numeric} Minute. Long task running more than \code{timeout} (perhaps killed with server restart or full memory) are set to "timeout" to enable running other waiting tasks}
 }
 \value{
 the number of launched tasks.

@@ -15,7 +15,7 @@ tasks_overview_server(
   allow_descr = TRUE,
   allowed_function_cols = c("path", "name"),
   allow_args = TRUE,
-  allowed_status = c("waiting", "running", "finished", "error"),
+  allowed_status = c("waiting", "running", "finished", "timeout", "error"),
   allow_log_btn = TRUE,
   allow_rm_task = TRUE,
   update_mode = c("reactive", "button"),
@@ -52,7 +52,7 @@ tasks_overview_UI(
 
 \item{allow_args}{\code{boolean or character} (TRUE). Either a boolean specifying whether or not to keep args elements, or column names.}
 
-\item{allowed_status}{\code{character} (c("waiting", "running", "finished", "error")). Vector of allowed status.}
+\item{allowed_status}{\code{character} (c("waiting", "running", "finished", "timeout", "error")). Vector of allowed status.}
 
 \item{allow_log_btn}{\code{boolean} (TRUE). Whether or not to display a button to show log in modal.}
 
@@ -133,7 +133,7 @@ ui <- shiny::fluidPage(
 server <- function(input, output, session) {
   selected_task <- callModule(tasks_overview_server, "my_id_1",
              dir_path = dir_conf,
-             allowed_status = c("waiting", "running", "finished", "error"),
+             allowed_status = c("waiting", "running", "finished", "timeout", "error"),
              allowed_run_info_cols = NULL,
              allowed_function_cols = "",
              allow_descr = TRUE,
