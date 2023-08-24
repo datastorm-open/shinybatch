@@ -249,6 +249,12 @@ scheduler_add <- function(dir_scheduler,
       cron_args$description <- "Calls launcher() function at specified frequency"
     }
 
+    # Since cronR 0.6.0, default ask for add or rm cron
+    # disable if user not pass 'ask' argument
+    if (! "ask" %in% names(cron_args) & packageVersion("cronR") > '0.5.1') {
+      cron_args$ask <- FALSE
+    }
+
     do.call(cronR::cron_add, cron_args)
   }
 
@@ -281,7 +287,13 @@ scheduler_remove <- function(taskname, ...) {
            call. = FALSE)
     }
 
-    cronR::cron_rm(id = taskname, ...)
+    # Since cronR 0.6.0, default ask for add or rm cron
+    # disable if user not pass 'ask' argument
+    if (! "ask" %in% names(list(...)) & packageVersion("cronR") > '0.5.1') {
+      cronR::cron_rm(id = taskname, ask = FALSE, ...)
+    } else {
+      cronR::cron_rm(id = taskname, ...)
+    }
   }
 }
 
