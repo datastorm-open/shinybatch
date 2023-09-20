@@ -127,15 +127,20 @@ scheduler_init <- function(dir_scheduler,
   if (is.null(dir_scheduler)) {
     stop("'dir_scheduler' must be of class <character>.")
   }
+  
   if (! dir.exists(dir_scheduler)) {
     stop("'dir_scheduler' directory doesn't exist. (", dir_scheduler, ")")
   }
   if (is.null(dir_conf)) {
     stop("'dir_conf' must be of class <character>.")
   }
-  if (! dir.exists(dir_conf)) {
-    stop("'dir_conf' directory doesn't exist. (", dir_conf, ")")
+  
+  for(d in dir_conf){
+    if (! dir.exists(d)) {
+      stop("'dir_conf' directory doesn't exist. (", d, ")")
+    }
   }
+
   if (! all(tolower(ignore_status) %in% c("waiting", "running", "finished", "timeout", "error"))) {
     stop(paste0("Unknown status ['", paste0(setdiff(ignore_status, c("waiting", "running", "finished", "timeout", "error")), collapse = "', '"), "']."))
   }
