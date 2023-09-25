@@ -1,6 +1,6 @@
 Package: shinybatch
 Title: Launch Tasks in Batch
-Version: 0.3
+Version: 0.3.2
 Authors@R: c(
     person("Benoit", "Thieurmel", role = c("aut", "cre"),
       email = "bthieurmel@gmail.com"),

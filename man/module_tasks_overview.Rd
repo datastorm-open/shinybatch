@@ -19,7 +19,7 @@ tasks_overview_server(
   allow_log_btn = TRUE,
   allow_rm_task = TRUE,
   update_mode = c("reactive", "button"),
-  intervalMillis = 1000,
+  intervalMillis = 5000,
   table_fun = function(x) x,
   return_value = c("selected_task", "tasks_table"),
   datatable_options = list(),

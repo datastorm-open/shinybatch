@@ -16,7 +16,8 @@ configure_task_server(
   fun_args = NULL,
   priority = 0L,
   compress = TRUE,
-  labels = list(success = "Task configured !", error = "Error when configuring the task")
+  labels = list(success = "Task configured !", error =
+    "Error when configuring the task")
 )
 }
 \arguments{
