@@ -20,6 +20,7 @@ conf_1 <- configure_task(dir_path = dir_conf,
                                          z = iris),
                          priority = 1)
 
+
 Sys.sleep(2)
 
 conf_2 <- configure_task(dir_path = dir_conf,

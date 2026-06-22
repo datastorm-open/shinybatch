@@ -14,7 +14,7 @@ server <- function(input, output, session) {
                fun_args = reactive(list(n = input$fun_nb_points,
                                         mean = input$fun_mean,
                                         sd = input$fun_sd,
-                                        sleep = input$sleep_time)),
+                                        sleep = input$sleep_time, error = input$error)),
                priority = reactive(input$priority))
 
     # call module to view tasks

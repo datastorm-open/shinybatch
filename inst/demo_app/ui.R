@@ -34,6 +34,9 @@ navbarPage(title = HTML(paste0('<p style="margin-top: 0.05cm;">', paste0(rep("&n
                                                         column(2,
                                                                numericInput("sleep_time", "Sleep time (s)",
                                                                             min = 0, max = 30, value = 0, step = 1)
+                                                        ),
+                                                        column(2,
+                                                               checkboxInput("error", "Error ?")
                                                         )
                                                       ),
                                                       fluidRow(

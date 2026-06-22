@@ -104,85 +104,148 @@ run_task <- function(conf_path,
     # and threshold
     futile.logger::flog.threshold("INFO", name = "run_task.io")
 
-    fun_res <- withCallingHandlers({
+    local_tb <- NULL
+    task_failed <- FALSE
 
-      if(verbose){
-        message("Starting task execution...")
-      } else {
-        futile.logger::flog.info("Starting task execution...", name = "run_task.io")
-      }
+    fun_res <- tryCatch(
+      withCallingHandlers({
 
-      conf$run_info$date_start <- as.character(time)
-      conf$run_info$status <- "running"
-      yaml::write_yaml(conf,file = conf_path)
+        if(verbose){
+          message("Starting task execution...")
+        } else {
+          futile.logger::flog.info("Starting task execution...", name = "run_task.io")
+        }
 
-      # retrieve fun args
-      fun_args <- conf$args
-      if (length(fun_args) > 0) {
-        for (n_arg in 1:length(fun_args)) {
-          arg <- fun_args[[n_arg]]
+        conf$run_info$date_start <- as.character(time)
+        conf$run_info$status <- "running"
+        yaml::write_yaml(conf,file = conf_path)
 
-          if (! is.null(names(arg)) && names(arg) == "_path") {
-            # list() for NULL Case
-            fun_args[n_arg] <- list(
-              tryCatch(readRDS(arg[["_path"]]),
-                                          error = function(e) {
-                                            stop(paste0("Path '", arg[["_path"]], "' doesnt exist."))
-                                          })
-            )
+        # retrieve fun args
+        fun_args <- conf$args
+        if (length(fun_args) > 0) {
+          for (n_arg in 1:length(fun_args)) {
+            arg <- fun_args[[n_arg]]
+
+            if (! is.null(names(arg)) && names(arg) == "_path") {
+              # list() for NULL Case
+              fun_args[n_arg] <- list(
+                tryCatch(readRDS(arg[["_path"]]),
+                                            error = function(e) {
+                                              stop(paste0("Path '", arg[["_path"]], "' doesnt exist."))
+                                            })
+              )
+            }
           }
         }
+
+        # apply fun + create log
+        # keep.source = TRUE ensures srcref attributes are preserved even in non-interactive (batch) mode
+        tryCatch(source(conf[["function"]]$path, keep.source = TRUE),
+                 error = function(e) {
+                   stop(paste0("File '", conf[["function"]]$path, "' cannot be sourced."), call. = FALSE)
+                 })
+
+        setwd(paste0(dirname(conf_path), "/output"))
+
+        # run fun
+
+        # add a try to catch exception (for instance when failing to run code in Python with reticulate)
+        res <- try(
+          withCallingHandlers(
+            do.call(conf[["function"]]$name, fun_args),
+            error = function(e) {
+              if (is.null(local_tb)) {
+                all_calls <- sys.calls()
+                all_funs  <- lapply(seq_along(all_calls), sys.function)
+                dc_idx <- which(vapply(all_calls, function(x) {
+                  is.call(x) && length(x) >= 1L && identical(x[[1L]], quote(do.call))
+                }, logical(1L)))
+                if (length(dc_idx) > 0L) {
+                  idx <- dc_idx[1L]:length(all_calls)
+                  user_calls <- all_calls[idx]
+                  user_funs  <- all_funs[idx]
+                  n <- length(user_calls)
+                  # remove do.call frame (first) and internal R handler frames (last 2)
+                  keep <- if (n > 3L) 2L:(n - 2L) else seq_len(n)
+                  local_tb <<- list(calls = user_calls[keep], funs = user_funs[keep])
+                } else {
+                  local_tb <<- list(calls = all_calls, funs = all_funs)
+                }
+              }
+            }
+          ),
+          silent = TRUE
+        )
+        if ("try-error" %in% class(res)) {
+          stop(attr(res, "condition")$message)
+        }
+
+        if(verbose){
+          message("... task terminated.")
+        } else {
+          futile.logger::flog.info("... task terminated.", name = "run_task.io")
+        }
+        res
+
+      },
+      error = function(e) {
+        if (is.null(local_tb)) {
+          .tb_calls <- sys.calls()
+          local_tb <<- list(calls = .tb_calls, funs = lapply(seq_along(.tb_calls), sys.function))
+        }
+      },
+      warning = function(w){
+        futile.logger::flog.warn(gsub("(\n)*$", "", w$message), name = "run_task.io")
+      },
+      message = function(m){
+        futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "run_task.io")
+      }),
+      error = function(e) {
+        tb_str <- tryCatch({
+          if (!is.null(local_tb)) {
+            calls <- rev(local_tb$calls)
+            funs  <- rev(local_tb$funs)
+            paste(seq_along(calls), vapply(seq_along(calls), function(i) {
+              call_str <- paste(deparse(calls[[i]]), collapse = " ")
+              # srcref on the call object (available when code is sourced)
+              sr <- utils::getSrcref(calls[[i]])
+              # fallback: srcref from the function definition (at least gives the file)
+              if (is.null(sr) && is.function(funs[[i]])) sr <- utils::getSrcref(funs[[i]])
+              loc <- if (!is.null(sr)) {
+                fname <- utils::getSrcFilename(sr)
+                lnum  <- utils::getSrcLocation(sr, "line")
+                if (nzchar(fname)) paste0(" [", fname, ":", lnum, "]") else ""
+              } else ""
+              paste0(call_str, loc)
+            }, character(1L)), sep = ": ", collapse = "\n  ")
+          } else ""
+        }, error = function(tb_err) "")
+        futile.logger::flog.fatal(
+          paste0(conditionMessage(e),
+                 if (nzchar(tb_str)) paste0("\nTraceback:\n  ", tb_str) else ""),
+          name = "run_task.io"
+        )
+        conf$run_info$date_end <- as.character(Sys.time())
+        conf$run_info$status <- "error"
+        yaml::write_yaml(conf, file = conf_path)
+        task_failed <<- TRUE
+        NULL
+      }
+    )
+
+    if (!task_failed) {
+      if(save_rds){
+        saveRDS(fun_res,
+                file = paste0(dirname(conf_path), "/output/res.RDS"),
+                compress = compress)
       }
 
-      # apply fun + create log
-      tryCatch(source(conf[["function"]]$path),
-               error = function(e) {
-                 stop(paste0("File '", conf[["function"]]$path, "' cannot be sourced."), call. = FALSE)
-               })
-
-      setwd(paste0(dirname(conf_path), "/output"))
-
-      # run fun
-
-      # add a try to catch exception (for instance when failing to run code in Python with reticulate)
-      res <- try(do.call(conf[["function"]]$name, fun_args), silent = TRUE)
-      if ("try-error" %in% class(res)) {
-        stop(attr(res, "condition")$message)
-      }
-
-      if(verbose){
-        message("... task terminated.")
-      } else {
-        futile.logger::flog.info("... task terminated.", name = "run_task.io")
-      }
-      res
-
-    }, simpleError  = function(e){
-      futile.logger::flog.fatal(gsub("^(Error in withCallingHandlers[[:punct:]]{3}[[:space:]]*)|(\n)*$", "", e$message), name="run_task.io")
-
-      # update conf file if error
+      # update conf file
       conf$run_info$date_end <- as.character(Sys.time())
-      conf$run_info$status <- "error"
+      conf$run_info$status <- "finished"
 
-      yaml::write_yaml(conf,file = conf_path)
-
-    }, warning = function(w){
-      futile.logger::flog.warn(gsub("(\n)*$", "", w$message), name = "run_task.io")
-    }, message = function(m){
-      futile.logger::flog.info(gsub("(\n)*$", "", m$message), name = "run_task.io")
-    })
-
-    if(save_rds){
-      saveRDS(fun_res,
-              file = paste0(dirname(conf_path), "/output/res.RDS"),
-              compress = compress)
+      yaml::write_yaml(conf, file = conf_path)
     }
-
-    # update conf file
-    conf$run_info$date_end <- as.character(Sys.time())
-    conf$run_info$status <- "finished"
-
-    yaml::write_yaml(conf, file = conf_path)
   }
 
   if(return){

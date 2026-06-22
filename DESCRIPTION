@@ -1,6 +1,6 @@
 Package: shinybatch
 Title: Launch Tasks in Batch
-Version: 0.3.2
+Version: 0.4
 Authors@R: c(
     person("Benoit", "Thieurmel", role = c("aut", "cre"),
       email = "bthieurmel@gmail.com"),
@@ -11,7 +11,7 @@ Description: Provides two modules to configure some R task, launch in batch, and
 Depends: R (>= 3.5.0)
 License: GPL-3
 Encoding: UTF-8
-RoxygenNote: 7.2.1
+RoxygenNote: 7.1.1
 Imports: 
     data.table,
     DT,
